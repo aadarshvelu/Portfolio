@@ -1,13 +1,19 @@
 {
-  "name": "framermotion",
+  "name": "portfolio",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
+    "bootstrap": "^4.5.0",
+    "framer-motion": "^1.11.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-full-page": "^0.1.9",
+    "react-icons": "^3.10.0",
+    "react-particles-js": "^3.2.1",
+    "react-rotating-text": "^1.4.1",
     "react-scripts": "3.4.1"
   },
   "scripts": {
@@ -30,5 +36,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "description": "This portraits the aadarshvelu's portfolio!",
+  "main": "index.js",
+  "devDependencies": {},
+  "author": "aadarshvelu",
+  "license": "ISC"
 }

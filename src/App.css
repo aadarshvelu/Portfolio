@@ -1,38 +1,120 @@
-.App {
-  text-align: center;
+@import url('https://fonts.googleapis.com/css2?family=Abel&display=swap');
+
+body {
+  font-family: 'Abel', sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.s2 {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-wrap: wrap;
+}
+
+.designTop {
+  position: fixed;;
+  right: 0px;
+  top: -50px;
+  transform: rotate(180deg)
+}
+
+.designBottom {
+  position: fixed;;
+  left: 0px;
+  bottom: -40px;
+}
+
+.canvas-overlap {
+  display: flex;
+  position: absolute;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  color: #111111;
+}
+
+.typewriter {
+  font-size: 50px;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: center;
+  backdrop-filter: blur(0.5px);
+  flex-wrap: wrap;
 }
 
-.App-link {
-  color: #61dafb;
+.avatar {
+  display: flex;
+  align-items: center;
+  padding-bottom: 110px;
+  flex-wrap: wrap;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.downIcon {
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 8px;
+}
+
+.message {
+  font-size: 25px;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 80px;
+}
+
+.particle-canvas {
+  font-size: 50px;
+}
+
+.img {
+  width: 400px;
+  height: 400px;
+}
+
+.summary {
+  width: 600px;
+  height: 350px;
+}
+
+@media (max-width: 768px){
+  .img {
+    width: 0px;
+    height: 0px;
   }
-  to {
-    transform: rotate(360deg);
+  .design {
+    width: 0px;
+    height: 0px;
+  }
+  .skillSet {
+    display: flex;
+    justify-content: center;
+  }
+  .summary {
+    width: 400px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+body {
+  overflow-x: hidden;
+}
+
+body::-webkit-scrollbar {
+  width: 0px;
+}
+
+.react-rotating-text-cursor {
+  animation: blinking-cursor 0.8s cubic-bezier(0.68, 0.01, 0.01, 0.99) 0s infinite;
+}
+
+@keyframes blinking-cursor {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
