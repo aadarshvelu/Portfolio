@@ -1,9 +1,13 @@
 import React from 'react';
-import Particles from 'react-particles-js';
 import RotatingText from 'react-rotating-text';
 import {BsChevronDown} from 'react-icons/bs';
 import {motion} from 'framer-motion';
 import { FullPage, Slide } from 'react-full-page';
+import Coverflow from 'react-coverflow';
+import { GrInstagram } from 'react-icons/gr';
+import { FaLinkedinIn} from 'react-icons/fa';
+import { MdMarkunreadMailbox } from 'react-icons/md';
+import Resume from '../assets/Resume.pdf';
 
 import avatar from '../assets/ava1.png'
 
@@ -11,163 +15,155 @@ import avatar2 from '../assets/avatar/ava2.svg'
 
 import avatar3 from '../assets/avatar/ava3.svg'
 
+import avatar4 from '../assets/avatar/ava6.svg'
+
+import avatar5 from '../assets/avatar/ava4.svg'
+
+import avatar6 from '../assets/avatar/ava5.svg'
+
 import SkillSet from '../assets/skillset.svg'
 
 import summaryOne from '../assets/summary1.svg'
 
+import summaryTwo from '../assets/summary2.svg'
+
 import design from '../assets/design.svg'
+
+import project1 from '../assets/projectsList/P1.svg'
+
+import project2 from '../assets/projectsList/p2.svg'
+
+import project3 from '../assets/projectsList/p3.svg'
 
 const portfolio = () => {
 
-    const particleOptions = {
-      "particles": {
-        "number": {
-          "value": 40,
-        },
-        "color": {
-          "value": "#6b0f24"
-        },
-        "shape": {
-          "type": "circle",
-          "stroke": {
-            "width": 0,
-            "color": ""
-          },
-          "polygon": {
-            "nb_sides": 5
-          },
-        },
-        "opacity": {
-          "value": 0.5,
-          "random": true,
-          "anim": {
-            "enable": false,
-            "speed": 2,
-            "opacity_min": 0.1,
-            "sync": false
-          }
-        },
-        "size": {
-          "value": 3,
-          "random": true,
-          "anim": {
-            "enable": false,
-            "speed": 40,
-            "size_min": 0.1,
-            "sync": false
-          }
-        },
-        "line_linked": {
-          "enable": true,
-          "distance": 150,
-          "color": "#000000",
-          "opacity": 0.4,
-          "width": 1
-        },
-        "move": {
-          "enable": true,
-          "speed": 3,
-          "direction": "none",
-          "random": false,
-          "straight": false,
-          "out_mode": "out",
-          "bounce": false,
-          "attract": {
-            "enable": false,
-            "rotateX": 600,
-            "rotateY": 1200
-          }
-        }
-      },
-      "interactivity": {
-        "detect_on": "canvas",
-        "events": {
-          "onhover": {
-            "enable": true,
-            "mode": "grab"
-          },
-          "onclick": {
-            "enable": true,
-            "mode": "push"
-          },
-          "resize": true
-        },
-        "modes": {
-          "grab": {
-            "distance": 140,
-            "line_linked": {
-              "opacity": 1
-            }
-          },
-          "bubble": {
-            "distance": 400,
-            "size": 40,
-            "duration": 2,
-            "opacity": 8,
-            "speed": 3
-          },
-          "repulse": {
-            "distance": 200,
-            "duration": 0.4
-          },
-          "push": {
-            "particles_nb": 4
-          },
-          "remove": {
-            "particles_nb": 2
-          }
-        }
-      },
-      "retina_detect": true
-    };
-
     return ( 
         <React.Fragment>
+            <div className="designTop">
+                <img src={design} alt="" style={{ width: '1000px', height: '300px' }}/>
+            </div>
+            <div className="designBottom">
+                <img src={design} alt="" style={{ width: '1000px', height: '300px' }}/>
+            </div>
               <FullPage>
                 <Slide>
                   <div className="particle-canvas row">
-                    {/* <Particles params={particleOptions} className="particleCanvas" style={{ position: 'absolute', backgroundColor: 'white', }} /> */}
                     <motion.div className="canvas-overlap typewriter" initial={{ y: '-100vw' }} animate={{ y: 0 }} transition={{ duration: 1.5, type: 'spring', mass: 1 }}>
                       <RotatingText items={['Hello There ?', 'This is Aadarsh velu !']} />
                     </motion.div>
-                    <motion.div className="canvas-overlap avatar" initial={{ x: '-18vw' }} animate={{ x: 0 }} transition={{ duration: 1, type: 'tween', ease: 'easeOut' }} >
-                      <img src={avatar} alt="" className="img" />
+                    <motion.div className="canvas-overlap avatar" initial={{ x: '-18vw' }} animate={{ x: -5 }} transition={{ duration: 1, type: 'tween', ease: 'easeOut' }} >
+                      <img src={avatar} alt="" className="img img-thumbnail" />
                     </motion.div>
-                    {/* <motion.div className="canvas-overlap message" animate={{ opacity: [0, 1, 0] }} transition={{ duration: 2.5, loop: Infinity }}>
+                    <motion.div className="canvas-overlap message" animate={{ opacity: [0, 1, 0] }} transition={{ duration: 2.5, loop: Infinity }}>
                       Wanna Know About Me ?
-                    </motion.div> */}
+                    </motion.div>
                     <motion.div className="canvas-overlap downIcon" animate={{ y: [-15, 15, -15] }} transition={{ duration: 2, ease: "easeInOut", loop: Infinity, }}>
                       <BsChevronDown/>
                     </motion.div>
                   </div>
                 </Slide>
-                <Slide> 
-                <div className="designTop">
-                    <img src={design} alt="" style={{ width: '1000px', height: '300px' }}/>
-                  </div>
-                  <div className="designBottom">
-                    <img src={design} alt="" style={{ width: '1000px', height: '300px' }}/>
-                  </div>
+                <Slide>
                   <div className="">
                   <div className="row">
-                    <motion.div className="col-lg-5 pl-4 skillSet" >
-                      <motion.img className="" src={SkillSet} alt="" style={{ width: '600px', height: '680px' }} initial={{ y: 0 }}  animate={{ y: [-20, 20, -20] }} transition={{ duration: 1.5, ease: "easeInOut", loop: Infinity, }}/>
-                    </motion.div>
-                    <div className="col-lg-7">
-                      <div className="col" style={{ paddingTop: '90px' }}>
-                          <motion.img className="summary" src={summaryOne} alt="" whileHover={{ scale: 1.3 }} transition={{ ease: 'backOut', duration: 0.8}}/>
+                    <div className="col" style={{ paddingLeft: '50px' }}>
+                      <div className="col d-flex">
+                        <motion.img className="img-thumbnail" src={avatar2} alt="" style={{ width: '200px', height: '230px' }}  initial={{ opacity: 1 }} whileHover={{ opacity: 0 }} transition={{ ease: 'backOut', duration: 0.4}}/>
                       </div>
-                      <div className="col d-flex justify-content-end">
-                        <motion.img className="" src={avatar2} alt="" style={{ width: '400px', height: '280px' }}  initial={{ opacity: 1 }} whileHover={{ opacity: 0 }} transition={{ ease: 'backOut', duration: 0.4}}/>
-                      </div>
+                      <motion.img className="summary img-thumbnail" src={summaryOne} alt="" whileHover={{ scale: 1.2 }} transition={{ ease: 'backOut', duration: 0.8}}/>
                     </div>
+                    <motion.div className="col-lg-5 p-4 skillSet">
+                      <div className="d-flex justify-content-center">
+                        <motion.img className="skillSet img-thumbnail" src={SkillSet} alt="" style={{ width: '500px', height: '450px' }} initial={{ y: 0 }}  animate={{ y: [-10, 10, -10] }} transition={{ duration: 1.5, ease: "easeInOut", loop: Infinity, }}/>
+                      </div>
+                      <div className="d-flex justify-content-center">
+                        <motion.img className="img-thumbnail" src={avatar4} alt="" style={{ width: '200px', height: '180px' }}  initial={{ opacity: 1 }} whileHover={{ opacity: 0 }} transition={{ ease: 'backOut', duration: 0.4}}/>
+                      </div>
+                    </motion.div>
                   </div>
                   </div>
                 </Slide>
                 <Slide>
-                  <div className="row">
-                    <div className="col">
-                      <motion.img className="" src={avatar3} alt="" style={{ width: '600px', height: '350px' }}  initial={{ opacity: 1 }} whileHover={{ opacity: 0 }} transition={{ ease: 'backOut', duration: 0.4}}/>
+                  <div className="slide-3">
+                    <div className="row">
+                      <div className="col slide-3-img">
+                        <motion.img className="img-thumbnail" src={avatar3} alt="" style={{ width: '300px', height: '300px' }}  initial={{ opacity: 1 }} whileHover={{ opacity: 0 }} transition={{ ease: 'backOut', duration: 0.4}}/>
+                      </div>
+                      <div className="col p">
+                        <p>My Achievements : </p>
+                      </div>
+                      <div className="col d-flex justify-content-end" style={{ marginTop: '80px' }}>
+                        <Coverflow
+                            width= {900}
+                            height={650}
+                            displayQuantityOfSide={3}
+                            media={{
+                              '@media (max-width: 768px)': {
+                                display: 'none'
+                              },
+                              '@media (min-width: 900px)': {
+                                width: '1000px',
+                                height: '600px',
+                                marginTop: '80px'
+                              }
+                            }}
+                            classes={{backgroundColor: 'transparent', boxShadow: 'transparent', webkitBoxReflect: 'none', }}
+                        >
+                          <div>
+                            <div className="launch"><a rel="noopener noreferrer" target="_blank" href="http://listenify.herokuapp.com/home">🚀</a></div>
+                            <img src={project2} alt="" className="img-thumbnail"/>
+                          </div>
+                          <div>
+                            <div className="launch"><a rel="noopener noreferrer" target="_blank" href="https://dsavisually.netlify.app/">🚀</a></div>
+                            <img src={project1} alt="" className="img-thumbnail"/>
+                          </div>
+                          <div>
+                            <div className="launch"><a rel="noopener noreferrer" target="_blank" href="http://mypass-webapp.herokuapp.com/login">🚀</a></div>
+                            <img src={project3} alt="" className="img-thumbnail"/>
+                          </div>
+                        </Coverflow>
+                      </div>
+                    </div>
+                    <div className={"slide-3-list-proj"}>
+                      <div className="row d-flex justify-content-center">
+                        <div>
+                          <div className="launch"><a rel="noopener noreferrer" target="_blank" href="http://listenify.herokuapp.com/home">🚀</a></div>
+                          <img src={project2} alt="" className="img-thumbnail p-5"/>
+                        </div>
+                        <div>
+                          <div className="launch"><a rel="noopener noreferrer" target="_blank" href="https://dsavisually.netlify.app/">🚀</a></div>
+                          <img src={project1} alt="" className="img-thumbnail p-5"/>
+                        </div>
+                        <div>
+                          <div className="launch"><a rel="noopener noreferrer" target="_blank" href="http://mypass-webapp.herokuapp.com/login">🚀</a></div>
+                          <img src={project3} alt="" className="img-thumbnail p-5"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Slide>
+                <Slide className={"slide-4"}>
+                  <div className="row pl-4">
+                    <div className="col m-5">
+                      <motion.img className="img-thumbnail" style={{ marginTop: '50px' }} src={summaryTwo} alt="" whileHover={{ scale: 1.2 }} transition={{ ease: 'backOut', duration: 0.8}}/>
+                    </div>
+                    <div className="co mt-4">
+                      <motion.img className="img-thumbnail" src={avatar5} alt="" style={{ width: '600px', height: '300px' }}  initial={{ opacity: 1 }} whileHover={{ opacity: 0 }} transition={{ ease: 'backOut', duration: 0.4}}/>
+                    </div>
+                  </div>
+                  <div className="row slide-4-final">
+                    <div className="col d-flex justify-content-center flex-wrap">
+                      <div className="m-5">
+                        <h3>Wanna Hire Me ?</h3>
+                          <a href={Resume} download={"Aadarsh's_Resume"} rel="noopener noreferrer" target="_blank">
+                            <motion.img className="img-thumbnail" src={avatar6} alt="" style={{ width: '200px', height: '180px' }} animate={{ y: [-15, 15, -15] }} transition={{ duration: 2, ease: "easeInOut", loop: Infinity, }}/>
+                          </a>
+                      </div>
+                      <div className="m-5 text-center">
+                          <h3>Reach out to me here !</h3>
+                          <h4><MdMarkunreadMailbox className={"pr-2"} style={{ fontSize: '40px' }} /><a href="mailto:aadarshvelu@gmail.com" rel="noopener noreferrer" target={"_blank"}>aadarshvelu@gmail.com</a></h4>
+                          <h4><GrInstagram className={"pr-2"} style={{ fontSize: '40px' }} /><a href="https://www.instagram.com/aadarshvelu_/" rel="noopener noreferrer" target={"_blank"}>@aadarshvelu</a></h4>
+                          <h4><FaLinkedinIn className={"pr-2"} style={{ fontSize: '30px' }} /><a href="https://www.linkedin.com/in/aadarsh-velu-36b274143/" rel="noopener noreferrer" target={"_blank"}>Aadarshvelu</a></h4>
+                      </div>
                     </div>
                   </div>
                 </Slide>
@@ -175,9 +171,5 @@ const portfolio = () => {
         </React.Fragment>
      );
 }
- 
-export default portfolio;
 
-{/* <div className="design">
-  <img className="img" src={design} alt="" style={{ width: '300px', height: '150px' }}/>
-</div> */}
+export default portfolio;

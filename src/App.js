@@ -1,7 +1,7 @@
 import React from 'react';
 import Portfolio from './components/portfolio';
 
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import '../node_modules/bootstrap/dist/css/bootstrap.css';
 import '../node_modules/bootstrap/dist/css/bootstrap-grid.css';
 import './App.css';
 

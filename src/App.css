@@ -4,6 +4,36 @@ body {
   font-family: 'Abel', sans-serif;
 }
 
+.coverflow__container__1P-xE {
+  background: transparent;
+}
+
+.p {
+  position: absolute;
+  margin-top: 180px;
+  font-size: 30px;
+  margin-left: 500px;
+}
+
+.coverflow__text__39hqd {
+  display: none;
+}
+
+.coverflow__figure__3bk_C, .coverflow__cover__25-7e, .coverflow__figure__3bk_C {
+  box-shadow: none;
+  -webkit-box-reflect: unset;
+}
+
+.coverflow__figure__3bk_C {
+  min-width: 0;
+}
+
+.img-thumbnail {
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
 .s2 {
   display: flex;
   flex-wrap: wrap;
@@ -17,8 +47,8 @@ body {
 }
 
 .designBottom {
-  position: fixed;;
-  left: 0px;
+  position: fixed;
+  left: 0;
   bottom: -40px;
 }
 
@@ -36,8 +66,6 @@ body {
   font-size: 50px;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(0.5px);
-  flex-wrap: wrap;
 }
 
 .avatar {
@@ -65,33 +93,67 @@ body {
 }
 
 .img {
-  width: 400px;
-  height: 400px;
+  width: 300px;
+  height: 300px;
 }
 
 .summary {
   width: 600px;
-  height: 350px;
+  height: 180px;
+}
+
+.slide-3-list-proj {
+  display: none;
+}
+
+.launch {
+  position: fixed;
+  border-radius: 20px;
+  background: #0dd95a;
+  margin-left: 115px;
+  color: white;
+  padding: 2px;
+  font-size: 17px
+}
+
+.slide-4-final {
+  margin-left: 300px;
 }
 
 @media (max-width: 768px){
   .img {
-    width: 0px;
-    height: 0px;
+    width: 0;
+    height: 0;
   }
   .design {
-    width: 0px;
-    height: 0px;
+    width: 0;
+    height: 0;
   }
-  .skillSet {
-    display: flex;
-    justify-content: center;
+  .typewriter {
+    font-size: 30px;
   }
-  .summary {
-    width: 400px;
-    height: 300px;
+  .slide-3-list-proj {
     display: flex;
-    justify-content: center;
+    position: absolute;
+  }
+  .launch {
+    position: absolute;
+    margin: 40px;
+    font-size: 30px;
+  }
+  .p {
+    display: none
+  }
+  .slide-3 {
+    margin-top: 300px;
+  }
+  .slide-4 {
+    margin-top: 1100px;
+    position: absolute;
+  }
+  .slide-4-final {
+    margin-left: 0;
+    margin-bottom: 200px;
   }
 }
 
@@ -100,7 +162,7 @@ body {
 }
 
 body::-webkit-scrollbar {
-  width: 0px;
+  width: 0;
 }
 
 .react-rotating-text-cursor {
