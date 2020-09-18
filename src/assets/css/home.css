@@ -1,0 +1,171 @@
+.grid-container {
+    display: grid;
+    width: 100%;
+    grid-template-rows: .5fr .3fr .3fr .3fr;
+    grid-template-columns: repeat(6, .8fr);
+    grid-template-areas: 
+    "logo . . design design design"
+    "avatar1 . g1 g1 . ."
+    ". . g2 g2 . ."
+    ". cb cb ap ap ."
+    ;
+}
+
+.logo {
+    grid-area: logo;
+    height: 130px;
+    justify-self: start;
+    align-self: start;
+}
+
+.design1 {
+    grid-area: design;
+    transform: rotate(180deg);
+}
+
+.min-logo {
+    height: 0px;
+}
+
+.min-design {
+    display: none;
+}
+
+.design2 {
+    position: relative;
+    grid-row: 5;
+    grid-column: span 3;
+    align-self: flex-end;
+}
+
+.avatar1 {
+    height: 180px;
+    grid-area: avatar1;
+}
+
+.greet1 {
+    font-size: 60px;
+    grid-area: g1;
+    justify-self: center;
+    align-self: end;
+}
+
+.greet2 {
+    font-size: 70px;
+    grid-area: g2;
+    justify-self: center;
+}
+
+.connectBtnBase {
+    grid-area: cb;
+    justify-self: end;
+    margin: 1rem;
+}
+
+.connectBtn {
+    width: 280px;
+    height: 50px;
+    background: linear-gradient(90deg, rgba(240, 38, 87, 0.65912) 0%, rgba(214, 21, 67, 0.343111) 99.99%, rgba(231, 56, 98, 0) 100%);
+    border-radius: 140px;
+    font-size: 30px;
+}
+
+.abtPageBtnBase {
+    grid-area: ap;
+    justify-self: start;
+    margin: 1rem
+}
+
+.abtPageBtn {
+    width: 280px;
+    height: 50px;
+    background: linear-gradient(90deg, #43F254 0%, rgba(58, 241, 77, 0.750602) 56.5%, rgba(58, 237, 76, 0.54) 105.32%);
+    border-radius: 140px;
+    font-size: 30px;
+}
+
+@media only screen and (max-width: 1024px) {
+    .grid-container {
+        grid-template-rows: repeat(5, 1fr);
+        grid-template-areas: 
+    "logo . . design design design"
+    "avatar1 . . . . ."
+    ". . g1 g1 . ."
+    ". g2 g2 g2 g2 ."
+    ". cb cb ap ap ."
+    ;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    .grid-container {
+        grid-template-rows: repeat(5, 1fr);
+        grid-template-areas: 
+    "logo . . design design design"
+    "avatar1 . . . . ."
+    ". . g1 g1 . ."
+    ". g2 g2 g2 g2 ."
+    ". cb cb ap ap ."
+    ;
+    }
+}
+
+@media only screen and (max-width: 550px) {
+    .grid-container {
+        grid-template-rows: repeat(2, 1fr) repeat(4, .8fr);
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+        "topBar"
+        "avatar1"
+        "g1"
+        "g2"
+        "cb"
+        "ap"
+        ;
+    }
+    .topBar {
+        display: grid;
+        grid-area: topBar;
+        grid-template-columns: 30% 70%;
+        grid-template-areas: "min-logo min-design";
+    }
+    .logo {
+        width: 0px;
+        height: 0px;
+    }
+    .design1 {
+        display: none;
+    }
+    .min-logo {
+        display: block;
+        grid-area: min-logo;
+        height: 100px;
+        margin-bottom: 30px;
+    }
+    .min-design {
+        display: block;
+        grid-area: min-design;
+        transform: rotate(180deg);
+    }
+    .avatar1 {
+        height: 120px;
+    }
+    .greet1 {
+        font-size: 40px;
+    }
+    .greet2 {
+        font-size: 40px;
+    }
+    .connectBtnBase {
+        justify-self: center;
+    }
+    .abtPageBtnBase {
+        justify-self: center;
+    }
+    .connectBtn {
+        width: 200px;
+    }
+    .abtPageBtn {
+        width: 280px;
+    }
+}

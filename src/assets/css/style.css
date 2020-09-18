@@ -1,0 +1,39 @@
+@font-face {
+    font-weight: 'Caveat';
+    font-style: normal;
+    font-weight: 400;
+    font-family: 'Caveat';
+    src: url('../fonts/Caveat.ttf');
+    src: local('Caveat'), local('Caveat'),
+            url('../fonts/Caveat.ttf')
+}
+
+* {
+    margin: '0px';
+    padding: '0px';
+}
+
+html,
+body,
+div,
+:root {
+  height: 100%;
+  scrollbar-width: none;
+}
+
+body {
+    font-family: 'Caveat';
+    color: rgba(0, 0, 0, 0.87);
+}
+
+.img-thumbnail {
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+}
+
+::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}

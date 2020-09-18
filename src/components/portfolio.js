@@ -9,7 +9,9 @@ import { FaLinkedinIn} from 'react-icons/fa';
 import { MdMarkunreadMailbox } from 'react-icons/md';
 import Resume from '../assets/Resume.pdf';
 
-import avatar from '../assets/ava1.png'
+import '../App.css'
+
+import avatar from '../assets/avatar/ava1.svg'
 
 import avatar2 from '../assets/avatar/ava2.svg'
 
@@ -83,62 +85,39 @@ const portfolio = () => {
                   </div>
                 </Slide>
                 <Slide>
-                  <div className="slide-3">
-                    <div className="row">
-                      <div className="col slide-3-img">
-                        <motion.img className="img-thumbnail" src={avatar3} alt="" style={{ width: '300px', height: '300px' }}  initial={{ opacity: 1 }} whileHover={{ opacity: 0 }} transition={{ ease: 'backOut', duration: 0.4}}/>
-                      </div>
-                      <div className="col p">
-                        <p>My Achievements : </p>
-                      </div>
-                      <div className="col d-flex justify-content-end" style={{ marginTop: '80px' }}>
-                        <Coverflow
-                            width= {900}
-                            height={650}
-                            displayQuantityOfSide={3}
-                            media={{
-                              '@media (max-width: 768px)': {
-                                display: 'none'
-                              },
-                              '@media (min-width: 900px)': {
-                                width: '1000px',
-                                height: '600px',
-                                marginTop: '80px'
-                              }
-                            }}
-                            classes={{backgroundColor: 'transparent', boxShadow: 'transparent', webkitBoxReflect: 'none', }}
-                        >
-                          <div>
-                            <div className="launch"><a rel="noopener noreferrer" target="_blank" href="http://listenify.herokuapp.com/home">🚀</a></div>
-                            <img src={project2} alt="" className="img-thumbnail"/>
-                          </div>
-                          <div>
-                            <div className="launch"><a rel="noopener noreferrer" target="_blank" href="https://dsavisually.netlify.app/">🚀</a></div>
-                            <img src={project1} alt="" className="img-thumbnail"/>
-                          </div>
-                          <div>
-                            <div className="launch"><a rel="noopener noreferrer" target="_blank" href="http://mypass-webapp.herokuapp.com/login">🚀</a></div>
-                            <img src={project3} alt="" className="img-thumbnail"/>
-                          </div>
-                        </Coverflow>
-                      </div>
+                  <div className="row">
+                    <div className="col">
+                      <motion.img className="img-thumbnail d-none d-lg-block" src={avatar3} alt="" style={{ width: '300px', height: '300px' }}  initial={{ opacity: 1 }} whileHover={{ opacity: 0 }} transition={{ ease: 'backOut', duration: 0.4}}/>
                     </div>
-                    <div className={"slide-3-list-proj"}>
+                  </div>
+                  <div>
+                  <div className="row">
+                  <div className="col text-center" style={{ fontSize: '30px'}}>
+                      <p>My Achievements : </p>
+                  </div>
+                    <div className="ml-lg-5">
                       <div className="row d-flex justify-content-center">
-                        <div>
-                          <div className="launch"><a rel="noopener noreferrer" target="_blank" href="http://listenify.herokuapp.com/home">🚀</a></div>
-                          <img src={project2} alt="" className="img-thumbnail p-5"/>
+                        <div className="card col-lg-2 col-md-4 px-0" style={{ width: '50%' }}>
+                          <img src={project1} className="card-img-top" alt="..."/>
+                          <div className="card-body">
+                            <p className="card-text">A Secure web-based Online Password Manager .</p>
+                          </div>
                         </div>
-                        <div>
-                          <div className="launch"><a rel="noopener noreferrer" target="_blank" href="https://dsavisually.netlify.app/">🚀</a></div>
-                          <img src={project1} alt="" className="img-thumbnail p-5"/>
+                        <div className="card col-lg-2 col-md-4 px-0 mx-5 my-md-4 my-lg-0" style={{ width: '50%' }}>
+                          <img src={project2} className="card-img-top" alt="..."/>
+                          <div className="card-body">
+                            <p className="card-text">The Collaborative and Fun Way To Learn Data Structures and Algorithms.</p>
+                          </div>
                         </div>
-                        <div>
-                          <div className="launch"><a rel="noopener noreferrer" target="_blank" href="http://mypass-webapp.herokuapp.com/login">🚀</a></div>
-                          <img src={project3} alt="" className="img-thumbnail p-5"/>
+                        <div className="card col-lg-2 col-md-4 px-0" style={{ width: '50%' }}>
+                          <img src={project3} className="card-img-top" alt="..."/>
+                          <div className="card-body">
+                            <p className="card-text">A World's First 8D Online Player With Some Cool Stuff Like Visualizations, And Lot More Included In Box.</p>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  </div>
                   </div>
                 </Slide>
                 <Slide className={"slide-4"}>
@@ -146,7 +125,7 @@ const portfolio = () => {
                     <div className="col m-5">
                       <motion.img className="img-thumbnail" style={{ marginTop: '50px' }} src={summaryTwo} alt="" whileHover={{ scale: 1.2 }} transition={{ ease: 'backOut', duration: 0.8}}/>
                     </div>
-                    <div className="co mt-4">
+                    <div className="col mt-4">
                       <motion.img className="img-thumbnail" src={avatar5} alt="" style={{ width: '600px', height: '300px' }}  initial={{ opacity: 1 }} whileHover={{ opacity: 0 }} transition={{ ease: 'backOut', duration: 0.4}}/>
                     </div>
                   </div>

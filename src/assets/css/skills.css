@@ -1,0 +1,185 @@
+.skills-container {
+    display: grid;
+    min-height: 100vh;
+    grid-template-rows: .5fr 2.5fr .3fr;
+    grid-template-columns: 50% 50%;
+    grid-template-areas: 
+      "logo design"
+      "skillSet rightSide"
+    ;
+}
+
+.logo {
+    grid-area: logo;
+    height: 130px;
+    justify-self: start;
+    align-self: start;
+}
+
+.design {
+    grid-area: design;
+    transform: rotate(180deg);
+}
+
+.min-logo {
+    height: 0px;
+}
+
+.min-design {
+    display: none;
+}
+
+.skillSetBase {
+    grid-area: skillSet;
+    align-self: center;
+    justify-self: center;
+}
+
+.skillSet {
+    height: 100%;
+}
+
+.rightSide {
+    grid-area: rightSide;
+    display: grid;
+    grid-template-rows: 33.3% 33.3% 33.3%;
+    grid-template-areas: 
+    "base"
+    "base"
+    "wb"
+    ;
+}
+
+.base {
+    grid-area: base;
+    display: grid;
+    grid-template-areas: 
+    "avatar"
+    "summary"
+    ;
+}
+
+.avatar2 {
+    grid-area: avatar;
+    height: 200px;
+    align-self: end;
+}
+
+.summary1 {
+    grid-area: summary;
+    height: 200px;
+    padding-left: 20px;
+}
+
+.workPageBtnBase {
+    grid-area: wb;
+    height: 0;
+    margin: 1rem;
+    justify-self: center;
+    align-self: center;
+}
+
+.workPageBtn {
+    width: 280px;
+    height: 50px;
+    background: linear-gradient(90deg, #43F254 0%, rgba(58, 241, 77, 0.750602) 56.5%, rgba(58, 237, 76, 0.54) 105.32%);
+    border-radius: 140px;
+    font-size: 30px;
+}
+
+@media only screen and (max-height: 700px) {
+    .skillSetBase {
+        align-self: start;
+        height: 500px;
+    }
+    .base {
+        justify-self: center;
+    }
+    .avatar2 {
+        height: 150px;
+    }
+    .summary1 {
+        height: 150px;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    .base {
+        grid-template-rows: 50% 50%;
+    }
+    .avatar2 {
+        height: 100px;
+    }
+    .summary1 {
+        height: 150px;
+    }
+    .workPageBtnBase {
+        align-self: start;
+    }
+}
+
+@media only screen and (max-width: 550px) {
+    body {
+        overflow: scroll;
+    }
+    .skills-container {
+        overflow-y: auto;
+        grid-template-rows: repeat(4, 1fr);
+        grid-template-columns: 100%;
+        grid-template-areas: 
+        "topBar"
+        "skillSet"
+        "rightSide"
+        "wb"
+        ;
+    }
+    .topBar {
+        display: grid;
+        grid-area: topBar;
+        grid-template-columns: 30% 70%;
+        grid-template-areas: "min-logo min-design";
+    }
+    .logo {
+        width: 0px;
+        height: 0px;
+    }
+    .design1 {
+        display: none;
+    }
+    .min-logo {
+        display: block;
+        grid-area: min-logo;
+        height: 100px;
+        margin-bottom: 30px;
+    }
+    .min-design {
+        display: block;
+        grid-area: min-design;
+        transform: rotate(180deg);
+    }
+    .skillSetBase {
+        justify-self: center;
+        align-self: start;
+    }
+    .avatar2 {
+        height: 130px;
+        justify-self: center;
+    }
+    .summary1 {
+        align-self: start;
+        justify-self: center;
+        height: 130px;
+        width: 300px;
+    }
+    .workPageBtnBase {
+        justify-self: center;
+        align-self: end;
+        margin-bottom: 100px;
+    }
+    .workPageBtn {
+        padding-top: 5px;
+        width: 240px;
+        font-size: 25px;
+        text-align: center;
+    }
+}
