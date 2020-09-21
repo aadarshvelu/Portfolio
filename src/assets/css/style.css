@@ -1,12 +1,4 @@
-@font-face {
-    font-weight: 'Caveat';
-    font-style: normal;
-    font-weight: 400;
-    font-family: 'Caveat';
-    src: url('../fonts/Caveat.ttf');
-    src: local('Caveat'), local('Caveat'),
-            url('../fonts/Caveat.ttf')
-}
+/* @import url('https://fonts.googleapis.com/css2?family=Caveat&display=swap'); */
 
 * {
     margin: '0px';
@@ -24,6 +16,11 @@ div,
 body {
     font-family: 'Caveat';
     color: rgba(0, 0, 0, 0.87);
+}
+
+a, a:hover, a:focus {
+    color: rgba(0, 0, 0, 0.87);
+    text-decoration: none;
 }
 
 .img-thumbnail {

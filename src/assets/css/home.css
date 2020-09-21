@@ -11,6 +11,17 @@
     ;
 }
 
+.loader {
+    display: flex;
+    background-color: powderblue;
+    height: 100%;
+    width: 100%;
+    backdrop-filter: blur(20px);
+    justify-content: center;
+    align-content: center;
+    font-size: xx-large;
+}
+
 .logo {
     grid-area: logo;
     height: 130px;
@@ -122,6 +133,7 @@
         "cb"
         "ap"
         ;
+        margin-bottom: 200px;
     }
     .topBar {
         display: grid;

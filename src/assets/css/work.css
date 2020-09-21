@@ -182,7 +182,8 @@
 
 @media only screen and (max-width: 550px) {
     body {
-        overflow: scroll;
+        overflow-y: scroll;
+        overflow-x: hidden;
     }
     .work-container {
         overflow-y: auto;
