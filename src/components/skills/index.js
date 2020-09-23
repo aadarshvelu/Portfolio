@@ -28,31 +28,31 @@ const Skills = () => {
                 <motion.div className="skillSetBase"  initial={{ x: '-170vw' }} animate={{ x: 0 }} transition={{ type: 'tween', delay: 0.5, ease: 'easeOut', duration: 1  }}>
                     <p className={"header-title"}>My Hands Got Dirty Using These Technologies :</p>
                     <motion.div className="item-1-container" whileHover={{ scale: 1.1 }}>
-                        <img src={globalState.RRLogo} alt="react/redux" className={"item-img img-1"} />
+                        <img src={globalState.RRLogo} alt="img" className={"item-img img-1"} />
                         <div className={"item-text item-1"}>React / Redux</div>
                     </motion.div>
                     <motion.div className="item-2-container" whileHover={{ scale: 1.1 }}>
-                        <img src={globalState.reactNative} alt="react/redux" className={"item-img img-2"} />
+                        <img src={globalState.reactNative} alt="img" className={"item-img img-2"} />
                         <div className={"item-text item-2"}>React Native</div>
                     </motion.div>
                     <motion.div className="item-3-container" whileHover={{ scale: 1.1 }}>
-                        <img src={globalState.node} alt="react/redux" className={"item-img img-3"} />
+                        <img src={globalState.node} alt="img" className={"item-img img-3"} />
                         <div className={"item-text item-3"}>Node JS</div>
                     </motion.div>
-                    <motion.div className="item-4-container" whileHover={{ scale: 1.1 }}>
-                        <img src={globalState.typescript} alt="react/redux" className={"item-img img-4"} />
+                    <motion.div className="item-4-container py-md-2" whileHover={{ scale: 1.1 }}>
+                        <img src={globalState.typescript} alt="img" className={"item-img img-4"} />
                         <div className={"item-text item-4"}>Typescript</div>
                     </motion.div>
                     <motion.div className="item-5-container" whileHover={{ scale: 1.1 }}>
-                        <img src={globalState.java} alt="react/redux" className={"item-img img-5"} />
+                        <img src={globalState.java} alt="img" className={"item-img img-5"} />
                         <div className={"item-text item-5"}>Java</div>
                     </motion.div>
                     <motion.div className="item-6-container" whileHover={{ scale: 1.1 }}>
-                        <img src={globalState.mongoDB} alt="react/redux" className={"item-img img-6"} />
+                        <img src={globalState.mongoDB} alt="img" className={"item-img img-6"} />
                         <div className={"item-text item-6"}>MongoDB</div>
                     </motion.div>
                     <motion.div className="item-7-container" whileHover={{ scale: 1.1 }}>
-                      <img src={globalState.firebase} alt="react/redux" className={"item-img img-7"} />
+                      <img src={globalState.firebase} alt="img" className={"item-img img-7"} />
                       <div className={"item-text item-7"}>Firebase</div>
                     </motion.div>
                 </motion.div>

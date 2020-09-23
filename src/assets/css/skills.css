@@ -35,13 +35,14 @@
     grid-template-rows: 0fr;
     align-self: center;
     justify-self: center;
+    gap: 10px;
     width: 300px;
     height: 530px;
     background: #ffffff27;
     border: 0.1px solid rgba(0, 0, 0, 0.24);
     box-sizing: border-box;
     border-radius: 16px;
-    box-shadow: 9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px  rgba(255,255,255, 0.5);
+    box-shadow: 9px 9px 16px rgb(163,177,198, 0.6), -9px -9px 16px  rgba(255,255,255, 0.5);
     grid-template-areas: 
     "title"
     "item-1-container"
@@ -102,6 +103,7 @@
     grid-template-areas: 
     "img-7 item-7"
     ;
+    margin-bottom: 15px;
 }
 
 .header-title {
@@ -111,6 +113,7 @@
     padding: 18px;
     padding-top: 10px;
     padding-bottom: 0px;
+    margin-bottom: 0px;
 }
 
 .item-img {
@@ -250,7 +253,7 @@
 @media only screen and (max-height: 700px) {
     .skillSetBase {
         align-self: start;
-        height: 450px;
+        height: auto;
     }
     .base {
         justify-self: center;
