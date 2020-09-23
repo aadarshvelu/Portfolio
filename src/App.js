@@ -99,18 +99,23 @@ const App =  () => {
     switch (ctx) {
       case 'common':
         updateCommonComponent([...commonComponent, ctx])
+        commonComponent.push(ctx)
         break;
       case 'home':
         updateHomeComponent([...homeComponent, ctx])
+        homeComponent.push(ctx)
         break;
       case 'skills':
         updateSkillsComponent([...skillsComponent, ctx])
+        skillsComponent.push(ctx)
         break;
       case 'work':
         updateWorkComponent([...workComponent, ctx])
+        workComponent.push(ctx)
         break;
       case 'contact':
         updateContactComponent([...contactComponent, ctx])
+        contactComponent.push(ctx)
         break;
       default:
         break;
@@ -119,6 +124,8 @@ const App =  () => {
     updateGlobalStateValues({ ...globalStateValues, loadingPercentile: loadingPercentile + 4.8 })
 
     updateLoadingPercentile(loadingPercentile + 4.8)
+
+    console.log('loading.....', homeComponent.length, commonComponent.length, skillsComponent.length, workComponent.length, contactComponent.length)
 
     if (homeComponent.length === 1 && commonComponent.length === 2 && skillsComponent.length === 9 && workComponent.length === 4 && contactComponent.length === 5) {
       
@@ -146,17 +153,16 @@ const App =  () => {
           linkedIn,
           loadingPercentile: 100
         }
+        console.log('loaded.....')          
         history.push('/Home')
         updateGlobalStateValues(values)
-    } 
+    }
   }
-
   return (
     <React.Fragment>
       <GlobalState.Provider value={globalStateValues}>
         <Route
           render={({ location }) => {
-            console.log(location, location.pathname)
             return (
               <PageTransition
                 preset="fall"
