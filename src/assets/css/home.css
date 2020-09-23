@@ -1,6 +1,7 @@
 .grid-container {
     display: grid;
     width: 100%;
+    min-height: 100vh;
     grid-template-rows: .5fr .3fr .3fr .3fr;
     grid-template-columns: repeat(6, .8fr);
     grid-template-areas: 
@@ -9,17 +10,6 @@
     ". . g2 g2 . ."
     ". cb cb ap ap ."
     ;
-}
-
-.loader {
-    display: flex;
-    background-color: powderblue;
-    height: 100%;
-    width: 100%;
-    backdrop-filter: blur(20px);
-    justify-content: center;
-    align-content: center;
-    font-size: xx-large;
 }
 
 .logo {
@@ -35,7 +25,7 @@
 }
 
 .min-logo {
-    height: 0px;
+    height: 0;
 }
 
 .min-design {
@@ -122,9 +112,13 @@
 }
 
 @media only screen and (max-width: 550px) {
+    body {
+        overflow: scroll;
+    }
     .grid-container {
-        grid-template-rows: repeat(2, 1fr) repeat(4, .8fr);
-        grid-template-columns: 1fr;
+        overflow-y: auto;
+        grid-template-rows: auto;
+        grid-template-columns: 100%;
         grid-template-areas: 
         "topBar"
         "avatar1"
@@ -132,8 +126,8 @@
         "g2"
         "cb"
         "ap"
+        "."
         ;
-        margin-bottom: 200px;
     }
     .topBar {
         display: grid;
@@ -142,8 +136,8 @@
         grid-template-areas: "min-logo min-design";
     }
     .logo {
-        width: 0px;
-        height: 0px;
+        width: 0;
+        height: 0;
     }
     .design1 {
         display: none;
@@ -179,5 +173,11 @@
     }
     .abtPageBtn {
         width: 280px;
+    }
+}
+
+@media only screen and (max-width: 340px) {
+    .abtPageBtnBase {
+        margin: 0;
     }
 }

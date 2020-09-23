@@ -70,7 +70,7 @@ import Home from './components/home/index';
 // Skills Component
 import Skills from './components/skills/index';
 
-// Work Compponent
+// Work Component
 import Work from './components/work/index';
 
 // Contact Component
@@ -80,7 +80,17 @@ const App =  () => {
 
   const [globalStateValues, updateGlobalStateValues] = React.useState({});
 
-  const commonComponent = [], homeComponent = [], skillsComponent = [], workComponent = [], contactComponent = [];
+  const [commonComponent, updateCommonComponent] = React.useState([])
+
+  const [homeComponent, updateHomeComponent] = React.useState([])
+
+  const [skillsComponent, updateSkillsComponent] = React.useState([])
+
+  const [workComponent, updateWorkComponent] = React.useState([])
+
+  const [contactComponent, updateContactComponent] = React.useState([])
+  
+  const [loadingPercentile, updateLoadingPercentile] = React.useState(0)
 
   const history = useHistory()
 
@@ -88,25 +98,30 @@ const App =  () => {
 
     switch (ctx) {
       case 'common':
-        commonComponent.push(ctx)
+        updateCommonComponent([...commonComponent, ctx])
         break;
       case 'home':
-        homeComponent.push(ctx)
+        updateHomeComponent([...homeComponent, ctx])
         break;
       case 'skills':
-        skillsComponent.push(ctx)
+        updateSkillsComponent([...skillsComponent, ctx])
         break;
       case 'work':
-        workComponent.push(ctx)  
+        updateWorkComponent([...workComponent, ctx])
         break;
       case 'contact':
-        contactComponent.push(ctx)
+        updateContactComponent([...contactComponent, ctx])
         break;
       default:
         break;
     }
 
+    updateGlobalStateValues({ ...globalStateValues, loadingPercentile: loadingPercentile + 4.8 })
+
+    updateLoadingPercentile(loadingPercentile + 4.8)
+
     if (homeComponent.length === 1 && commonComponent.length === 2 && skillsComponent.length === 9 && workComponent.length === 4 && contactComponent.length === 5) {
+      
       const values = {
           design,
           logo,
@@ -129,6 +144,7 @@ const App =  () => {
           insta,
           gmail,
           linkedIn,
+          loadingPercentile: 100
         }
         history.push('/Home')
         updateGlobalStateValues(values)

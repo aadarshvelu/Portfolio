@@ -22,7 +22,7 @@
 }
 
 .min-logo {
-    height: 0px;
+    height: 0;
 }
 
 .min-design {
@@ -182,11 +182,11 @@
 
 @media only screen and (max-width: 550px) {
     body {
-        overflow-y: scroll;
-        overflow-x: hidden;
+        overflow: scroll;
     }
     .work-container {
         overflow-y: auto;
+        overflow-x: hidden;
         grid-template-rows: auto;
         grid-template-columns: 100%;
         grid-template-areas: 
@@ -197,7 +197,7 @@
         ;
     }
     .cards {
-        margin-left: 0px;
+        margin-left: 0;
         grid-template-rows: auto;
         grid-template-columns: 100%;
         grid-template-areas: 
@@ -211,7 +211,7 @@
         transform: rotate(-10deg);
     }
     .section2 {
-        margin-left: 0px;
+        margin-left: 0;
         grid-template-rows: auto;
     }
     .item3 {
@@ -245,7 +245,7 @@
         width: 200px;
         height: 200px;
         justify-self: center;
-        margin-left: 0px;
+        margin-left: 0;
         margin-bottom: 40px;
     }
     .contactPageBtnBase {
@@ -267,8 +267,8 @@
         grid-template-areas: "min-logo min-design";
     }
     .logo {
-        width: 0px;
-        height: 0px;
+        width: 0;
+        height: 0;
     }
     .design1 {
         display: none;

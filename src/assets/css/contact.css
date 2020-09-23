@@ -2,7 +2,7 @@
     display: grid;
     grid-template-rows: .2fr auto;
     grid-template-columns: 60% 40%;
-    height: auto;
+    min-height: 100vh;    
     grid-template-areas: 
     "logo design"
     "sectionOne sectionTwo"
@@ -58,7 +58,9 @@
     grid-area: intro-title;
     font-size: xx-large;
 }
+
 .insta {
+    height: auto;
     grid-area: insta;
     display: grid;
     grid-template-columns: 20% 80%;
@@ -67,6 +69,7 @@
 }
 
 .mail {
+    height: auto;
     grid-area: mail;
     display: grid;
     grid-template-columns: 20% 80%;
@@ -75,6 +78,7 @@
 }
 
 .linkedIn {
+    height: auto;
     grid-area: lkn;
     display: grid;
     grid-template-columns: 20% 80%;
@@ -84,7 +88,7 @@
 
 @media only screen and (max-height: 700px) {
     .partTwo {
-        margin-top: 0px;
+        margin-top: 0;
     }
     .avatar4 {
         height: 400px;
@@ -97,11 +101,13 @@
         overflow: scroll;
     }
     .contact-grid {
+        overflow-y: auto;
         grid-template-rows: auto;
         grid-template-columns: 100%;
         grid-template-areas: 
         "topBar"
         "sectionOne"
+        "sectionTwo"
         ;
         margin-bottom: 200px;
     }
@@ -112,6 +118,22 @@
         ;
     }
     .partTwo {
-        margin-top: 0px;
+        margin-top: 0;
+    }
+}
+
+@media only screen and (max-width: 340px) {
+    body {
+        overflow: scroll;
+    }
+    .insta, .linkedIn, .mail {
+        grid-template-columns: 20% 80%;
+        font-size: x-large;
+        gap: 0;
+    }
+    .insta-icon, .linkedIn-icon, .mail-icon {
+        width: 30px;
+        height: 30px;
+        margin-top: 5px;
     }
 }

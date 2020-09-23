@@ -37,7 +37,7 @@ const Contact = () => {
                         </motion.div>
                         <motion.div className="mail" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.8 }}>
                             <img src={globalState.gmail} alt="" className={"mail-icon"} />
-                            <p className="mail-text"><a href="mailto:aadarshvelu@gmail.com?subject = Hello Aadarsh!" target={"_blank"}>aadarshvelu@gmail.com</a></p>
+                            <p className="mail-text"><a href="mailto:aadarshvelu@gmail.com?subject = Hello Aadarsh!" rel="noopener noreferrer" target={"_blank"}>aadarshvelu@gmail.com</a></p>
                         </motion.div>
                         <motion.div className="linkedIn" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.8 }}>
                             <img src={globalState.linkedIn} alt="" className={"linkedIn-icon"} />
