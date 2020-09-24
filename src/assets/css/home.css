@@ -158,12 +158,15 @@
     }
     .greet1 {
         font-size: 40px;
+        padding-bottom: 0;
     }
     .greet2 {
         font-size: 40px;
+        padding-bottom: 0;
     }
     .connectBtnBase {
         justify-self: center;
+        margin: 0;
     }
     .abtPageBtnBase {
         justify-self: center;
