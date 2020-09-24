@@ -125,8 +125,6 @@ const App =  () => {
 
     updateLoadingPercentile(loadingPercentile + 4.8)
 
-    console.log('loading.....', homeComponent.length, commonComponent.length, skillsComponent.length, workComponent.length, contactComponent.length)
-
     if (homeComponent.length === 1 && commonComponent.length === 2 && skillsComponent.length === 9 && workComponent.length === 4 && contactComponent.length === 5) {
       
       const values = {
@@ -153,7 +151,7 @@ const App =  () => {
           linkedIn,
           loadingPercentile: 100
         }
-        console.log('loaded.....')          
+        
         history.push('/Home')
         updateGlobalStateValues(values)
     }
