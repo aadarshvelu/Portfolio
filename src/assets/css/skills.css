@@ -35,7 +35,6 @@
     grid-template-rows: 0fr;
     align-self: center;
     justify-self: center;
-    gap: 10px;
     width: 300px;
     height: 530px;
     background: #ffffff27;
@@ -61,6 +60,7 @@
     grid-template-areas: 
     "img-1 item-1"
     ;
+    padding-top: 10px;
 }
 .item-2-container {
     display: grid;
