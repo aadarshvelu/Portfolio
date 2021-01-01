@@ -58,7 +58,8 @@
     display: grid;
     grid-template-columns: 30% 70%;
     grid-template-areas: 
-    "img-1 item-1";
+    "img-1 item-1"
+    ;
     padding-top: 10px;
 }
 

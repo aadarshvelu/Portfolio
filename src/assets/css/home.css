@@ -161,7 +161,11 @@
     .avatar1 {
         height: 120px;
     }
-    .greet1, .greet2 {
+    .greet1 {
+        font-size: 40px;
+        padding-bottom: 0;
+    }
+    .greet2 {
         font-size: 40px;
         padding-bottom: 0;
     }
