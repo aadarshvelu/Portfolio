@@ -127,7 +127,12 @@
         "cb"
         "ap"
         "."
+        "space"
         ;
+    }
+    .space {
+        grid-area: space;
+        margin-bottom: 200px;
     }
     .topBar {
         display: grid;
@@ -156,14 +161,13 @@
     .avatar1 {
         height: 120px;
     }
-    .greet1 {
+    .greet1, .greet2 {
         font-size: 40px;
-    }
-    .greet2 {
-        font-size: 40px;
+        padding-bottom: 0;
     }
     .connectBtnBase {
         justify-self: center;
+        margin: 0;
     }
     .abtPageBtnBase {
         justify-self: center;

@@ -35,7 +35,6 @@
     grid-template-rows: 0fr;
     align-self: center;
     justify-self: center;
-    gap: 10px;
     width: 300px;
     height: 530px;
     background: #ffffff27;
@@ -59,9 +58,10 @@
     display: grid;
     grid-template-columns: 30% 70%;
     grid-template-areas: 
-    "img-1 item-1"
-    ;
+    "img-1 item-1";
+    padding-top: 10px;
 }
+
 .item-2-container {
     display: grid;
     grid-template-columns: 30% 70%;
@@ -69,27 +69,28 @@
     "img-2 item-2"
     ;
 }
+
 .item-3-container {
     display: grid;
     grid-template-columns: 30% 70%;
     grid-template-areas: 
-    "img-3 item-3"
-    ;
+    "img-3 item-3";
 }
+
 .item-4-container {
     display: grid;
     grid-template-columns: 30% 70%;
     grid-template-areas: 
-    "img-4 item-4"
-    ;
+    "img-4 item-4";
 }
+
 .item-5-container {
     display: grid;
     grid-template-columns: 30% 70%;
     grid-template-areas: 
-    "img-5 item-5"
-    ;
+    "img-5 item-5";
 }
+
 .item-6-container {
     display: grid;
     grid-template-columns: 30% 70%;
