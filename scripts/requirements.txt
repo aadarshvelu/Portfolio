@@ -1,0 +1,7 @@
+rembg[gpu]
+torch
+torchvision
+transformers
+Pillow
+numpy
+scipy
