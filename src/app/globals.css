@@ -88,6 +88,18 @@ body {
   80% { -webkit-clip-path: inset(0 0 100% 0); clip-path: inset(0 0 100% 0); transform: translate(0); }
 }
 
+/* Sci-fi icon scan-line sweep (runs on hover of .scifi-icon) */
+.scifi-icon:hover .scifi-scan {
+  animation: scifi-scan-sweep 0.9s ease-out;
+}
+
+@keyframes scifi-scan-sweep {
+  0% { top: 4px; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: calc(100% - 4px); opacity: 0; }
+}
+
 @keyframes cursor-ripple {
   0% {
     opacity: 0.7;
