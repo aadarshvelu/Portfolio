@@ -4,6 +4,9 @@ import { useEffect, useRef } from "react";
 
 const MAX_RIPPLES = 5;
 
+// Shared flag any component can set to signal a hoverable state to the cursor
+export const cursorHoverSignal = { value: false };
+
 export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
@@ -38,16 +41,27 @@ export default function CustomCursor() {
         target.closest("a, button, [data-cursor-hover]") ||
         target.tagName === "A" ||
         target.tagName === "BUTTON";
+      const wasHovering = isHovering.current;
       isHovering.current = !!interactive;
-    };
-
-    // Click ripple
-    const onMouseDown = () => {
-      spawnRipple(pos.current.x, pos.current.y);
+      // Spawn ripple when entering hover state
+      if (!wasHovering && isHovering.current) {
+        spawnRipple(pos.current.x, pos.current.y);
+      }
     };
 
     let raf: number;
     const animate = () => {
+      // Also check the external hover signal (from R3F canvas events)
+      const wasHovering = isHovering.current;
+      const external = cursorHoverSignal.value;
+      if (external && !wasHovering) {
+        isHovering.current = true;
+        spawnRipple(pos.current.x, pos.current.y);
+      } else if (!external && wasHovering) {
+        // Only reset if DOM hover isn't active either
+        isHovering.current = false;
+      }
+
       ringPos.current.x += (pos.current.x - ringPos.current.x) * 0.15;
       ringPos.current.y += (pos.current.y - ringPos.current.y) * 0.15;
 
@@ -59,8 +73,17 @@ export default function CustomCursor() {
         const scale = isHovering.current ? 1.8 : 1;
         ringRef.current.style.transform = `translate(${ringPos.current.x}px, ${ringPos.current.y}px) scale(${scale})`;
         ringRef.current.style.borderColor = isHovering.current
-          ? "rgba(100, 200, 255, 0.8)"
+          ? "rgba(255, 80, 80, 0.9)"
           : "rgba(100, 200, 255, 0.4)";
+        ringRef.current.style.boxShadow = isHovering.current
+          ? "0 0 16px 2px rgba(255, 80, 80, 0.4), 0 0 40px 8px rgba(255, 60, 60, 0.15)"
+          : "0 0 12px 1px rgba(100, 200, 255, 0.1)";
+      }
+      if (dotRef.current) {
+        dotRef.current.style.background = isHovering.current ? "#ff6060" : "#c0e8ff";
+        dotRef.current.style.boxShadow = isHovering.current
+          ? "0 0 10px 2px rgba(255, 80, 80, 0.7), 0 0 24px 5px rgba(255, 60, 60, 0.25)"
+          : "0 0 8px 2px rgba(100, 200, 255, 0.6), 0 0 20px 4px rgba(100, 200, 255, 0.2)";
       }
 
       raf = requestAnimationFrame(animate);
@@ -69,14 +92,12 @@ export default function CustomCursor() {
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseleave", onMouseLeave);
     document.addEventListener("mouseover", onMouseOver);
-    document.addEventListener("mousedown", onMouseDown);
     raf = requestAnimationFrame(animate);
 
     return () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseleave", onMouseLeave);
       document.removeEventListener("mouseover", onMouseOver);
-      document.removeEventListener("mousedown", onMouseDown);
       cancelAnimationFrame(raf);
     };
   }, []);
@@ -100,8 +121,8 @@ export default function CustomCursor() {
       margin-left: -18px;
       margin-top: -18px;
       border-radius: 50%;
-      border: 1.5px solid rgba(100, 200, 255, 0.6);
-      box-shadow: 0 0 8px 1px rgba(100, 200, 255, 0.15);
+      border: 1.5px solid rgba(255, 80, 80, 0.7);
+      box-shadow: 0 0 10px 1px rgba(255, 80, 80, 0.2);
       pointer-events: none;
       transform: translate(${x}px, ${y}px);
       animation: cursor-ripple 0.6s ease-out forwards;
