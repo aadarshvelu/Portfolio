@@ -3,14 +3,21 @@
 import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { animState } from "@/lib/animation-state";
+import type { ViewportTier } from "@/hooks/useViewportTier";
 
-const PARTICLE_COUNT = 600;
 const CONE_HEIGHT = 12;
 const CONE_BASE_Y = -1.5;
 
-export default function AmbientParticles() {
+interface Props {
+  tier?: ViewportTier;
+}
+
+export default function AmbientParticles({ tier = "desktop" }: Props) {
   const pointsRef = useRef<THREE.Points>(null!);
+
+  // Same count across all tiers — modern phones handle 600 particles fine
+  const PARTICLE_COUNT = 600;
+  void tier;
 
   const { positions, velocities } = useMemo(() => {
     const pos = new Float32Array(PARTICLE_COUNT * 3);
@@ -31,7 +38,7 @@ export default function AmbientParticles() {
     }
 
     return { positions: pos, velocities: vel };
-  }, []);
+  }, [PARTICLE_COUNT]);
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
@@ -67,7 +74,7 @@ export default function AmbientParticles() {
   return (
     <points ref={pointsRef} geometry={geometry}>
       <pointsMaterial
-        color="#88bbdd"
+        color="#66dd88"
         size={0.04}
         transparent
         opacity={0.4}

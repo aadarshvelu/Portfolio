@@ -4,6 +4,7 @@ import { Suspense, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { animState } from "@/lib/animation-state";
+import { useViewport } from "@/components/providers/ViewportProvider";
 import HologramPortrait from "./HologramPortrait";
 import HologramBase from "./HologramBase";
 import AmbientParticles from "./AmbientParticles";
@@ -25,21 +26,33 @@ function CameraRig() {
 }
 
 export default function HeroCanvas() {
+  const tier = useViewport();
+
+  // Per-tier layout tuning (framing only — rendering quality is identical across tiers)
+  const cameraZ = tier === "mobile" ? 30 : tier === "tablet" ? 25 : 22;
+  const sceneScale = tier === "mobile" ? 0.75 : tier === "tablet" ? 0.9 : 1;
+
   return (
     <Canvas
-      camera={{ fov: 40, position: [0, 6.4, 22], near: 0.1, far: 100 }}
-      gl={{ antialias: true, alpha: false }}
-      dpr={[1, 2]}
+      camera={{ fov: 40, position: [0, 6.4, cameraZ], near: 0.1, far: 100 }}
+      gl={{
+        antialias: true,
+        alpha: false,
+        powerPreference: "high-performance",
+      }}
+      dpr={[1, 3]}
       style={{ background: "#000000" }}
     >
       <color attach="background" args={["#000000"]} />
       <ambientLight intensity={0.1} />
 
       <Suspense fallback={null}>
-        <HologramBase />
-        <HologramPortrait />
-        <AmbientParticles />
-        <OrbitingDrones />
+        <group scale={sceneScale}>
+          <HologramBase />
+          <HologramPortrait />
+          <AmbientParticles tier={tier} />
+          <OrbitingDrones tier={tier} />
+        </group>
       </Suspense>
 
       <CameraRig />

@@ -170,10 +170,10 @@ export const neonCardFragment = /* glsl */ `
     // Subtle flicker
     float flicker = 0.97 + 0.03 * sin(t * 9.0 + 2.0);
 
-    // --- Solid dark panel background ---
-    vec3 panelBg = vec3(0.02, 0.06, 0.10); // dark blue-black
+    // --- Solid dark green-black panel background ---
+    vec3 panelBg = vec3(0.03, 0.10, 0.05); // dark green-black
     // Subtle inner gradient (slightly brighter at top)
-    panelBg += vec3(0.01, 0.02, 0.04) * vUv.y;
+    panelBg += vec3(0.01, 0.04, 0.02) * vUv.y;
 
     // --- Neon content layer ---
     vec3 neonColor = uTint * content * scan * flicker * 2.0;

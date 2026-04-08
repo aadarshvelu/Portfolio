@@ -74,16 +74,16 @@ export default function CustomCursor() {
         ringRef.current.style.transform = `translate(${ringPos.current.x}px, ${ringPos.current.y}px) scale(${scale})`;
         ringRef.current.style.borderColor = isHovering.current
           ? "rgba(255, 80, 80, 0.9)"
-          : "rgba(100, 200, 255, 0.4)";
+          : "rgba(80, 255, 140, 0.4)";
         ringRef.current.style.boxShadow = isHovering.current
           ? "0 0 16px 2px rgba(255, 80, 80, 0.4), 0 0 40px 8px rgba(255, 60, 60, 0.15)"
-          : "0 0 12px 1px rgba(100, 200, 255, 0.1)";
+          : "0 0 12px 1px rgba(80, 255, 140, 0.1)";
       }
       if (dotRef.current) {
-        dotRef.current.style.background = isHovering.current ? "#ff6060" : "#c0e8ff";
+        dotRef.current.style.background = isHovering.current ? "#ff6060" : "#c0ffd0";
         dotRef.current.style.boxShadow = isHovering.current
           ? "0 0 10px 2px rgba(255, 80, 80, 0.7), 0 0 24px 5px rgba(255, 60, 60, 0.25)"
-          : "0 0 8px 2px rgba(100, 200, 255, 0.6), 0 0 20px 4px rgba(100, 200, 255, 0.2)";
+          : "0 0 8px 2px rgba(80, 255, 140, 0.6), 0 0 20px 4px rgba(80, 255, 140, 0.2)";
       }
 
       raf = requestAnimationFrame(animate);
@@ -111,9 +111,20 @@ export default function CustomCursor() {
       container.removeChild(container.children[0]);
     }
 
+    // Wrapper handles position; inner element handles scale animation
+    // (keeps transforms independent, works on Safari)
+    const wrapper = document.createElement("div");
+    wrapper.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      transform: translate(${x}px, ${y}px);
+    `;
+
     const ripple = document.createElement("div");
     ripple.style.cssText = `
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       width: 36px;
@@ -124,14 +135,14 @@ export default function CustomCursor() {
       border: 1.5px solid rgba(255, 80, 80, 0.7);
       box-shadow: 0 0 10px 1px rgba(255, 80, 80, 0.2);
       pointer-events: none;
-      transform: translate(${x}px, ${y}px);
       animation: cursor-ripple 0.6s ease-out forwards;
     `;
 
-    container.appendChild(ripple);
+    wrapper.appendChild(ripple);
+    container.appendChild(wrapper);
 
     ripple.addEventListener("animationend", () => {
-      ripple.remove();
+      wrapper.remove();
     });
   }
 
@@ -149,9 +160,9 @@ export default function CustomCursor() {
           marginLeft: -3,
           marginTop: -3,
           borderRadius: "50%",
-          background: "#c0e8ff",
+          background: "#c0ffd0",
           boxShadow:
-            "0 0 8px 2px rgba(100, 200, 255, 0.6), 0 0 20px 4px rgba(100, 200, 255, 0.2)",
+            "0 0 8px 2px rgba(80, 255, 140, 0.6), 0 0 20px 4px rgba(80, 255, 140, 0.2)",
           pointerEvents: "none",
           zIndex: 9999,
           opacity: 0,
@@ -171,8 +182,8 @@ export default function CustomCursor() {
           marginLeft: -18,
           marginTop: -18,
           borderRadius: "50%",
-          border: "1.5px solid rgba(100, 200, 255, 0.4)",
-          boxShadow: "0 0 12px 1px rgba(100, 200, 255, 0.1)",
+          border: "1.5px solid rgba(80, 255, 140, 0.4)",
+          boxShadow: "0 0 12px 1px rgba(80, 255, 140, 0.1)",
           pointerEvents: "none",
           zIndex: 9998,
           opacity: 0,

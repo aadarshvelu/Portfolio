@@ -5,12 +5,12 @@ import { motion } from "framer-motion";
 export default function HeroOverlay() {
   return (
     <div className="pointer-events-none relative z-10 h-full w-full">
-      {/* Name + title — top right */}
-      <div className="absolute right-8 top-12 text-right sm:right-16 sm:top-16">
+      {/* Name + title — centered in empty upper area on mobile/tablet, top-right on desktop */}
+      <div className="absolute left-1/2 top-[6%] -translate-x-1/2 text-center md:top-[4%] lg:left-auto lg:right-16 lg:top-16 lg:translate-x-0 lg:text-right">
         <motion.h1
-          className="hero-glitch pointer-events-auto text-5xl font-bold tracking-tight sm:text-7xl"
+          className="hero-glitch pointer-events-auto text-5xl font-black tracking-tight sm:text-6xl md:text-5xl lg:text-7xl"
           data-text="Aadarsh velu"
-          style={{ color: "#e0f0ff" }}
+          style={{ color: "#e0ffe8", fontFamily: "var(--font-orbitron)" }}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 2.8, ease: "easeOut" }}
@@ -18,19 +18,19 @@ export default function HeroOverlay() {
           Aadarsh velu
         </motion.h1>
         <motion.p
-          className="pointer-events-auto mt-2 text-lg font-medium tracking-widest uppercase sm:text-xl"
+          className="pointer-events-auto mt-2 text-base tracking-widest uppercase sm:text-lg md:mt-1 md:text-sm lg:mt-2 lg:text-xl"
           initial={{ opacity: 0, y: 20 }}
           animate={{
             opacity: [0, 0.6, 1, 0.6],
             y: 0,
             textShadow: [
-              "0 0 8px rgba(100, 200, 255, 0.3), 0 0 25px rgba(100, 200, 255, 0.1)",
-              "0 0 8px rgba(100, 200, 255, 0.3), 0 0 25px rgba(100, 200, 255, 0.1)",
-              "0 0 20px rgba(100, 200, 255, 0.7), 0 0 60px rgba(100, 200, 255, 0.3), 0 0 100px rgba(100, 200, 255, 0.1)",
-              "0 0 8px rgba(100, 200, 255, 0.3), 0 0 25px rgba(100, 200, 255, 0.1)",
+              "0 0 8px rgba(80, 255, 140, 0.3), 0 0 25px rgba(80, 255, 140, 0.1)",
+              "0 0 8px rgba(80, 255, 140, 0.3), 0 0 25px rgba(80, 255, 140, 0.1)",
+              "0 0 20px rgba(80, 255, 140, 0.7), 0 0 60px rgba(80, 255, 140, 0.3), 0 0 100px rgba(80, 255, 140, 0.1)",
+              "0 0 8px rgba(80, 255, 140, 0.3), 0 0 25px rgba(80, 255, 140, 0.1)",
             ],
           }}
-          style={{ color: "#80d0ff" }}
+          style={{ color: "#70e090", fontFamily: "var(--font-share-tech-mono)" }}
           transition={{
             y: { duration: 0.8, delay: 3.1, ease: "easeOut" },
             opacity: {
@@ -53,21 +53,20 @@ export default function HeroOverlay() {
         </motion.p>
       </div>
 
-      {/* Tagline — left center, vertical */}
-      <div className="absolute left-8 top-1/2 -translate-y-1/2 sm:left-16">
+      {/* Tagline — bottom center on mobile, left edge on tablet, left center on desktop */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center md:bottom-8 md:left-6 md:translate-x-0 md:text-left lg:bottom-auto lg:left-16 lg:top-1/2 lg:-translate-y-1/2">
         <motion.p
-          className="pointer-events-auto max-w-[180px] text-sm font-light leading-relaxed tracking-wide sm:max-w-[220px] sm:text-base"
+          className="pointer-events-auto max-w-[260px] text-sm leading-relaxed tracking-wide sm:text-base md:max-w-[180px] md:text-xs lg:max-w-[220px] lg:text-base"
           style={{
-            color: "#5a9ab8",
-            textShadow: "0 0 12px rgba(80, 160, 220, 0.25)",
+            color: "#5ab872",
+            textShadow: "0 0 12px rgba(80, 200, 120, 0.25)",
+            fontFamily: "var(--font-share-tech-mono)",
           }}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 3.5, ease: "easeOut" }}
         >
-          Where Creativity
-          <br />
-          Meets Innovation
+          Where Creativity Meets Innovation
         </motion.p>
       </div>
     </div>

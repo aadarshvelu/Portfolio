@@ -23,8 +23,8 @@ function ProjectorDisc() {
     () => ({
       uTime: { value: 0 },
       uOpacity: { value: 0 },
-      uColorPrimary: { value: new THREE.Color(0.4, 0.8, 1.0) },   // bright cyan
-      uColorSecondary: { value: new THREE.Color(0.2, 0.45, 0.6) }, // muted blue
+      uColorPrimary: { value: new THREE.Color(0.3, 1.0, 0.5) },   // bright green
+      uColorSecondary: { value: new THREE.Color(0.15, 0.55, 0.3) }, // muted green
     }),
     []
   );
@@ -60,7 +60,7 @@ export default function HologramBase() {
     () => ({
       uTime: { value: 0 },
       uOpacity: { value: 0 },
-      uColor: { value: new THREE.Color(0.27, 0.53, 0.67) },
+      uColor: { value: new THREE.Color(0.2, 0.65, 0.35) },
     }),
     []
   );

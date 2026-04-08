@@ -25,7 +25,7 @@ export default function HologramPortrait() {
     () => ({
       uTexture: { value: texture },
       uTime: { value: 0 },
-      uGlowColor: { value: new THREE.Color(0.91, 0.96, 1.0) }, // #e8f4ff
+      uGlowColor: { value: new THREE.Color(0.8, 1.0, 0.85) }, // green-white
       uGlowIntensity: { value: 3.0 },
       uScanlineY: { value: 0 },
       uBootProgress: { value: 0 },
