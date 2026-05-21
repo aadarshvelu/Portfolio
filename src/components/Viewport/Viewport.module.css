@@ -1,7 +1,17 @@
-/* fills the browser window — the black here is the thin CRT bezel surround */
+/* fills the browser window — the black here is the thin CRT bezel surround.
+   Height is pinned to --app-h: a pixel value App.jsx measures once from a
+   100lvh probe and re-measures only on a real resize. Mobile browsers
+   resize the visual viewport as their chrome bars show/hide on scroll;
+   a fixed px keeps the canvas (and the scene) from reflowing. The vh/lvh
+   lines are fallbacks for the first paint before the JS lock runs. */
 .viewport {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  height: 100lvh;
+  height: var(--app-h, 100lvh);
   background: #000;
 }
 

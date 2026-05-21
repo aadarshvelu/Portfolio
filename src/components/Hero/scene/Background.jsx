@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ORDER } from '../config.js'
+import { ORDER, SKY_SCALE } from '../config.js'
 import { useLayout } from '../breakpoint.js'
 import { useFade } from '../../../hooks/useFade.js'
 
@@ -15,6 +15,7 @@ void main() {
 const fragmentShader = /* glsl */ `
 varying vec2 vUv;
 uniform float uNebula;
+uniform float uScale;
 
 vec3 stageGradient(vec2 uv) {
   vec3 cLight = vec3(0.243, 0.306, 0.376); // #3e4e60
@@ -34,11 +35,14 @@ float blob(vec2 uv, vec2 c, vec2 r) {
 }
 
 void main() {
-  vec3 col = stageGradient(vUv);
+  // remap so the central design-sized region is identical to the hero; the
+  // plane extends past it so a parked, panned camera never reaches an edge
+  vec2 uv = (vUv - 0.5) * uScale + 0.5;
+  vec3 col = stageGradient(uv);
   vec3 neb = vec3(0.0);
-  neb += vec3(0.275, 0.353, 0.627) * 0.30 * blob(vUv, vec2(0.62, 0.78), vec2(0.55, 0.38));
-  neb += vec3(0.353, 0.275, 0.588) * 0.18 * blob(vUv, vec2(0.28, 0.45), vec2(0.45, 0.30));
-  neb += vec3(0.196, 0.314, 0.549) * 0.12 * blob(vUv, vec2(0.80, 0.20), vec2(0.70, 0.50));
+  neb += vec3(0.275, 0.353, 0.627) * 0.30 * blob(uv, vec2(0.62, 0.78), vec2(0.55, 0.38));
+  neb += vec3(0.353, 0.275, 0.588) * 0.18 * blob(uv, vec2(0.28, 0.45), vec2(0.45, 0.30));
+  neb += vec3(0.196, 0.314, 0.549) * 0.12 * blob(uv, vec2(0.80, 0.20), vec2(0.70, 0.50));
   col += neb * uNebula;
   gl_FragColor = vec4(pow(col, vec3(2.2)), 1.0); // sRGB -> linear
 }
@@ -46,12 +50,15 @@ void main() {
 
 export default function Background({ on }) {
   const { design } = useLayout()
-  const uniforms = useMemo(() => ({ uNebula: { value: 0 } }), [])
+  const uniforms = useMemo(
+    () => ({ uNebula: { value: 0 }, uScale: { value: SKY_SCALE } }),
+    [],
+  )
   useFade(uniforms.uNebula, on, { prop: 'value', duration: 2.2, to: 1 })
 
   return (
     <mesh renderOrder={ORDER.background} position={[0, 0, 0]}>
-      <planeGeometry args={[design.w, design.h]} />
+      <planeGeometry args={[design.w * SKY_SCALE, design.h * SKY_SCALE]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}

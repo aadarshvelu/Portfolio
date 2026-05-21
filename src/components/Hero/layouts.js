@@ -25,6 +25,25 @@ export const LAYOUTS = {
     },
     scrollPrompt: { y: -486 },
     bootLine: { fontSize: 14 },
+    // Phase A — camera parks the FIRST LIGHT frame. Scene computes the exact
+    // dolly target from the live viewport so the frame can never overshoot
+    // off-screen. 'left' = frame pinned left at heightFrac of viewport height,
+    // its content sideMargin in from the left edge.
+    park: { mode: 'left', heightFrac: 0.78, sideMargin: 0.055 },
+    // Phase B — Beat 1 text column scrolls up the right lane. lane{Top,Bot}
+    // are viewport-height fractions (0 = top edge); full height on desktop.
+    originBeat: {
+      x: 143,
+      fontSize: 15,
+      gap: 22,
+      maxWidth: 195,
+      anchorX: 'left',
+      laneTop: 0.05,
+      laneBot: 0.95,
+    },
+    // Confetti celebration scale (relative to desktop) + reel-transition card.
+    confetti: { scale: 1 },
+    reel: { titleSize: 17, emSize: 8.5, labelSize: 4.6, mode: 'corners' },
   },
 
   tablet: {
@@ -46,6 +65,20 @@ export const LAYOUTS = {
     },
     scrollPrompt: { y: -420 },
     bootLine: { fontSize: 16 },
+    // Portrait — 'top' pins the frame to the top at widthFrac of viewport
+    // width, topMargin in from the top edge; Beat 1 scrolls up the lower band.
+    park: { mode: 'top', widthFrac: 0.84, topMargin: 0.05 },
+    originBeat: {
+      x: 0,
+      fontSize: 28,
+      gap: 24,
+      maxWidth: 250,
+      anchorX: 'center',
+      laneTop: 0.54,
+      laneBot: 0.97,
+    },
+    confetti: { scale: 1.8 },
+    reel: { titleSize: 9, emSize: 6, labelSize: 4, mode: 'stack' },
   },
 
   mobile: {
@@ -67,5 +100,19 @@ export const LAYOUTS = {
     },
     scrollPrompt: { y: -320 },
     bootLine: { fontSize: 11 },
+    // Portrait — 'top' pins the frame to the top at widthFrac of viewport
+    // width, topMargin in from the top edge; Beat 1 scrolls up the lower band.
+    park: { mode: 'top', widthFrac: 0.9, topMargin: 0.04 },
+    originBeat: {
+      x: 0,
+      fontSize: 26,
+      gap: 22,
+      maxWidth: 195,
+      anchorX: 'center',
+      laneTop: 0.4,
+      laneBot: 0.97,
+    },
+    confetti: { scale: 1.8 },
+    reel: { titleSize: 6, emSize: 4, labelSize: 2.8, mode: 'stack' },
   },
 }

@@ -29,8 +29,9 @@ export default function Hero() {
   const progressRef = useRef(0)
   useEffect(() => {
     const onScroll = () => {
-      const range = window.innerHeight || 1
-      progressRef.current = Math.min(1, Math.max(0, window.scrollY / range))
+      const max =
+        document.documentElement.scrollHeight - window.innerHeight || 1
+      progressRef.current = Math.min(1, Math.max(0, window.scrollY / max))
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -43,9 +44,12 @@ export default function Hero() {
       dpr={[1, 2]}
       gl={{ antialias: true, alpha: false }}
       camera={{ position: [0, 0, CAMERA_Z], fov: CAMERA_FOV, near: 1, far: 6000 }}
+      resize={{ scroll: false }}
       style={{ width: '100%', height: '100%', display: 'block' }}
     >
-      <color attach="background" args={['#000000']} />
+      {/* clear colour = the Background's deep-edge tone, so when the parked
+          camera pans past the night-sky plane the gap stays seamless */}
+      <color attach="background" args={['#1b2530']} />
       <BreakpointContext.Provider value={ctx}>
         <CoverCamera design={ctx.layout.design} />
         <Suspense fallback={null}>

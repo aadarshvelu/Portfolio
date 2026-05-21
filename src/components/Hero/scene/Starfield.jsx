@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { ORDER } from '../config.js'
+import { ORDER, SKY_SCALE } from '../config.js'
 import { useLayout } from '../breakpoint.js'
 import { useFade } from '../../../hooks/useFade.js'
 
@@ -30,7 +30,8 @@ void main() {
 
 export default function Starfield({ on }) {
   const { design, starfield } = useLayout()
-  const count = starfield.count
+  // stars cover the same extended area as the Background, same design density
+  const count = starfield.count * SKY_SCALE * SKY_SCALE
 
   const geometry = useMemo(() => {
     const g = new THREE.BufferGeometry()
@@ -39,8 +40,8 @@ export default function Starfield({ on }) {
     const phase = new Float32Array(count)
     const speed = new Float32Array(count)
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * design.w
-      pos[i * 3 + 1] = (Math.random() - 0.5) * design.h
+      pos[i * 3] = (Math.random() - 0.5) * design.w * SKY_SCALE
+      pos[i * 3 + 1] = (Math.random() - 0.5) * design.h * SKY_SCALE
       pos[i * 3 + 2] = 0
       const tier = Math.random()
       size[i] = tier > 0.94 ? 7 : tier > 0.78 ? 4.5 : 2.5
