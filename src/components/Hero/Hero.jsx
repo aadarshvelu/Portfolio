@@ -1,4 +1,4 @@
-import { Suspense, useLayoutEffect, useMemo } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { CAMERA_Z, CAMERA_FOV, coverFov } from './config.js'
 import { useBreakpoint } from '../../hooks/useBreakpoint.js'
@@ -24,6 +24,19 @@ export default function Hero() {
   const bp = useBreakpoint()
   const ctx = useMemo(() => ({ bp, layout: LAYOUTS[bp] }), [bp])
 
+  // page scroll -> camera transition. A plain ref the scroll listener
+  // mutates and the render loop reads — no React re-render per scroll event.
+  const progressRef = useRef(0)
+  useEffect(() => {
+    const onScroll = () => {
+      const range = window.innerHeight || 1
+      progressRef.current = Math.min(1, Math.max(0, window.scrollY / range))
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <Canvas
       flat
@@ -36,7 +49,7 @@ export default function Hero() {
       <BreakpointContext.Provider value={ctx}>
         <CoverCamera design={ctx.layout.design} />
         <Suspense fallback={null}>
-          <Scene />
+          <Scene progressRef={progressRef} />
         </Suspense>
       </BreakpointContext.Provider>
     </Canvas>

@@ -9,7 +9,7 @@ const SPREAD = 16 * DEG // per-frame fan angle
 const DEPTH = 920 // cylinder radius
 const TILT = -7 * DEG // roll tilt
 
-export default function FilmRoll({ on, idle }) {
+export default function FilmRoll({ on, idle, frameMarker }) {
   const { filmRoll } = useLayout()
   const { y: rollY, scale, rise } = filmRoll
 
@@ -44,7 +44,10 @@ export default function FilmRoll({ on, idle }) {
       <group ref={roll} position={[0, -rise, 0]} rotation={[TILT, 0, 0]}>
         {FRAMES.map((f) => (
           <group key={f.i} rotation={[0, -f.i * SPREAD, 0]}>
-            <group position={[0, 0, DEPTH]}>
+            <group
+              position={[0, 0, DEPTH]}
+              ref={f.i === 0 ? frameMarker : undefined}
+            >
               <FilmFrame frame={f} idle={idle} />
             </group>
           </group>
