@@ -1,0 +1,45 @@
+:root {
+  --c-black:       #000000;
+  /* slate-blue palette sampled from the title photograph */
+  --c-slate-deep:  #1b2530;
+  --c-slate-mid:   #2c3a4a;
+  --c-slate-light: #3e4e60;
+  --c-night-top:   #060b1c;
+  --c-night-mid:   #0a1228;
+  --c-night-bot:   #152040;
+  --c-pearl:       #f2e8d8;
+  --c-pearl-dim:   #cbb999;
+  --c-gold:        #c8a157;
+  --c-gold-soft:   rgba(200, 161, 87, 0.65);
+  --c-star:        #f4f1e8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  background: #000;
+  color: var(--c-pearl);
+  font-family: 'DM Mono', ui-monospace, monospace;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+#root {
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+  }
+}

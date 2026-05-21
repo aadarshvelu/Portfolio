@@ -1,0 +1,2029 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aadarsh Velu — Director's Cut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Cormorant+Garamond:ital,wght@0,500;1,400;1,500&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   AADARSH VELU — DIRECTOR'S CUT HERO
+   Cinematic night composition: moon, depth-effect title,
+   curved film roll, letterbox.
+   ========================================================= */
+
+:root {
+  --c-black:        #000000;
+  /* slate-blue palette sampled from the supplied title photograph */
+  --c-slate-deep:   #1b2530;
+  --c-slate-mid:    #2c3a4a;
+  --c-slate-light:  #3e4e60;
+  --c-night-top:    #060b1c;
+  --c-night-mid:    #0a1228;
+  --c-night-bot:    #152040;
+  --c-pearl:        #f2e8d8;
+  --c-pearl-dim:    #cbb999;
+  --c-gold:         #c8a157;
+  --c-gold-soft:    rgba(200,161,87,0.65);
+  --c-star:         #f4f1e8;
+
+  /* depth-effect tuning */
+  --title-y-shift:  -2vh;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  background: #000;
+  color: var(--c-pearl);
+  font-family: 'DM Mono', ui-monospace, monospace;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+/* After the boot sequence finishes, JS adds `.boot-done` to <html>
+   which unlocks scroll so the user can navigate from the hero into
+   Chapter I. */
+html.boot-done, html.boot-done body {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   STAGE
+   ========================================================= */
+.stage {
+  position: relative;
+  width: 100vw; height: 100vh;
+  overflow: hidden;
+  /* slate-blue ground tone matching the title photo — lighter in
+     the upper-mid, vignetting to deep slate at the edges. */
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%,
+      var(--c-slate-light) 0%,
+      var(--c-slate-mid)   45%,
+      #25303d              78%,
+      var(--c-slate-deep) 100%);
+}
+
+/* boot mask — pure black, covers everything until load sequence runs */
+.boot-mask {
+  position: absolute; inset: 0;
+  background: #000;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 800ms ease-out;
+}
+.boot-mask.gone { opacity: 0; }
+.boot-mask.removed { display: none; }
+
+/* =========================================================
+   NIGHT SKY: nebula + stars
+   ========================================================= */
+.nebula {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 55% 38% at 62% 22%, rgba(70,90,160,0.30), transparent 70%),
+    radial-gradient(ellipse 45% 30% at 28% 55%, rgba(90,70,150,0.18), transparent 65%),
+    radial-gradient(ellipse 70% 50% at 80% 80%, rgba(50,80,140,0.12), transparent 70%);
+  opacity: 0;
+  transition: opacity 2.2s ease-in 0.4s;
+  pointer-events: none;
+}
+.nebula.on { opacity: 1; }
+
+.stars {
+  position: absolute; inset: 0;
+  opacity: 0;
+  transition: opacity 2s ease-in;
+  pointer-events: none;
+}
+.stars.on { opacity: 1; }
+.star {
+  position: absolute;
+  width: 1px; height: 1px;
+  background: var(--c-star);
+  border-radius: 50%;
+  animation: twinkle var(--dur, 4s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+.star.s2 { width: 2px; height: 2px; box-shadow: 0 0 4px rgba(244,241,232,0.6); }
+.star.s3 { width: 2px; height: 2px; box-shadow: 0 0 8px rgba(244,241,232,0.9), 0 0 14px rgba(200,170,140,0.4); }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 1; }
+}
+
+/* =========================================================
+   MOON — crescent (transparent-BG asset), positioned so the
+   image sits partly above the viewport: only the lower bright
+   curve sweeps into the composition.
+   ========================================================= */
+.moon-wrap {
+  position: absolute;
+  /* asset's crescent lives in the upper-right of its canvas, so we
+     anchor the image's top at the viewport top \u2014 not above it \u2014
+     otherwise we'd be showing the transparent lower half and nothing
+     would appear. */
+  top: 0;
+  /* tucked into the top-right corner of the viewport */
+  left: 55vw;
+  width: 50vw;
+  /* image native ratio 962:614 ≈ 1.567 */
+  aspect-ratio: 962 / 614;
+  transform: translate(0, -2vh);
+  opacity: 0;
+  transition:
+    opacity 1.8s ease-out,
+    transform 2s cubic-bezier(.16,1,.3,1);
+  z-index: 2;
+  pointer-events: none;
+  /* stacked drop-shadows = the moon's edge glow */
+  filter:
+    drop-shadow(0 0 12px rgba(255,238,205,0.55))
+    drop-shadow(0 0 40px rgba(244,220,170,0.40))
+    drop-shadow(0 0 100px rgba(220,180,130,0.25))
+    drop-shadow(0 0 220px rgba(200,160,110,0.15));
+  animation: moon-breathe 9s ease-in-out infinite;
+}
+.moon-wrap.on {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+@keyframes moon-breathe {
+  0%, 100% { filter:
+             drop-shadow(0 0 12px rgba(255,238,205,0.55))
+             drop-shadow(0 0 40px rgba(244,220,170,0.40))
+             drop-shadow(0 0 100px rgba(220,180,130,0.25))
+             drop-shadow(0 0 220px rgba(200,160,110,0.15)); }
+  50%      { filter:
+             drop-shadow(0 0 16px rgba(255,238,205,0.70))
+             drop-shadow(0 0 50px rgba(244,220,170,0.50))
+             drop-shadow(0 0 130px rgba(220,180,130,0.35))
+             drop-shadow(0 0 260px rgba(200,160,110,0.22)); }
+}
+
+.moon-img {
+  width: 100%; height: 100%;
+  display: block;
+  /* slight brightness lift so the warm crescent reads against the slate BG */
+  filter: brightness(1.06) contrast(1.02);
+}
+
+/* =========================================================
+   TITLE — DIRECTOR'S CUT (supplied artwork as a PNG)
+   The artwork has long letter "drops" / shadows beneath each
+   glyph. We size it so those drops reach down into the film
+   roll — the roll (z:5) cuts through the lower portion of the
+   title (z:3), producing the intersection.
+   ========================================================= */
+.title {
+  position: absolute;
+  left: 50%;
+  /* anchored from the top so the drops hang below the baseline */
+  top: 16%;
+  width: clamp(720px, 78vw, 1500px);
+  /* image native ratio 1750:899 */
+  aspect-ratio: 1750 / 899;
+  transform: translate(-50%, 40px);
+  opacity: 0;
+  transition:
+    opacity 1.2s ease-out,
+    transform 1.6s cubic-bezier(.16,1,.3,1);
+  user-select: none;
+  pointer-events: none;
+  z-index: 3;
+  filter: drop-shadow(0 18px 40px rgba(0,0,0,0.35));
+}
+.title.on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.title img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  /* slate ground in the artwork matches the stage gradient, so it
+     reads as continuous canvas. Subtle shimmer cycles brightness. */
+  animation: title-shimmer 7s ease-in-out infinite;
+}
+@keyframes title-shimmer {
+  0%, 100% { filter: brightness(1)    contrast(1); }
+  47%      { filter: brightness(1.04) contrast(1.02); }
+  53%      { filter: brightness(0.98) contrast(1); }
+}
+
+/* legacy hooks (no-op now that the title is a single image,
+   but kept so the boot sequence's `.title-front` selector still
+   resolves without throwing) */
+.title-front { display: none !important; }
+
+/* =========================================================
+   FILM ROLL — curved cylindrical strip
+   ========================================================= */
+.film-wrap {
+  position: absolute;
+  left: 50%; top: 56%;
+  width: 100%;
+  height: 280px;
+  transform: translate(-50%, -50%);
+  perspective: 1700px;
+  perspective-origin: 50% 50%;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 1s ease-out;
+  pointer-events: none;
+}
+.film-wrap.on { opacity: 1; }
+
+.film-roll {
+  position: relative;
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  /* slight oblique downward tilt — matches reference roll geometry */
+  transform: rotateX(-7deg);
+}
+
+.frame {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 260px;
+  height: 200px;
+  margin-left: -130px;
+  margin-top: -100px;
+  transform-style: preserve-3d;
+  transform:
+    rotateY(var(--angle, 0deg))
+    translateZ(820px)
+    translateX(var(--slide-x, 0px));
+  transition:
+    transform 1.4s cubic-bezier(.16,1,.3,1),
+    filter 1.4s ease-out;
+  will-change: transform;
+
+  /* film base — dark with subtle warm undertone */
+  background:
+    linear-gradient(180deg,
+      #060608 0 24px,
+      #0a0a0d 24px calc(100% - 24px),
+      #060608 calc(100% - 24px) 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04),
+    0 30px 60px -30px rgba(0,0,0,0.6);
+}
+
+/* SPROCKET HOLES — small lighter rectangles repeating along top + bottom */
+.frame::before,
+.frame::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  height: 18px;
+  background-image:
+    linear-gradient(90deg,
+      transparent 0 6px,
+      #1c1c22 6px 18px,
+      transparent 18px 26px,
+      #1c1c22 26px 38px,
+      transparent 38px 46px,
+      #1c1c22 46px 58px,
+      transparent 58px 66px,
+      #1c1c22 66px 78px,
+      transparent 78px 86px,
+      #1c1c22 86px 98px,
+      transparent 98px 106px,
+      #1c1c22 106px 118px,
+      transparent 118px 126px,
+      #1c1c22 126px 138px,
+      transparent 138px 146px,
+      #1c1c22 146px 158px,
+      transparent 158px 166px,
+      #1c1c22 166px 178px,
+      transparent 178px 186px,
+      #1c1c22 186px 198px,
+      transparent 198px 206px,
+      #1c1c22 206px 218px,
+      transparent 218px 226px,
+      #1c1c22 226px 238px,
+      transparent 238px 246px,
+      #1c1c22 246px 258px);
+  box-shadow:
+    inset 0 1px 0 rgba(0,0,0,0.5),
+    inset 0 -1px 0 rgba(0,0,0,0.5);
+}
+.frame::before { top: 3px; }
+.frame::after  { bottom: 3px; }
+
+/* Frame image cell */
+.cell {
+  position: absolute;
+  left: 4px; right: 4px;
+  top: 28px; bottom: 28px;
+  overflow: hidden;
+  background: var(--cell-bg, #1a2240);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 14px;
+  /* Bleach-bypass: lower saturation, slight contrast bump */
+  filter: contrast(1.06) saturate(0.7) brightness(0.86);
+  box-shadow:
+    inset 0 0 32px rgba(0,0,0,0.6),
+    inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+/* Chromatic aberration — red on left edge, cyan on right edge */
+.cell::before,
+.cell::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 6px;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.55;
+}
+.cell::before {
+  left: 0;
+  background: linear-gradient(90deg, rgba(255,60,80,0.55) 0%, transparent 100%);
+}
+.cell::after {
+  right: 0;
+  background: linear-gradient(-90deg, rgba(40,200,255,0.55) 0%, transparent 100%);
+}
+
+/* Vignette on each frame */
+.cell > .vignette {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.45) 100%);
+  pointer-events: none;
+}
+
+/* Film grain on each frame */
+.cell > .grain {
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 0.45 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>");
+  mix-blend-mode: overlay;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Frame chapter content */
+.chapter-tag {
+  position: absolute;
+  top: 12px; left: 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: rgba(244,234,216,0.85);
+  text-transform: uppercase;
+}
+.chapter-tag .roman { color: var(--c-gold); margin-right: 6px; }
+.chapter-meta {
+  position: absolute;
+  top: 12px; right: 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: rgba(244,234,216,0.55);
+}
+.chapter-title {
+  position: relative;
+  font-family: 'Anton', sans-serif;
+  font-size: 30px;
+  line-height: 0.92;
+  letter-spacing: -0.005em;
+  color: #efe4cd;
+  text-transform: uppercase;
+  z-index: 2;
+}
+.chapter-title em {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: rgba(244,234,216,0.7);
+  margin-top: 4px;
+}
+
+/* Per-frame cell aesthetics — placeholder gradients tagged by chapter */
+.cell.c-origin {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(244,234,216,0.18) 0%, transparent 50%),
+    linear-gradient(135deg, #1c2a52 0%, #0c1530 60%, #050a1c 100%);
+}
+.cell.c-work {
+  background:
+    radial-gradient(circle at 70% 35%, rgba(200,161,87,0.14) 0%, transparent 55%),
+    linear-gradient(160deg, #1a2238 0%, #0a1024 100%);
+}
+.cell.c-record {
+  background:
+    radial-gradient(circle at 30% 65%, rgba(80,120,200,0.18) 0%, transparent 55%),
+    linear-gradient(200deg, #16203e 0%, #07091a 100%);
+}
+.cell.c-architect {
+  background:
+    radial-gradient(circle at 60% 50%, rgba(244,234,216,0.10) 0%, transparent 55%),
+    linear-gradient(180deg, #1a1d2c 0%, #060812 100%);
+}
+.cell.c-prologue {
+  background:
+    linear-gradient(180deg, #0a1024 0%, #050810 100%);
+}
+
+/* Center frame: brighter, sharper, highlighted with subtle gold tint */
+.frame.center .cell {
+  filter: contrast(1.1) saturate(0.85) brightness(1);
+  box-shadow:
+    inset 0 0 28px rgba(0,0,0,0.5),
+    inset 0 0 0 1px rgba(200,161,87,0.22);
+}
+.frame.center .chapter-tag { color: #fff; }
+.frame.center .chapter-tag .roman { color: var(--c-gold); }
+.frame.center .chapter-title { color: #faedd2; }
+.frame.center .chapter-title em { color: var(--c-gold); }
+
+/* Center frame focus pulse — gold pin in the corner, marks the focal target */
+.focus-pin {
+  position: absolute;
+  bottom: 12px; right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.25em;
+  color: var(--c-gold);
+  text-transform: uppercase;
+  z-index: 3;
+}
+.focus-pin .dot {
+  width: 5px; height: 5px;
+  background: var(--c-gold);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--c-gold);
+  animation: pin-pulse 2.2s ease-in-out infinite;
+}
+@keyframes pin-pulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* Non-center frames: dim them */
+.frame:not(.center) .cell { filter: contrast(1.08) saturate(0.55) brightness(0.7); }
+
+/* Idle: center frame slow zoom on its image */
+.frame.center .cell-image-still {
+  position: absolute;
+  inset: 0;
+  animation: still-zoom 11s ease-in-out infinite alternate;
+  transform-origin: 60% 50%;
+}
+@keyframes still-zoom {
+  0%   { transform: scale(1);    }
+  100% { transform: scale(1.08); }
+}
+
+/* Whole roll idle drift — micro horizontal & rotational sway */
+.film-roll.idle {
+  animation: roll-drift 14s ease-in-out infinite;
+}
+@keyframes roll-drift {
+  0%, 100% { transform: rotateX(-7deg) rotateY(0deg)   translateX(0px); }
+  50%      { transform: rotateX(-7deg) rotateY(-1.4deg) translateX(-6px); }
+}
+
+/* Center-frame typewriter line */
+.cell-typed {
+  position: absolute;
+  bottom: 18px; left: 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgba(244,234,216,0.85);
+  text-transform: uppercase;
+  z-index: 3;
+}
+.cell-typed::after {
+  content: "";
+  display: inline-block;
+  width: 7px; height: 11px;
+  background: var(--c-gold);
+  margin-left: 4px;
+  vertical-align: -1px;
+  animation: blink 0.9s steps(2) infinite;
+}
+@keyframes blink {
+  0%, 50%   { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
+/* =========================================================
+   LETTERBOX BARS
+   ========================================================= */
+.letterbox {
+  position: absolute; left: 0; right: 0;
+  height: 10vh;
+  background: #000;
+  z-index: 20;
+  pointer-events: none;
+}
+.letterbox.top    { top:    0; transform: translateY(-100%); transition: transform 700ms cubic-bezier(.5,.05,.2,1); }
+.letterbox.bottom { bottom: 0; transform: translateY( 100%); transition: transform 700ms cubic-bezier(.5,.05,.2,1); }
+.letterbox.on.top,
+.letterbox.on.bottom { transform: translateY(0); }
+
+/* subtle film edge gradient on inner side of letterbox */
+.letterbox.top::after,
+.letterbox.bottom::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 22px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%);
+}
+.letterbox.top::after    { bottom: -22px; }
+.letterbox.bottom::after { top: -22px; transform: scaleY(-1); }
+
+/* =========================================================
+   TOP CHROME: wordmark + nav
+   ========================================================= */
+.top-chrome {
+  position: absolute;
+  top: 10vh;
+  left: 0; right: 0;
+  padding: 28px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 30;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 900ms ease-out 0.6s, transform 900ms ease-out 0.6s;
+  pointer-events: none;
+}
+.top-chrome.on {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.wordmark {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 28px;
+  letter-spacing: 0.01em;
+  color: var(--c-pearl);
+  line-height: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.wordmark small {
+  font-family: 'DM Mono', monospace;
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  color: var(--c-gold);
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--c-pearl);
+  pointer-events: auto;
+}
+.nav a {
+  color: inherit;
+  text-decoration: none;
+  position: relative;
+  padding: 4px 0;
+  transition: color 0.25s;
+}
+.nav a:hover { color: var(--c-gold); }
+.nav .dot { color: var(--c-gold); opacity: 0.6; }
+.nav .reel-id {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: rgba(244,234,216,0.45);
+  padding-left: 18px;
+  margin-left: 6px;
+  border-left: 1px solid rgba(244,234,216,0.18);
+}
+
+/* =========================================================
+   BOTTOM CHROME: metadata + scroll prompt
+   ========================================================= */
+.bottom-chrome {
+  position: absolute;
+  bottom: 10vh;
+  left: 0; right: 0;
+  padding: 22px 48px 28px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  z-index: 30;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 900ms ease-out 0.9s, transform 900ms ease-out 0.9s;
+  pointer-events: none;
+}
+.bottom-chrome.on {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(244,234,216,0.55);
+  display: flex; flex-direction: column; gap: 6px;
+  line-height: 1.2;
+}
+.meta .row { display: flex; align-items: center; gap: 12px; }
+.meta .label { color: rgba(244,234,216,0.35); }
+.meta .val   { color: var(--c-pearl); }
+.meta .gold  { color: var(--c-gold); }
+
+.scroll-prompt {
+  position: absolute;
+  left: 50%; bottom: 30px;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: var(--c-gold);
+  display: flex; align-items: center; flex-direction: column;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+  pointer-events: none;
+}
+.scroll-prompt.on { opacity: 1; }
+.scroll-prompt .bar {
+  width: 1px; height: 28px;
+  background: linear-gradient(180deg, rgba(200,161,87,0) 0%, var(--c-gold) 100%);
+  animation: scroll-bar 2.2s ease-in-out infinite;
+  transform-origin: top;
+}
+@keyframes scroll-bar {
+  0%   { transform: scaleY(0); opacity: 0;   }
+  40%  { opacity: 1; }
+  100% { transform: scaleY(1); opacity: 0;   }
+}
+.scroll-prompt .label { animation: prompt-pulse 2.6s ease-in-out infinite; }
+@keyframes prompt-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1;   }
+}
+
+.corner-meta {
+  position: absolute;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: rgba(244,234,216,0.42);
+  text-transform: uppercase;
+  z-index: 25;
+  opacity: 0;
+  transition: opacity 1s ease-out 1.1s;
+}
+.corner-meta.on { opacity: 1; }
+.corner-meta.tl { top: calc(10vh + 92px); left: 48px; }
+.corner-meta.tr { top: calc(10vh + 92px); right: 48px; text-align: right; }
+
+/* Crosshair / film registration mark (subtle corner detail) */
+.regmark {
+  position: absolute;
+  width: 18px; height: 18px;
+  z-index: 25;
+  opacity: 0;
+  transition: opacity 1s ease-out 1.4s;
+  pointer-events: none;
+}
+.regmark.on { opacity: 0.4; }
+.regmark::before,
+.regmark::after {
+  content: ""; position: absolute;
+  background: var(--c-pearl);
+}
+.regmark::before { left: 50%; top: 0; bottom: 0; width: 1px; margin-left: -0.5px; }
+.regmark::after  { top: 50%; left: 0; right: 0; height: 1px; margin-top: -0.5px; }
+.regmark.tl { top: calc(10vh + 28px); left: 28px; }
+.regmark.tr { top: calc(10vh + 28px); right: 28px; }
+.regmark.bl { bottom: calc(10vh + 28px); left: 28px; }
+.regmark.br { bottom: calc(10vh + 28px); right: 28px; }
+
+/* =========================================================
+   LOAD-SEQUENCE TYPEWRITER (center overlay)
+   ========================================================= */
+.boot-line {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  letter-spacing: 0.32em;
+  color: var(--c-pearl);
+  white-space: nowrap;
+  z-index: 70;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0;
+}
+.boot-line.on { opacity: 1; }
+.boot-line .caret {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--c-gold);
+  margin-left: 6px;
+  vertical-align: -2px;
+  animation: blink 0.9s steps(2) infinite;
+}
+
+/* =========================================================
+   FILM VIGNETTE (over whole stage, very subtle)
+   ========================================================= */
+.stage-vignette {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+  pointer-events: none;
+  z-index: 8;
+  opacity: 0;
+  transition: opacity 1.6s ease-out 0.6s;
+}
+.stage-vignette.on { opacity: 1; }
+
+/* =========================================================
+   GLOBAL GRAIN OVERLAY (very subtle)
+   ========================================================= */
+.stage-grain {
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+  opacity: 0;
+  transition: opacity 1.6s ease-out 0.6s;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 18;
+}
+.stage-grain.on { opacity: 0.18; }
+
+/* =========================================================
+   TWEAKS PANEL (in-page)
+   ========================================================= */
+.tweaks {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: 280px;
+  background: rgba(10,14,28,0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(244,234,216,0.14);
+  border-radius: 10px;
+  padding: 14px 16px 16px;
+  color: var(--c-pearl);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  z-index: 999;
+  display: none;
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
+}
+.tweaks.on { display: block; }
+.tweaks h3 {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  color: var(--c-gold);
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.tweaks h3 button {
+  background: none; border: none; color: var(--c-pearl); cursor: pointer;
+  font: inherit; padding: 0; opacity: 0.5;
+}
+.tweaks h3 button:hover { opacity: 1; }
+.tweak {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 0;
+  border-top: 1px solid rgba(244,234,216,0.08);
+}
+.tweak:first-of-type { border-top: none; }
+.tweak label {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(244,234,216,0.7);
+}
+.tweak .control { display: flex; gap: 4px; }
+.tweak .control button {
+  background: rgba(244,234,216,0.06);
+  border: 1px solid rgba(244,234,216,0.12);
+  color: var(--c-pearl);
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.tweak .control button.active {
+  background: var(--c-gold);
+  color: #0a1228;
+  border-color: var(--c-gold);
+}
+.tweak .swatch {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid rgba(244,234,216,0.2);
+}
+.tweak .swatch.active { box-shadow: 0 0 0 2px var(--c-gold), 0 0 0 3px #0a1228; }
+.tweak .replay {
+  width: 100%;
+  background: var(--c-gold);
+  color: #0a1228;
+  border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  padding: 8px 0;
+  cursor: pointer;
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+.tweak .replay:hover { background: #d6b271; }
+
+/* =========================================================
+   ACCESSIBILITY: reduced motion
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+@media (max-width: 720px) {
+  :root { --title-y-shift: -3vh; }
+  .letterbox { height: 4vh; }
+  .top-chrome    { top: 4vh; padding: 16px 20px; }
+  .bottom-chrome { bottom: 4vh; padding: 16px 20px 20px; }
+  .corner-meta.tl { top: calc(4vh + 64px); left: 20px; }
+  .corner-meta.tr { top: calc(4vh + 64px); right: 20px; }
+  .regmark.tl { top: calc(4vh + 16px); left: 14px; }
+  .regmark.tr { top: calc(4vh + 16px); right: 14px; }
+  .regmark.bl { bottom: calc(4vh + 16px); left: 14px; }
+  .regmark.br { bottom: calc(4vh + 16px); right: 14px; }
+  .title { font-size: clamp(64px, 22vw, 140px); white-space: normal; text-align: center; line-height: 0.84; }
+  /* mobile: hide front layer (single-layer fallback) */
+  .title-front { display: none; }
+  .nav { font-size: 9px; gap: 10px; }
+  .nav .reel-id { display: none; }
+  .wordmark { font-size: 22px; }
+  .wordmark small { font-size: 7px; }
+  .film-wrap { perspective: 900px; height: 220px; }
+  .frame { width: 240px; height: 180px; margin-left: -120px; margin-top: -90px; }
+  /* on mobile, push side frames further out so only center reads */
+  .frame[data-i="-2"], .frame[data-i="2"] { opacity: 0.15; }
+}
+
+/* =========================================================
+   CHAPTER I — THE ORIGIN
+   Deep-night, observational chapter that follows the hero.
+   Single-column 720px content, gold year spine on the right.
+   ========================================================= */
+.origin {
+  position: relative;
+  background:
+    linear-gradient(180deg,
+      #152040 0%,
+      #0a1228 26%,
+      #0a1228 100%);
+  color: var(--c-pearl);
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+  /* the 5 beats + chapter card pin add up to ~500vh of scrollable height */
+}
+
+/* Permanent 4vh letterbox bars (post-hero sections).
+   Fixed-positioned at viewport top/bottom; opacity-revealed only
+   while the user is scrolling through the Origin section. */
+.origin-letterbox {
+  position: fixed;
+  left: 0; right: 0;
+  height: 4vh;
+  background: #000;
+  z-index: 52;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+.origin-letterbox.top    { top: 0; }
+.origin-letterbox.bottom { bottom: 0; }
+html.in-origin .origin-letterbox { opacity: 1; }
+
+/* --- YEAR SPINE (right edge, draws on scroll) ----------- */
+.year-spine {
+  position: absolute;
+  top: 0;
+  right: 32px;
+  width: 90px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 4;
+}
+.year-spine .spine-svg {
+  position: absolute;
+  top: 0; left: 12px;
+  width: 2px; height: 100%;
+  overflow: visible;
+}
+.year-spine .spine-svg line {
+  stroke: var(--c-gold);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;        /* fully hidden by default */
+  transition: stroke-dashoffset 0.08s linear;
+}
+.year-node {
+  position: absolute;
+  left: 6px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  opacity: 0.4;
+  transition: opacity 0.6s ease-out;
+  transform: translateY(-50%);
+}
+.year-node.active { opacity: 1; }
+.year-node .dot {
+  width: 7px; height: 7px;
+  background: var(--c-gold);
+  border-radius: 50%;
+  display: block;
+  box-shadow: 0 0 0 0 rgba(200,161,87,0.3);
+  transition: box-shadow 0.6s ease-out;
+}
+.year-node.active .dot {
+  box-shadow: 0 0 0 6px rgba(200,161,87,0.06);
+}
+.year-node .label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: var(--c-gold);
+  white-space: nowrap;
+}
+
+/* --- Shared text styles for Origin -------------------------- */
+.origin .gold { color: var(--c-gold); }
+
+.origin-col {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.italic-line {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+  color: var(--c-pearl);
+  margin: 0;
+  /* clip-path wipe: hidden by default, revealed on .in-view */
+  clip-path: inset(0 100% 0 0);
+  -webkit-clip-path: inset(0 100% 0 0);
+  transition:
+    clip-path        0.95s cubic-bezier(0.22, 0.61, 0.36, 1),
+    -webkit-clip-path 0.95s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.italic-line.in-view {
+  clip-path: inset(0 0 0 0);
+  -webkit-clip-path: inset(0 0 0 0);
+}
+
+.gap-3em { height: 3em; }
+.gap-4em { height: 4em; }
+
+/* --- CHAPTER CARD (pinned ~80vh, hard cut) ------------------- */
+.chapter-card-section {
+  position: relative;
+  height: 180vh;     /* gives the sticky card ~80vh of pin life */
+}
+.chapter-card-stick {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chapter-card {
+  text-align: center;
+  max-width: 720px;
+  padding: 0 32px;
+  /* hard cut in / out  no fade: handled by toggling .visible via JS */
+  opacity: 0;
+}
+.chapter-card.visible { opacity: 1; }
+.chapter-card .card-rule {
+  width: 240px;
+  height: 1px;
+  background: rgba(242, 232, 216, 0.42);
+  margin: 28px auto;
+  border: 0;
+}
+.chapter-card .card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 34px;
+  line-height: 1.4;
+  letter-spacing: 0.012em;
+  color: var(--c-pearl);
+}
+.chapter-card .card-year {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  letter-spacing: 0.42em;
+  color: var(--c-gold);
+  margin-top: 6px;
+}
+
+/* --- BEAT 1: seven italic lines ------------------------------ */
+.beat-1 {
+  padding-top: 18vh;
+  padding-bottom: 16vh;
+}
+
+/* --- BEAT 2: DSAVisually footnote ---------------------------- */
+.beat-2 {
+  padding-top: 10vh;
+  padding-bottom: 14vh;
+}
+.hairline {
+  height: 1px;
+  background: rgba(242, 232, 216, 0.15);
+  border: 0;
+  margin: 0;
+}
+.dsa-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: rgba(242, 232, 216, 0.55);
+  padding: 18px 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dsa-body {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  line-height: 1.7;
+  color: rgba(242, 232, 216, 0.62);
+  padding: 6px 0 14px;
+}
+.dsa-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 20px;
+}
+.mono-link {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: rgba(242, 232, 216, 0.48);
+  text-decoration: none;
+  transition: color 0.3s ease-out;
+  display: inline-block;
+  width: max-content;
+}
+.mono-link:hover { color: var(--c-gold); }
+
+/* clip-path reveal for beat-2 contents */
+.beat-2 .dsa-label,
+.beat-2 .dsa-body,
+.beat-2 .dsa-links a {
+  clip-path: inset(0 100% 0 0);
+  -webkit-clip-path: inset(0 100% 0 0);
+  transition:
+    clip-path        0.95s cubic-bezier(0.22, 0.61, 0.36, 1),
+    -webkit-clip-path 0.95s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.beat-2.in-view .dsa-label { clip-path: inset(0 0 0 0); -webkit-clip-path: inset(0 0 0 0); }
+.beat-2.in-view .dsa-body  { clip-path: inset(0 0 0 0); -webkit-clip-path: inset(0 0 0 0); transition-delay: 120ms; }
+.beat-2.in-view .dsa-links a:nth-child(1) { clip-path: inset(0 0 0 0); -webkit-clip-path: inset(0 0 0 0); transition-delay: 240ms; }
+.beat-2.in-view .dsa-links a:nth-child(2) { clip-path: inset(0 0 0 0); -webkit-clip-path: inset(0 0 0 0); transition-delay: 360ms; }
+
+/* --- BEAT 3: Kaggle / AI turn -------------------------------- */
+.beat-3 {
+  padding-top: 10vh;
+  padding-bottom: 14vh;
+}
+.beat-3 .credential {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  color: rgba(242, 232, 216, 0.7);
+  margin-bottom: 10px;
+  clip-path: inset(0 100% 0 0);
+  -webkit-clip-path: inset(0 100% 0 0);
+  transition:
+    clip-path        0.95s cubic-bezier(0.22, 0.61, 0.36, 1),
+    -webkit-clip-path 0.95s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.beat-3 .kaggle-link {
+  clip-path: inset(0 100% 0 0);
+  -webkit-clip-path: inset(0 100% 0 0);
+  transition:
+    clip-path        0.95s cubic-bezier(0.22, 0.61, 0.36, 1),
+    -webkit-clip-path 0.95s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition-delay: 180ms;
+}
+.beat-3.in-view .credential,
+.beat-3.in-view .kaggle-link {
+  clip-path: inset(0 0 0 0);
+  -webkit-clip-path: inset(0 0 0 0);
+}
+
+/* --- BEAT 4: IIM-K + emotional peak -------------------------- */
+.beat-4 {
+  padding-top: 10vh;
+  padding-bottom: 22vh;
+}
+.prose-line {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.7;
+  color: rgba(242, 232, 216, 0.78);
+  margin: 0;
+  clip-path: inset(0 100% 0 0);
+  -webkit-clip-path: inset(0 100% 0 0);
+  transition:
+    clip-path        0.95s cubic-bezier(0.22, 0.61, 0.36, 1),
+    -webkit-clip-path 0.95s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.prose-line.in-view {
+  clip-path: inset(0 0 0 0);
+  -webkit-clip-path: inset(0 0 0 0);
+}
+.prose-gap { height: 1.4em; }
+
+.closing-italic {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 32px;
+  line-height: 1.5;
+  letter-spacing: 0.012em;
+  text-align: center;
+  color: var(--c-pearl);
+  margin-top: 3em;
+  clip-path: inset(0 100% 0 0);
+  -webkit-clip-path: inset(0 100% 0 0);
+  transition:
+    clip-path        1.2s cubic-bezier(0.22, 0.61, 0.36, 1),
+    -webkit-clip-path 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.closing-italic.in-view {
+  clip-path: inset(0 0 0 0);
+  -webkit-clip-path: inset(0 0 0 0);
+}
+
+/* --- BEAT 5: footnote ---------------------------------------- */
+.beat-5 {
+  padding-top: 8vh;
+  padding-bottom: 14vh;
+  text-align: center;
+}
+.beat-5 .creds {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: rgba(242, 232, 216, 0.55);
+  line-height: 1.7;
+}
+.beat-5 .future {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: rgba(242, 232, 216, 0.32);
+  margin-top: 14px;
+}
+
+.origin-tail { height: 14vh; }
+
+/* --- MOBILE -------------------------------------------------- */
+@media (max-width: 720px) {
+  .origin-col,
+  .chapter-card { max-width: 90vw; padding: 0 16px; }
+
+  .italic-line       { font-size: 22px; }
+  .prose-line        { font-size: 16px; }
+  .closing-italic    { font-size: 24px; }
+  .chapter-card .card-title { font-size: 26px; }
+
+  .year-spine { right: auto; left: 1rem; width: 70px; }
+  /* show only the currently visible year label on mobile */
+  .year-node .label    { display: none; }
+  .year-node.current .label { display: block; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="stage" id="stage">
+
+  <!-- ========== STAGE BACKGROUND ========== -->
+  <div class="nebula" id="nebula"></div>
+  <div class="stars"  id="stars"></div>
+
+  <!-- ========== MOON (transparent crescent, anchored above viewport) ========== -->
+  <div class="moon-wrap" id="moon">
+    <img class="moon-img" src="moon-crescent.png" alt="" aria-hidden="true">
+  </div>
+
+  <!-- ========== TITLE (supplied artwork, behind the film roll) ========== -->
+  <div class="title" id="titleBack">
+    <img src="title-directors-cut-white.png" alt="Director's Cut">
+  </div>
+
+  <!-- ========== FILM ROLL ========== -->
+  <div class="film-wrap" id="filmWrap">
+    <div class="film-roll" id="filmRoll">
+
+      <!-- 5 frames; index from -2 (leftmost) to +2 (rightmost). Center is 0. -->
+      <div class="frame" data-i="-2" style="--angle: 36deg;">
+        <div class="cell c-prologue">
+          <div class="chapter-tag"><span class="roman">—</span> PROLOGUE</div>
+          <div class="chapter-meta">2014</div>
+          <div class="chapter-title">Cold<br>Open<em>before the work</em></div>
+          <div class="vignette"></div>
+          <div class="grain"></div>
+        </div>
+      </div>
+
+      <div class="frame" data-i="-1" style="--angle: 18deg;">
+        <div class="cell c-architect">
+          <div class="chapter-tag"><span class="roman">IV.</span> THE ARCHITECT</div>
+          <div class="chapter-meta">2025—</div>
+          <div class="chapter-title">Aadarsh<em>technical lead</em></div>
+          <div class="vignette"></div>
+          <div class="grain"></div>
+        </div>
+      </div>
+
+      <!-- CENTER / FOCAL -->
+      <div class="frame center" data-i="0" style="--angle: 0deg;">
+        <div class="cell c-origin">
+          <div class="cell-image-still">
+            <div class="vignette"></div>
+            <div class="grain"></div>
+          </div>
+          <div class="chapter-tag"><span class="roman">I.</span> THE ORIGIN</div>
+          <div class="chapter-meta">DXB · 2016</div>
+          <div class="chapter-title">First<br>Light<em>a story begins</em></div>
+          <div class="cell-typed" id="cellTyped">PRESS PLAY</div>
+          <div class="focus-pin"><span class="dot"></span><span>FOCAL</span></div>
+        </div>
+      </div>
+
+      <div class="frame" data-i="1" style="--angle: -18deg;">
+        <div class="cell c-work">
+          <div class="chapter-tag"><span class="roman">II.</span> THE WORK</div>
+          <div class="chapter-meta">2018—2022</div>
+          <div class="chapter-title">Selected<em>seventeen reels</em></div>
+          <div class="vignette"></div>
+          <div class="grain"></div>
+        </div>
+      </div>
+
+      <div class="frame" data-i="2" style="--angle: -36deg;">
+        <div class="cell c-record">
+          <div class="chapter-tag"><span class="roman">III.</span> THE RECORD</div>
+          <div class="chapter-meta">2022—</div>
+          <div class="chapter-title">Notes<em>from the cutting room</em></div>
+          <div class="vignette"></div>
+          <div class="grain"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- (legacy front-layer slot removed: title is now a single image) -->
+
+  <!-- ========== STAGE-WIDE POST FX ========== -->
+  <div class="stage-vignette" id="stageVignette"></div>
+  <div class="stage-grain"    id="stageGrain"></div>
+
+  <!-- ========== LETTERBOX BARS ========== -->
+  <div class="letterbox top"    id="lbTop"></div>
+  <div class="letterbox bottom" id="lbBot"></div>
+
+  <!-- ========== REGISTRATION MARKS ========== -->
+  <div class="regmark tl" id="rm1"></div>
+  <div class="regmark tr" id="rm2"></div>
+  <div class="regmark bl" id="rm3"></div>
+  <div class="regmark br" id="rm4"></div>
+
+  <!-- ========== TOP CHROME ========== -->
+  <header class="top-chrome" id="topChrome">
+    <div class="wordmark">
+      Aadarsh Velu
+      <small>Lead Technical Architect · DXB</small>
+    </div>
+    <nav class="nav" aria-label="Primary">
+      <a href="#work">Work</a>
+      <span class="dot">·</span>
+      <a href="#record">Record</a>
+      <span class="dot">·</span>
+      <a href="#contact">Contact</a>
+      <span class="reel-id">REEL N°01 / 2026</span>
+    </nav>
+  </header>
+
+  <!-- ========== CORNER META ========== -->
+  <div class="corner-meta tl" id="cmTL">
+    A. VELU<br>
+    <span style="opacity:0.55">PRESENTS</span>
+  </div>
+  <div class="corner-meta tr" id="cmTR">
+    25.2048° N · 55.2708° E<br>
+    <span style="opacity:0.55">DUBAI / U.A.E.</span>
+  </div>
+
+  <!-- ========== BOTTOM CHROME ========== -->
+  <div class="bottom-chrome" id="botChrome">
+    <div class="meta">
+      <div class="row"><span class="label">Reel</span><span class="val">N° 01</span><span class="gold">●</span><span class="label">Frame</span><span class="val">001 / 248</span></div>
+      <div class="row"><span class="label">ASA</span><span class="val">400T</span><span class="label">Lens</span><span class="val">35mm Anamorphic</span></div>
+    </div>
+    <div class="meta" style="align-items:flex-end; text-align:right;">
+      <div class="row"><span class="label">Chapter</span><span class="val">I. The Origin</span></div>
+      <div class="row"><span class="label">Runtime</span><span class="val">04 : 32</span><span class="label">Status</span><span class="gold">PLAY</span></div>
+    </div>
+  </div>
+
+  <!-- ========== SCROLL PROMPT ========== -->
+  <div class="scroll-prompt" id="scrollPrompt">
+    <span class="label">Scroll · Enter Chapter I</span>
+    <span class="bar"></span>
+  </div>
+
+  <!-- ========== BOOT MASK + TYPEWRITER LINE ========== -->
+  <div class="boot-line" id="bootLine"><span class="text"></span><span class="caret"></span></div>
+  <div class="boot-mask" id="bootMask"></div>
+
+</div>
+
+<!-- ========== CHAPTER I — THE ORIGIN ========== -->
+<section class="origin" id="origin" data-screen-label="02 Chapter I — The Origin">
+
+  <!-- Year spine (right edge, draws on scroll) -->
+  <div class="year-spine" id="yearSpine" aria-hidden="true">
+    <svg class="spine-svg" preserveAspectRatio="none" viewBox="0 0 2 1000">
+      <line id="spineLine" x1="1" y1="0" x2="1" y2="1000"
+            stroke="#c8a157" stroke-width="1"
+            pathLength="1000" stroke-dasharray="1000" stroke-dashoffset="1000"/>
+    </svg>
+    <div class="year-node" data-progress="0.12"><span class="dot"></span><span class="label">2016</span></div>
+    <div class="year-node" data-progress="0.32"><span class="dot"></span><span class="label">2020</span></div>
+    <div class="year-node" data-progress="0.52"><span class="dot"></span><span class="label">2022</span></div>
+    <div class="year-node" data-progress="0.74"><span class="dot"></span><span class="label">2024</span></div>
+    <div class="year-node" data-progress="0.92"><span class="dot"></span><span class="label">2025</span></div>
+  </div>
+
+  <!-- ===== Chapter card (pinned ~80vh, hard cut in/out) ===== -->
+  <div class="chapter-card-section">
+    <div class="chapter-card-stick">
+      <div class="chapter-card" id="chapterCard">
+        <hr class="card-rule">
+        <h1 class="card-title">Chapter I &mdash; The Origin</h1>
+        <hr class="card-rule">
+        <p class="card-year">2016</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Beat 1: seven italic lines (clip-path stagger) ===== -->
+  <div class="origin-col beat beat-1" id="beat1">
+    <p class="italic-line">Two years of programming.</p>
+    <p class="italic-line">Java. Fundamentals. A pandemic.</p>
+    <div class="gap-3em"></div>
+    <p class="italic-line">I couldn&rsquo;t showcase what I&rsquo;d learnt.</p>
+    <p class="italic-line">So I built a DSA visualizer using <span class="gold">React</span>.</p>
+    <div class="gap-3em"></div>
+    <p class="italic-line">It got <span class="gold">traction</span>.</p>
+    <p class="italic-line">It got me a job. At <span class="gold">eighteen</span>.</p>
+  </div>
+
+  <!-- ===== Beat 2: DSAVisually footnote (NOT a card) ===== -->
+  <div class="origin-col beat beat-2" id="beat2">
+    <hr class="hairline">
+    <p class="dsa-label">&mdash;&mdash; DSAVisually &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash; 2020 &mdash;&mdash;</p>
+    <p class="dsa-body">Sorting &middot; graph traversal &middot; search &mdash; visualized in real time. Built to learn. Shipped to get hired.</p>
+    <div class="dsa-links">
+      <a class="mono-link" href="https://dsavisually.netlify.app" target="_blank" rel="noopener">&rarr; dsavisually.netlify.app</a>
+      <a class="mono-link" href="https://github.com/[DSA_JAVA_REPO]" target="_blank" rel="noopener">&rarr; github.com/[DSA_JAVA_REPO]</a>
+    </div>
+    <hr class="hairline">
+  </div>
+
+  <!-- ===== Beat 3: AI / Kaggle turn ===== -->
+  <div class="origin-col beat beat-3" id="beat3">
+    <p class="italic-line">Wanted to learn AI. Started with the math and statistics. Practiced on Kaggle until it made sense.</p>
+    <div class="gap-4em"></div>
+    <p class="credential">KAGGLE 3&times; EXPERT &mdash; DATASET &middot; NOTEBOOK &middot; DISCUSSION</p>
+    <a class="mono-link kaggle-link" href="https://kaggle.com/[KAGGLE_PROFILE]" target="_blank" rel="noopener">&rarr; kaggle.com/[KAGGLE_PROFILE]</a>
+  </div>
+
+  <!-- ===== Beat 4: IIM-K turn + emotional peak ===== -->
+  <div class="origin-col beat beat-4" id="beat4">
+    <p class="prose-line">I started letting Cursor write the code I used to write.</p>
+    <div class="prose-gap"></div>
+    <p class="prose-line">What I noticed wasn&rsquo;t that I was faster &mdash; I was. It was that the work shifted. The ticket stopped being the hard part. The decision about which ticket to write became the bottleneck.</p>
+    <div class="prose-gap"></div>
+    <p class="prose-line">IIM Kozhikode &mdash; Strategic Management.</p>
+    <p class="prose-line">Not a pivot. An upgrade.</p>
+    <p class="closing-italic">When the tool handles the syntax, <span class="gold">judgment</span> becomes the only remaining moat.</p>
+  </div>
+
+  <!-- ===== Beat 5: footnote pointing to Chapter IV ===== -->
+  <div class="origin-col beat beat-5" id="beat5">
+    <p class="creds">AWS Solutions Architect &middot; Kaggle 3&times; Expert &middot; IIM-K Strategic Management</p>
+    <p class="future">&#x21B3; Detailed in Chapter IV</p>
+  </div>
+
+  <div class="origin-tail"></div>
+</section>
+
+<!-- ========== POST-HERO LETTERBOX BARS (permanent, 4vh) ========== -->
+<div class="origin-letterbox top"></div>
+<div class="origin-letterbox bottom"></div>
+
+<!-- ========== TWEAKS PANEL ========== -->
+<div class="tweaks" id="tweaks" aria-label="Tweaks">
+  <h3>
+    Tweaks
+    <button id="tweaksClose" title="Close">✕</button>
+  </h3>
+
+  <div class="tweak">
+    <label>Center idle</label>
+    <div class="control" data-tweak="idle">
+      <button data-val="still" class="active">Still</button>
+      <button data-val="flicker">Flicker</button>
+      <button data-val="off">Off</button>
+    </div>
+  </div>
+
+  <div class="tweak">
+    <label>Roll curvature</label>
+    <div class="control" data-tweak="curve">
+      <button data-val="flat">Flat</button>
+      <button data-val="med" class="active">Curve</button>
+      <button data-val="deep">Deep</button>
+    </div>
+  </div>
+
+  <div class="tweak">
+    <label>Letterbox</label>
+    <div class="control" data-tweak="letterbox">
+      <button data-val="cinema" class="active">10vh</button>
+      <button data-val="slim">4vh</button>
+      <button data-val="off">Off</button>
+    </div>
+  </div>
+
+  <div class="tweak" style="display:block;">
+    <button class="replay" id="replayBtn">↻ Replay Sequence</button>
+  </div>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ============================================================
+  // TWEAKABLE DEFAULTS — read/written by the host on disk
+  // ============================================================
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "idle": "flicker",
+    "curve": "med",
+    "letterbox": "cinema",
+    "frontLetters": "ends"
+  }/*EDITMODE-END*/;
+
+  const state = { ...TWEAK_DEFAULTS };
+
+  // ============================================================
+  // STARS — populate the night sky
+  // ============================================================
+  function makeStars() {
+    const root = document.getElementById('stars');
+    const N = 180;
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < N; i++) {
+      const s = document.createElement('span');
+      s.className = 'star';
+      const sz = Math.random();
+      if (sz > 0.94) s.classList.add('s3');
+      else if (sz > 0.78) s.classList.add('s2');
+      s.style.left = (Math.random() * 100) + '%';
+      s.style.top  = (Math.random() * 100) + '%';
+      s.style.setProperty('--dur',   (3 + Math.random() * 5) + 's');
+      s.style.setProperty('--delay', (Math.random() * 5) + 's');
+      frag.appendChild(s);
+    }
+    root.appendChild(frag);
+  }
+
+  // ============================================================
+  // TITLE — supplied artwork (single PNG, no per-letter build)
+  // ============================================================
+  function refreshTitle() { /* no-op kept for tweak handler API */ }
+
+  // ============================================================
+  // FILM ROLL — curvature presets
+  // ============================================================
+  const CURVE_PRESETS = {
+    flat: { spread: 8,  z: 880 },  // very gentle curve
+    med:  { spread: 18, z: 820 },  // default
+    deep: { spread: 28, z: 720 },  // strong wrap
+  };
+  function applyCurve(key) {
+    const c = CURVE_PRESETS[key] || CURVE_PRESETS.med;
+    const frames = document.querySelectorAll('.frame');
+    frames.forEach(f => {
+      const i = parseInt(f.dataset.i, 10);
+      const angle = -i * c.spread; // i=-2 → +2*spread, i=+2 → -2*spread
+      f.style.setProperty('--angle', angle + 'deg');
+      f.style.transform =
+        `rotateY(${angle}deg) translateZ(${c.z}px)`;
+    });
+  }
+
+  // ============================================================
+  // LETTERBOX
+  // ============================================================
+  function applyLetterbox(key) {
+    const top = document.getElementById('lbTop');
+    const bot = document.getElementById('lbBot');
+    if (key === 'off') {
+      top.style.height = '0'; bot.style.height = '0';
+    } else if (key === 'slim') {
+      top.style.height = '4vh'; bot.style.height = '4vh';
+    } else {
+      top.style.height = '10vh'; bot.style.height = '10vh';
+    }
+  }
+
+  // ============================================================
+  // IDLE BEHAVIOR
+  // ============================================================
+  function applyIdle(key) {
+    const stillEl = document.querySelector('.cell-image-still');
+    const roll    = document.getElementById('filmRoll');
+    if (!stillEl) return;
+    stillEl.style.animation = '';
+    if (key === 'off') {
+      stillEl.style.animation = 'none';
+      roll.classList.remove('idle');
+    } else if (key === 'flicker') {
+      stillEl.style.animation = 'still-zoom 11s ease-in-out infinite alternate, flicker 0.7s steps(1) infinite';
+      roll.classList.add('idle');
+    } else {
+      // 'still' (default)
+      stillEl.style.animation = 'still-zoom 11s ease-in-out infinite alternate';
+      roll.classList.add('idle');
+    }
+  }
+  // flicker keyframes injected dynamically
+  const flickerStyle = document.createElement('style');
+  flickerStyle.textContent = `
+    @keyframes flicker {
+      0%, 92%, 100% { opacity: 1; }
+      93% { opacity: 0.82; }
+      94% { opacity: 1; }
+      95% { opacity: 0.74; }
+      96% { opacity: 1; }
+    }
+  `;
+  document.head.appendChild(flickerStyle);
+
+  // ============================================================
+  // LOAD SEQUENCE
+  // ============================================================
+  const BOOT_TEXT = "LEAD TECHNICAL ARCHITECT.  DUBAI.";
+  let bootRunning = false;
+
+  function resetForReplay() {
+    document.getElementById('bootMask').classList.remove('gone', 'removed');
+    document.getElementById('nebula').classList.remove('on');
+    document.getElementById('stars').classList.remove('on');
+    document.getElementById('moon').classList.remove('on');
+    document.getElementById('filmWrap').classList.remove('on');
+    document.getElementById('titleBack').classList.remove('on');
+    document.getElementById('lbTop').classList.remove('on');
+    document.getElementById('lbBot').classList.remove('on');
+    document.getElementById('topChrome').classList.remove('on');
+    document.getElementById('botChrome').classList.remove('on');
+    document.getElementById('scrollPrompt').classList.remove('on');
+    document.getElementById('cmTL').classList.remove('on');
+    document.getElementById('cmTR').classList.remove('on');
+    document.getElementById('stageVignette').classList.remove('on');
+    document.getElementById('stageGrain').classList.remove('on');
+    document.querySelectorAll('.regmark').forEach(r => r.classList.remove('on'));
+    document.getElementById('bootLine').classList.remove('on');
+    document.querySelector('#bootLine .text').textContent = '';
+  }
+
+  async function runBootSequence() {
+    if (bootRunning) return;
+    bootRunning = true;
+    resetForReplay();
+
+    // ----- 1) Hold black 600ms
+    await sleep(600);
+
+    // ----- 2) Typewriter on the boot line
+    const bootLine = document.getElementById('bootLine');
+    const bootText = bootLine.querySelector('.text');
+    bootLine.classList.add('on');
+    await typeText(bootText, BOOT_TEXT, 35);
+    await sleep(700);
+
+    // ----- 3) Fade out boot line, drop the black mask
+    bootLine.classList.remove('on');
+    await sleep(280);
+    const mask = document.getElementById('bootMask');
+    mask.classList.add('gone');
+
+    // ----- 4) Letterbox bars slide in
+    document.getElementById('lbTop').classList.add('on');
+    document.getElementById('lbBot').classList.add('on');
+    await sleep(120);
+
+    // ----- 5) Nebula + stars fade in
+    document.getElementById('nebula').classList.add('on');
+    document.getElementById('stars').classList.add('on');
+    await sleep(200);
+
+    // ----- 6) Stage vignette + grain fade in
+    document.getElementById('stageVignette').classList.add('on');
+    document.getElementById('stageGrain').classList.add('on');
+    await sleep(120);
+
+    // ----- 7) Moon fades in
+    document.getElementById('moon').classList.add('on');
+    await sleep(700);
+
+    // ----- 8) Film roll slides in (with subtle overshoot built into easing)
+    const filmWrap = document.getElementById('filmWrap');
+    const filmRoll = document.getElementById('filmRoll');
+    // start far right, then settle
+    filmRoll.style.transition = 'transform 1.2s cubic-bezier(.16,1,.3,1)';
+    filmRoll.style.transform = 'rotateX(-7deg) translateX(120vw)';
+    filmWrap.classList.add('on');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        filmRoll.style.transform = 'rotateX(-7deg) translateX(0)';
+      });
+    });
+    await sleep(900);
+
+    // ----- 9) Title rises from below
+    document.getElementById('titleBack').classList.add('on');
+    await sleep(700);
+
+    // ----- 10) Remove boot mask completely (for clean rendering)
+    mask.classList.add('removed');
+
+    // ----- 11) Top + bottom chrome fade in
+    document.getElementById('topChrome').classList.add('on');
+    document.getElementById('botChrome').classList.add('on');
+    document.getElementById('cmTL').classList.add('on');
+    document.getElementById('cmTR').classList.add('on');
+    document.querySelectorAll('.regmark').forEach(r => r.classList.add('on'));
+    await sleep(500);
+
+    // ----- 12) Start center frame idle + roll drift
+    applyIdle(state.idle);
+    // type the focal frame caption
+    typeText(document.getElementById('cellTyped'), 'I. THE ORIGIN — FIRST LIGHT', 40);
+
+    // ----- 13) Scroll prompt pulse
+    await sleep(600);
+    document.getElementById('scrollPrompt').classList.add('on');
+
+    // small handoff: re-enable transition on the roll so curve tweaks animate
+    setTimeout(() => {
+      filmRoll.style.transition = '';
+    }, 600);
+
+    bootRunning = false;
+
+    // Unlock scroll for Chapter I navigation.
+    document.documentElement.classList.add('boot-done');
+    if (window.__originUnlock) window.__originUnlock();
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  function typeText(el, text, perChar = 40) {
+    return new Promise(resolve => {
+      el.textContent = '';
+      let i = 0;
+      const tick = () => {
+        if (i >= text.length) return resolve();
+        el.textContent += text[i++];
+        setTimeout(tick, perChar + (Math.random() * 18 - 9));
+      };
+      tick();
+    });
+  }
+
+  // ============================================================
+  // TWEAKS — host protocol + UI
+  // ============================================================
+  const tweaksEl  = document.getElementById('tweaks');
+  const closeBtn  = document.getElementById('tweaksClose');
+  const replayBtn = document.getElementById('replayBtn');
+
+  function openTweaks()  { tweaksEl.classList.add('on'); }
+  function closeTweaks() {
+    tweaksEl.classList.remove('on');
+    try { window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*'); } catch {}
+  }
+  closeBtn.addEventListener('click', closeTweaks);
+
+  // Register the listener FIRST, then announce availability
+  window.addEventListener('message', (ev) => {
+    const d = ev.data;
+    if (!d || typeof d !== 'object') return;
+    if (d.type === '__activate_edit_mode')   openTweaks();
+    if (d.type === '__deactivate_edit_mode') closeTweaks();
+  });
+  try { window.parent.postMessage({ type: '__edit_mode_available' }, '*'); } catch {}
+
+  function setTweak(key, val) {
+    state[key] = val;
+    // visual selection
+    const groups = tweaksEl.querySelectorAll(`[data-tweak="${key}"]`);
+    groups.forEach(g => {
+      g.querySelectorAll('button').forEach(b => {
+        b.classList.toggle('active', b.dataset.val === val);
+      });
+    });
+    // apply
+    switch (key) {
+      case 'idle':      applyIdle(val); break;
+      case 'curve':     applyCurve(val); break;
+      case 'letterbox': applyLetterbox(val); break;
+    }
+    // persist via host
+    try {
+      window.parent.postMessage(
+        { type: '__edit_mode_set_keys', edits: { [key]: val } },
+        '*'
+      );
+    } catch {}
+  }
+
+  tweaksEl.querySelectorAll('.control').forEach(group => {
+    const key = group.dataset.tweak;
+    group.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      setTweak(key, btn.dataset.val);
+    });
+  });
+
+  replayBtn.addEventListener('click', runBootSequence);
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  makeStars();
+  applyCurve(state.curve);
+  applyLetterbox(state.letterbox);
+  // boot
+  window.addEventListener('load', () => {
+    // small async kick so layout is settled
+    setTimeout(runBootSequence, 80);
+  });
+})();
+</script>
+
+<!-- ========== LENIS (smooth scroll) ========== -->
+<script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js" crossorigin="anonymous"></script>
+
+<!-- ========== CHAPTER I — ORIGIN SCRIPT ========== -->
+<script>
+(() => {
+  'use strict';
+
+  /* =================================================================
+     The hero's boot sequence locks scroll. When it finishes it adds
+     `.boot-done` to <html> and calls window.__originUnlock(). This
+     function does the actual init — Lenis, IntersectionObservers,
+     year-spine progress tracking, in-origin letterbox toggle.
+     ================================================================= */
+  let initialized = false;
+  function init() {
+    if (initialized) return;
+    initialized = true;
+
+    /* ---------- 1) Lenis smooth scroll ---------- */
+    let lenis = null;
+    if (typeof window.Lenis !== 'undefined') {
+      lenis = new window.Lenis({
+        duration: 1.15,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+        touchMultiplier: 1.4,
+      });
+      const raf = (time) => { lenis.raf(time); requestAnimationFrame(raf); };
+      requestAnimationFrame(raf);
+    }
+
+    /* ---------- 2) Year-spine progress + node activation ---------- */
+    const origin    = document.getElementById('origin');
+    const spineLine = document.getElementById('spineLine');
+    const nodes     = document.querySelectorAll('#yearSpine .year-node');
+
+    // Position year nodes at percentage of section height
+    nodes.forEach(n => { n.style.top = (parseFloat(n.dataset.progress) * 100) + '%'; });
+
+    // pathLength=1000 — dashoffset goes 1000 (hidden) → 0 (drawn)
+    function updateSpine() {
+      if (!origin) return;
+      const rect = origin.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = rect.height - vh;
+      if (total <= 0) return;
+      const progress = Math.min(1, Math.max(0, -rect.top / total));
+
+      if (spineLine) {
+        spineLine.style.strokeDashoffset = (1000 * (1 - progress)).toFixed(2);
+      }
+
+      // year nodes light up as progress passes them
+      let currentNode = null;
+      nodes.forEach((node, i) => {
+        const p = parseFloat(node.dataset.progress);
+        const active = progress >= p - 0.02;
+        node.classList.toggle('active', active);
+        // mobile: track the currently-visible year window
+        const next = nodes[i + 1];
+        const nextP = next ? parseFloat(next.dataset.progress) : 1.1;
+        if (progress >= p - 0.02 && progress < nextP - 0.02) currentNode = node;
+      });
+      nodes.forEach(n => n.classList.toggle('current', n === currentNode));
+    }
+
+    /* ---------- 3) Toggle `.in-origin` on <html> for letterbox ---------- */
+    function updateInOrigin() {
+      // trigger when origin enters viewport (its top is well into the frame)
+      // so the 4vh letterbox lands cleanly as the hero scrolls out.
+      const rect = origin.getBoundingClientRect();
+      const triggered = rect.top < window.innerHeight * 0.35;
+      document.documentElement.classList.toggle('in-origin', triggered);
+    }
+
+    /* ---------- 4) Chapter card visibility (hard cut) ---------- */
+    const card        = document.getElementById('chapterCard');
+    const cardSection = document.querySelector('.chapter-card-section');
+    function updateCard() {
+      if (!card || !cardSection) return;
+      const rect = cardSection.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // visible when the pin section overlaps the viewport
+      const visible = rect.top < vh * 0.6 && rect.bottom > vh * 0.4;
+      card.classList.toggle('visible', visible);
+    }
+
+    /* ---------- master scroll handler (rAF-throttled) ---------- */
+    let ticking = false;
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        updateSpine();
+        updateInOrigin();
+        updateCard();
+        ticking = false;
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+
+    /* ---------- 5) IntersectionObserver for clip-path reveals ---------- */
+    // Beat-1 (whole block): when it intersects, stagger-reveal its 7 italic lines.
+    const beat1 = document.getElementById('beat1');
+    if (beat1) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            const lines = beat1.querySelectorAll('.italic-line');
+            lines.forEach((line, idx) => {
+              line.style.transitionDelay = (idx * 120) + 'ms';
+              line.classList.add('in-view');
+            });
+            obs.disconnect();
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+      obs.observe(beat1);
+    }
+
+    // Beat-2, Beat-3, Beat-5: whole-block trigger
+    ['beat2', 'beat3', 'beat5'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            el.classList.add('in-view');
+            obs.disconnect();
+          }
+        });
+      }, { threshold: 0.2, rootMargin: '0px 0px -8% 0px' });
+      obs.observe(el);
+    });
+
+    // Beat-3 italic line: also reveals on its own (subcomponent)
+    document.querySelectorAll('#beat3 .italic-line').forEach(line => {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { line.classList.add('in-view'); obs.disconnect(); }
+        });
+      }, { threshold: 0.35 });
+      obs.observe(line);
+    });
+
+    // Beat-4: each prose line + the closing italic reveal independently
+    document.querySelectorAll('#beat4 .prose-line, #beat4 .closing-italic').forEach(line => {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { line.classList.add('in-view'); obs.disconnect(); }
+        });
+      }, { threshold: 0.4, rootMargin: '0px 0px -10% 0px' });
+      obs.observe(line);
+    });
+
+    // First pass after init
+    onScroll();
+  }
+
+  // The hero boot calls this when it's done unlocking the page.
+  window.__originUnlock = init;
+
+  // Failsafe: if the hero never boots (e.g. asset error), init after 4s.
+  setTimeout(() => {
+    if (!initialized && document.documentElement.classList.contains('boot-done')) init();
+  }, 4000);
+})();
+</script>
+
+</body>
+</html>

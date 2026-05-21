@@ -1,0 +1,24 @@
+/* fills the browser window — the black here is the thin CRT bezel surround */
+.viewport {
+  position: fixed;
+  inset: 0;
+  background: #000;
+}
+
+/* the tube surface — fills the padded area, rounded CRT corners */
+.screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #000;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 0 1px #060607,
+    0 24px 80px -30px rgba(0, 0, 0, 0.9);
+}
+
+.screen canvas {
+  display: block;
+}
