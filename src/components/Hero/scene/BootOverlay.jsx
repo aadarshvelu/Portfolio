@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { Text } from '@react-three/drei'
-import { DESIGN_W, DESIGN_H, ORDER } from '../config.js'
+import { ORDER } from '../config.js'
+import { useLayout } from '../breakpoint.js'
 import { FONTS } from '../../../fonts.js'
 import { useTypewriter } from '../../../hooks/useTypewriter.js'
 import { useGroupFade } from '../../../hooks/useGroupFade.js'
@@ -9,8 +10,11 @@ import { useGroupFade } from '../../../hooks/useGroupFade.js'
 const BOOT_TEXT = 'Life is a film. This is my story.'
 
 export default function BootOverlay({ bootLine, maskGone }) {
+  const L = useLayout()
   const maskMat = useRef()
+
   const typed = useTypewriter(BOOT_TEXT, { speed: 35, start: bootLine })
+
   const lineOpacity = useGroupFade(bootLine, { duration: 0.3 })
 
   useEffect(() => {
@@ -27,7 +31,7 @@ export default function BootOverlay({ bootLine, maskGone }) {
   return (
     <>
       <mesh renderOrder={ORDER.bootMask} position={[0, 0, 0]}>
-        <planeGeometry args={[DESIGN_W, DESIGN_H]} />
+        <planeGeometry args={[L.design.w, L.design.h]} />
         <meshBasicMaterial
           ref={maskMat}
           color="#000000"
@@ -41,7 +45,7 @@ export default function BootOverlay({ bootLine, maskGone }) {
 
       <Text
         font={FONTS.dmMono400}
-        fontSize={14}
+        fontSize={L.bootLine.fontSize}
         color="#f2e8d8"
         anchorX="center"
         anchorY="middle"

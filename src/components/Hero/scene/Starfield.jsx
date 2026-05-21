@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { DESIGN_W, DESIGN_H, ORDER } from '../config.js'
+import { ORDER } from '../config.js'
+import { useLayout } from '../breakpoint.js'
 import { useFade } from '../../../hooks/useFade.js'
-
-const COUNT = 180
 
 const vertexShader = /* glsl */ `
 attribute float aSize;
@@ -30,15 +29,18 @@ void main() {
 `
 
 export default function Starfield({ on }) {
+  const { design, starfield } = useLayout()
+  const count = starfield.count
+
   const geometry = useMemo(() => {
     const g = new THREE.BufferGeometry()
-    const pos = new Float32Array(COUNT * 3)
-    const size = new Float32Array(COUNT)
-    const phase = new Float32Array(COUNT)
-    const speed = new Float32Array(COUNT)
-    for (let i = 0; i < COUNT; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * DESIGN_W
-      pos[i * 3 + 1] = (Math.random() - 0.5) * DESIGN_H
+    const pos = new Float32Array(count * 3)
+    const size = new Float32Array(count)
+    const phase = new Float32Array(count)
+    const speed = new Float32Array(count)
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * design.w
+      pos[i * 3 + 1] = (Math.random() - 0.5) * design.h
       pos[i * 3 + 2] = 0
       const tier = Math.random()
       size[i] = tier > 0.94 ? 7 : tier > 0.78 ? 4.5 : 2.5
@@ -50,7 +52,7 @@ export default function Starfield({ on }) {
     g.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1))
     g.setAttribute('aSpeed', new THREE.BufferAttribute(speed, 1))
     return g
-  }, [])
+  }, [count, design.w, design.h])
 
   const uniforms = useMemo(
     () => ({ uTime: { value: 0 }, uOpacity: { value: 0 } }),
@@ -62,7 +64,7 @@ export default function Starfield({ on }) {
   })
 
   return (
-    <points renderOrder={ORDER.stars} geometry={geometry}>
+    <points key={count} renderOrder={ORDER.stars} geometry={geometry}>
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { DESIGN_W, DESIGN_H, ORDER } from '../config.js'
+import { ORDER } from '../config.js'
+import { useLayout } from '../breakpoint.js'
 import { useFade } from '../../../hooks/useFade.js'
 
 const vertexShader = /* glsl */ `
@@ -44,12 +45,13 @@ void main() {
 `
 
 export default function Background({ on }) {
+  const { design } = useLayout()
   const uniforms = useMemo(() => ({ uNebula: { value: 0 } }), [])
   useFade(uniforms.uNebula, on, { prop: 'value', duration: 2.2, to: 1 })
 
   return (
     <mesh renderOrder={ORDER.background} position={[0, 0, 0]}>
-      <planeGeometry args={[DESIGN_W, DESIGN_H]} />
+      <planeGeometry args={[design.w, design.h]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}

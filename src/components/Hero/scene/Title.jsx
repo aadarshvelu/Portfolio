@@ -3,16 +3,17 @@ import * as THREE from 'three'
 import { useTexture } from '@react-three/drei'
 import gsap from 'gsap'
 import { ORDER } from '../config.js'
+import { useLayout } from '../breakpoint.js'
 import { useFade } from '../../../hooks/useFade.js'
 
-// DIRECTOR'S CUT title artwork — centred, near the top (CSS: top 5%,
-// width 78%, image ratio 1750:899)
-const W = 1497.6
-const H = (W * 899) / 1750
-const X = 0
-const Y = 101.3
-
+// DIRECTOR'S CUT title artwork — image ratio 1750:899
 export default function Title({ on }) {
+  const { title } = useLayout()
+  const W = title.w
+  const H = (W * 899) / 1750
+  const X = title.x
+  const Y = title.y
+
   const tex = useTexture('/assets/title-directors-cut-white.png')
   useMemo(() => {
     tex.colorSpace = THREE.SRGBColorSpace
@@ -24,14 +25,14 @@ export default function Title({ on }) {
   useFade(mat, on, { duration: 1.2 })
   useEffect(() => {
     if (on && group.current) {
-      // rises into place — matches the CSS translateY(40px) -> 0
+      // rises into place
       gsap.fromTo(
         group.current.position,
         { y: Y - 40 },
         { y: Y, duration: 1.6, ease: 'power3.out', overwrite: true },
       )
     }
-  }, [on])
+  }, [on, X, Y])
 
   return (
     <group ref={group} position={[X, Y, 0]}>

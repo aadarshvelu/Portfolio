@@ -1,22 +1,29 @@
-import { Suspense, useLayoutEffect } from 'react'
+import { Suspense, useLayoutEffect, useMemo } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { CAMERA_Z, CAMERA_FOV, coverFov } from './config.js'
+import { useBreakpoint } from '../../hooks/useBreakpoint.js'
+import { BreakpointContext } from './breakpoint.js'
+import { LAYOUTS } from './layouts.js'
 import Scene from './Scene.jsx'
 
-// Re-derives the camera fov per viewport so the 1920x1080 design rect always
-// covers the screen full-bleed (no letterbox bars).
-function CoverCamera() {
+// Re-derives the camera fov so the active design rect always covers the
+// viewport full-bleed (no letterbox bars).
+function CoverCamera({ design }) {
   const camera = useThree((s) => s.camera)
   const size = useThree((s) => s.size)
   useLayoutEffect(() => {
-    camera.fov = coverFov(size.width / size.height)
+    camera.fov = coverFov(size.width / size.height, design)
     camera.updateProjectionMatrix()
-  }, [camera, size])
+  }, [camera, size, design])
   return null
 }
 
-// The hero is a WebGL scene. World units = design pixels.
+// The hero is a WebGL scene. World units = design pixels of the active
+// breakpoint (desktop / tablet / mobile).
 export default function Hero() {
+  const bp = useBreakpoint()
+  const ctx = useMemo(() => ({ bp, layout: LAYOUTS[bp] }), [bp])
+
   return (
     <Canvas
       flat
@@ -26,10 +33,12 @@ export default function Hero() {
       style={{ width: '100%', height: '100%', display: 'block' }}
     >
       <color attach="background" args={['#000000']} />
-      <CoverCamera />
-      <Suspense fallback={null}>
-        <Scene />
-      </Suspense>
+      <BreakpointContext.Provider value={ctx}>
+        <CoverCamera design={ctx.layout.design} />
+        <Suspense fallback={null}>
+          <Scene />
+        </Suspense>
+      </BreakpointContext.Provider>
     </Canvas>
   )
 }

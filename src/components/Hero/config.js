@@ -1,21 +1,16 @@
-// World units = design pixels. Origin at screen centre, +x right, +y up.
-export const DESIGN_W = 1920
-export const DESIGN_H = 1080
-
 // Perspective camera distance (matches the prototype's CSS perspective).
 export const CAMERA_Z = 1700
 
-// Initial vertical fov — z=0 plane exactly DESIGN_H tall. The live fov is
-// re-derived per viewport by coverFov().
-export const CAMERA_FOV =
-  (2 * Math.atan(DESIGN_H / 2 / CAMERA_Z) * 180) / Math.PI
+// Initial vertical fov for the desktop design height — re-derived live by
+// coverFov() once the viewport + active layout are known.
+export const CAMERA_FOV = (2 * Math.atan(1080 / 2 / CAMERA_Z) * 180) / Math.PI
 
-// fov that makes the 1920x1080 design rect COVER a viewport of `aspect` —
-// the design always fills the screen full-bleed, cropping the overflow on
-// the longer axis. No letterbox bars.
-export const coverFov = (aspect) => {
-  const designAspect = DESIGN_W / DESIGN_H
-  const visibleHeight = aspect > designAspect ? DESIGN_W / aspect : DESIGN_H
+// fov that makes the active design rect COVER the viewport full-bleed —
+// crops the overflow on the longer axis, never letterboxes.
+export const coverFov = (viewportAspect, design) => {
+  const designAspect = design.w / design.h
+  const visibleHeight =
+    viewportAspect > designAspect ? design.w / viewportAspect : design.h
   return (2 * Math.atan(visibleHeight / 2 / CAMERA_Z) * 180) / Math.PI
 }
 

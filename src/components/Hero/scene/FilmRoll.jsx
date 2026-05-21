@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import gsap from 'gsap'
-import { DESIGN_H } from '../config.js'
+import { useLayout } from '../breakpoint.js'
 import FilmFrame, { FRAMES } from './FilmFrame.jsx'
 
 const DEG = Math.PI / 180
@@ -9,12 +9,10 @@ const SPREAD = 16 * DEG // per-frame fan angle
 const DEPTH = 920 // cylinder radius
 const TILT = -7 * DEG // roll tilt
 
-// reel vertical centre — matches the prototype's `.film-wrap { top: 56% }`
-const ROLL_Y = DESIGN_H / 2 - 0.7 * DESIGN_H
-
-const RISE = 700 // how far below the roll starts before rising into place
-
 export default function FilmRoll({ on, idle }) {
+  const { filmRoll } = useLayout()
+  const { y: rollY, scale, rise } = filmRoll
+
   const roll = useRef()
   const idleOn = useRef(false)
 
@@ -27,11 +25,11 @@ export default function FilmRoll({ on, idle }) {
     if (on && roll.current) {
       gsap.fromTo(
         roll.current.position,
-        { y: -RISE },
+        { y: -rise },
         { y: 0, duration: 1.2, ease: 'power3.out', overwrite: true },
       )
     }
-  }, [on])
+  }, [on, rise])
 
   // idle: slow drift sway
   useFrame((state) => {
@@ -42,8 +40,8 @@ export default function FilmRoll({ on, idle }) {
   })
 
   return (
-    <group position={[0, ROLL_Y, 0]}>
-      <group ref={roll} position={[0, -RISE, 0]} rotation={[TILT, 0, 0]}>
+    <group position={[0, rollY, 0]} scale={scale}>
+      <group ref={roll} position={[0, -rise, 0]} rotation={[TILT, 0, 0]}>
         {FRAMES.map((f) => (
           <group key={f.i} rotation={[0, -f.i * SPREAD, 0]}>
             <group position={[0, 0, DEPTH]}>

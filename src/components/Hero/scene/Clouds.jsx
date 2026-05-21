@@ -2,17 +2,15 @@ import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useTexture } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
+import { useLayout } from '../breakpoint.js'
 import { useFade } from '../../../hooks/useFade.js'
 
 // smoke.png is 377 x 329
 const BASE_W = 400
 const BASE_H = (BASE_W * 329) / 377
 
-// cloud cluster centre — move this to reposition the whole cloud
-const CLUSTER = { x: 390, y: 235 }
-
-// 3 puffs with small offsets -> tightly stacked, overlapping into one dense
-// cloud mass. dx/dy are offsets from CLUSTER.
+// puffs — offsets from the cluster centre. cluster x/y/scale come from the
+// active layout (layouts.js -> clouds).
 const PUFFS = [
   { dx: -50, dy: 25, scale: 1.15, opacity: 0.85, drift: 0.06, amp: 12 },
   { dx: 150, dy: 50, scale: 1.8, opacity: 0.8, drift: 0.045, amp: 10 },
@@ -23,6 +21,9 @@ const PUFFS = [
 const RENDER_ORDER = 2.6
 
 export default function Clouds({ on }) {
+  const { clouds } = useLayout()
+  const { x: cx, y: cy, scale: cs } = clouds
+
   const tex = useTexture('/assets/smoke.png')
   useMemo(() => {
     tex.colorSpace = THREE.SRGBColorSpace
@@ -40,7 +41,8 @@ export default function Clouds({ on }) {
       const g = groups.current[i]
       const m = mats.current[i]
       if (g) {
-        g.position.x = CLUSTER.x + p.dx + Math.sin(t * p.drift + i * 1.7) * p.amp
+        g.position.x =
+          cx + (p.dx + Math.sin(t * p.drift + i * 1.7) * p.amp) * cs
       }
       if (m) m.opacity = fade.value * p.opacity
     })
@@ -54,10 +56,12 @@ export default function Clouds({ on }) {
           ref={(el) => {
             groups.current[i] = el
           }}
-          position={[CLUSTER.x + p.dx, CLUSTER.y + p.dy, 0]}
+          position={[cx + p.dx * cs, cy + p.dy * cs, 0]}
         >
           <mesh renderOrder={RENDER_ORDER}>
-            <planeGeometry args={[BASE_W * p.scale, BASE_H * p.scale]} />
+            <planeGeometry
+              args={[BASE_W * p.scale * cs, BASE_H * p.scale * cs]}
+            />
             <meshBasicMaterial
               ref={(el) => {
                 mats.current[i] = el
