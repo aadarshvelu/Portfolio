@@ -44,6 +44,31 @@ export const LAYOUTS = {
     // Confetti celebration scale (relative to desktop) + reel-transition card.
     confetti: { scale: 1 },
     reel: { titleSize: 17, emSize: 8.5, labelSize: 4.6, mode: 'corners' },
+    // Act I.b — The Upgrade
+    upgrade: {
+      design: { w: 1920, h: 1080 },
+      starCount: 60,
+      // title slate
+      aboveSize: 11, titleSize: 120, subSize: 30, cornerSize: 10,
+      // clapperboard
+      clapX: -680, clapY: 240, clapScale: 1,
+      // polaroid positions (world units from Upgrade scene centre)
+      shootingStar: { count: 5, len: 100, thick: 2.0 },
+      polaroidW: 140, photoAspect: 1,
+      kaggle:    { x: 480, y: -260, rot: -4 },
+      kozhikode: { x: 660, y: -180, rot: 6 },
+      aws:       { x: 540, y: -50, rot: 6, scale: 0.78 },
+      // camera park per polaroid — fillFrac = how much of viewport height
+      // the polaroid fills when the camera is parked on it
+      kagglePark:    { fillFrac: 0.7 },
+      kozhikodePark: { fillFrac: 0.7 },
+      awsPark:       { fillFrac: 0.6 },
+      // chrome
+      chrome: {
+        cornerX: 900, topY: 412, bottomY: -384,
+        regX: 928, regY: 404, fontScale: 1,
+      },
+    },
   },
 
   tablet: {
@@ -79,6 +104,25 @@ export const LAYOUTS = {
     },
     confetti: { scale: 1.8 },
     reel: { titleSize: 9, emSize: 6, labelSize: 4, mode: 'stack' },
+    upgrade: {
+      design: { w: 820, h: 1180 },
+      starCount: 40,
+      aboveSize: 10, titleSize: 80, subSize: 24, cornerSize: 9,
+      titleX: 5, titleY: 250,
+      clapX: -270, clapY: 140, clapScale: 0.8,
+      shootingStar: { count: 4, len: 60, thick: 1.6 },
+      polaroidW: 120, photoAspect: 1,
+      kaggle:    { x: 20,  y: 10,  rot: -5 },
+      kozhikode: { x: -120, y: -160, rot: 6 },
+      aws:       { x: 50,  y: -150, rot: -3, scale: 0.78 },
+      kagglePark:    { fillFrac: 0.55 },
+      kozhikodePark: { fillFrac: 0.55 },
+      awsPark:       { fillFrac: 0.48 },
+      chrome: {
+        cornerX: 370, topY: 550, bottomY: -540,
+        regX: 390, regY: 540, fontScale: 0.92,
+      },
+    },
   },
 
   mobile: {
@@ -114,5 +158,24 @@ export const LAYOUTS = {
     },
     confetti: { scale: 1.8 },
     reel: { titleSize: 6, emSize: 4, labelSize: 2.8, mode: 'stack' },
+    upgrade: {
+      design: { w: 430, h: 930 },
+      starCount: 30,
+      aboveSize: 9, titleSize: 56, subSize: 20, cornerSize: 8,
+      titleX: 5, titleY: 125,
+      clapX: -120, clapY: 130, clapScale: 0.4,
+      shootingStar: { count: 3, len: 36, thick: 1.4 },
+      polaroidW: 100, photoAspect: 1,
+      kaggle:    { x: 80,  y: -30,   rot: -14 },
+      kozhikode: { x: -80, y: -100, rot: 5 },
+      aws:       { x: 40,  y: -160, rot: -3, scale: 0.78 },
+      kagglePark:    { fillFrac: 0.5 },
+      kozhikodePark: { fillFrac: 0.5 },
+      awsPark:       { fillFrac: 0.44 },
+      chrome: {
+        cornerX: 195, topY: 440, bottomY: -420,
+        regX: 208, regY: 430, fontScale: 0.78,
+      },
+    },
   },
 }

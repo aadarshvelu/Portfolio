@@ -41,9 +41,16 @@ function launch(slot, mesh, time, design) {
   mesh.rotation.z = ang
 }
 
-export default function ShootingStar({ on }) {
-  const { design, shootingStar } = useLayout()
-  const { count, len, thick } = shootingStar
+export default function ShootingStar({
+  on,
+  design: designProp,
+  config: configProp,
+  order,
+  opacityRef,
+}) {
+  const layout = useLayout()
+  const design = designProp || layout.design
+  const { count, len, thick } = configProp || layout.shootingStar
   const meshes = useRef([])
 
   const uniforms = useMemo(
@@ -105,7 +112,7 @@ export default function ShootingStar({ on }) {
       m.position.set(s.sx + s.dx * s.dist * p, s.sy + s.dy * s.dist * p, 0)
       const fadeIn = Math.min(p / 0.08, 1)
       const fadeOut = 1 - Math.max(0, Math.min((p - 0.88) / 0.12, 1))
-      u.uOpacity.value = fadeIn * fadeOut * 0.85
+      u.uOpacity.value = fadeIn * fadeOut * 0.85 * (opacityRef?.current ?? 1)
     }
   })
 
@@ -117,7 +124,7 @@ export default function ShootingStar({ on }) {
           ref={(el) => {
             meshes.current[i] = el
           }}
-          renderOrder={ORDER.stars}
+          renderOrder={order ?? ORDER.stars}
           position={[0, 0, 0]}
         >
           <planeGeometry args={[len, thick]} />

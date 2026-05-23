@@ -2,7 +2,18 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { EffectComposer } from '@react-three/postprocessing'
-import { CAMERA_Z, DOLLY_END } from './config.js'
+import {
+  CAMERA_Z,
+  DOLLY_END,
+  CELEB_END,
+  TRANSITION_END,
+  UPGRADE_ZOOM,
+  UPGRADE_KAGGLE,
+  UPGRADE_PAN_KZH,
+  UPGRADE_KZH,
+  UPGRADE_PAN_AWS,
+  UPGRADE_AWS,
+} from './config.js'
 import { useLayout } from './breakpoint.js'
 import { useBootSequence } from '../../hooks/useBootSequence.js'
 import CrtEffect from './effects/CrtEffect.jsx'
@@ -19,6 +30,7 @@ import BootOverlay from './scene/BootOverlay.jsx'
 import OriginBeat from './scene/OriginBeat.jsx'
 import Confetti from './scene/Confetti.jsx'
 import ReelTransition from './scene/ReelTransition.jsx'
+import UpgradeScene from './scene/upgrade/UpgradeScene.jsx'
 
 const INITIAL = {
   bootLine: false,
@@ -30,25 +42,22 @@ const INITIAL = {
   chrome: false,
   idle: false,
   prompt: false,
-  focus: false, // Phase B — hero decluttered down to FIRST LIGHT + Beat 1
+  focus: false,
 }
 
-// pointer parallax tilt
-const MAX_TILT = 0.02 // radians (~3.4°)
-const TILT_EASE = 0.02 // follow speed (0..1)
-// slight overscan so a tilt never reveals a gap at the screen edges
+const MAX_TILT = 0.02
+const TILT_EASE = 0.02
 const ZOOM = 1.01
 
-// scroll -> camera transition into the FIRST LIGHT frame
-const SCROLL_SMOOTH = 0.1 // scroll-follow smoothing
+const SCROLL_SMOOTH = 0.1
 const clamp01 = (x) => Math.min(1, Math.max(0, x))
 const smoothstep = (x) => x * x * (3 - 2 * x)
 
-// FIRST LIGHT frame extents in design units (see FilmFrame.jsx) — used to
-// compute a park target that always keeps the frame fully on-screen.
 const FRAME_W = 260
 const FRAME_H = 200
-const FRAME_CONTENT_LEFT = -116 // leftmost text (the chapter tag) local x
+const FRAME_CONTENT_LEFT = -116
+
+const DEG = Math.PI / 180
 
 export default function Scene({ progressRef }) {
   const [phase, setPhases] = useState(INITIAL)
@@ -57,21 +66,26 @@ export default function Scene({ progressRef }) {
     [],
   )
   useBootSequence({ setPhase })
-  const { park, filmRoll } = useLayout()
+  const { park, filmRoll, upgrade } = useLayout()
 
-  // tilt the whole scene toward the pointer
   const tilt = useRef()
-  // marks the FIRST LIGHT (centre) frame — the scroll camera parks on it
   const frameMarker = useRef()
   const smoothed = useRef(0)
   const framePos = useMemo(() => new THREE.Vector3(), [])
-  // shared point — end of the final Beat 1 line, where the confetti cone pins
   const coneAnchor = useMemo(() => new THREE.Vector3(), [])
-  // strips the hero down to FIRST LIGHT + Beat 1 once the dolly is underway
   const decluttered = useRef(false)
 
+  const upgradeRef = useRef()
+  const reelRef = useRef()
+  const actIRef = useRef()
+
+  const actIPark = useMemo(() => new THREE.Vector3(), [])
+  const camPark = useRef(null)
+
+  const polaroidPos = useMemo(() => new THREE.Vector3(), [])
+  const polaroidScale = useMemo(() => new THREE.Vector3(), [])
+
   useFrame((state) => {
-    // pointer parallax tilt
     const g = tilt.current
     if (g) {
       const targetX = -state.pointer.y * MAX_TILT
@@ -80,14 +94,11 @@ export default function Scene({ progressRef }) {
       g.rotation.y += (targetY - g.rotation.y) * TILT_EASE
     }
 
-    // smoothed scroll progress (0..1 across the whole runway)
     const raw = progressRef?.current ?? 0
     smoothed.current += (raw - smoothed.current) * SCROLL_SMOOTH
 
-    // Declutter the hero as the dolly commits — fade the moon, title, chrome
-    // and prompt, hide the side reels — leaving only FIRST LIGHT + Beat 1.
-    // Bidirectional with hysteresis so scrolling back up restores the hero.
-    if (!decluttered.current && smoothed.current > 0.085) {
+    // Act I declutter
+    if (!decluttered.current && smoothed.current > 0.038) {
       decluttered.current = true
       setPhases((p) => ({
         ...p,
@@ -98,7 +109,7 @@ export default function Scene({ progressRef }) {
         focus: true,
       }))
     }
-    if (decluttered.current && smoothed.current < 0.06) {
+    if (decluttered.current && smoothed.current < 0.027) {
       decluttered.current = false
       setPhases((p) => ({
         ...p,
@@ -110,27 +121,26 @@ export default function Scene({ progressRef }) {
       }))
     }
 
-    // Phase A — dolly the camera into the FIRST LIGHT frame, then hold.
-    // Maps scroll 0..DOLLY_END; the park target is derived from the live
-    // viewport every frame so the frame always lands fully on-screen.
+    if (actIRef.current) actIRef.current.visible = smoothed.current < CELEB_END
+
+    const cam = state.camera
+    const tanHalf = Math.tan((cam.fov * Math.PI) / 360)
+    const aspect = state.size.width / state.size.height
+
+    // ── Act I camera: dolly into FIRST LIGHT, then hold ──
     const t = smoothstep(clamp01(smoothed.current / DOLLY_END))
     const marker = frameMarker.current
     if (marker) {
       marker.getWorldPosition(framePos)
-      const cam = state.camera
-      const tanHalf = Math.tan((cam.fov * Math.PI) / 360)
-      const aspect = state.size.width / state.size.height
       const effScale = filmRoll.scale * ZOOM
 
       let parkX, parkY, parkGap
       if (park.mode === 'top') {
-        // portrait — frame pinned to the top edge, centred horizontally
         const visH = (FRAME_W * effScale) / park.widthFrac / aspect
         parkGap = visH / (2 * tanHalf)
         parkX = 0
         parkY = (FRAME_H * effScale) / 2 - visH * (0.5 - park.topMargin)
       } else {
-        // landscape — frame pinned to the left, content sideMargin from edge
         const visH = (FRAME_H * effScale) / park.heightFrac
         parkGap = visH / (2 * tanHalf)
         const visW = visH * aspect
@@ -138,40 +148,122 @@ export default function Scene({ progressRef }) {
         parkY = 0
       }
 
-      cam.position.x = THREE.MathUtils.lerp(0, framePos.x + parkX, t)
-      cam.position.y = THREE.MathUtils.lerp(0, framePos.y + parkY, t)
-      cam.position.z = THREE.MathUtils.lerp(CAMERA_Z, framePos.z + parkGap, t)
-      cam.updateMatrixWorld()
+      // Act I park target
+      actIPark.set(
+        framePos.x + parkX,
+        framePos.y + parkY,
+        framePos.z + parkGap,
+      )
+
+      // If we're still in Act I territory, position the camera here
+      if (smoothed.current <= TRANSITION_END) {
+        cam.position.x = THREE.MathUtils.lerp(0, actIPark.x, t)
+        cam.position.y = THREE.MathUtils.lerp(0, actIPark.y, t)
+        cam.position.z = THREE.MathUtils.lerp(CAMERA_Z, actIPark.z, t)
+      }
     }
+
+    // ── Upgrade camera: carrier fills viewport, polaroid zoom chain ──
+    if (smoothed.current > TRANSITION_END) {
+      // Freeze the Act I park target so the tilt group's pointer-driven
+      // rotation no longer feeds into the camera position.  Without this
+      // the marker's world-position wobble causes aggressive panning
+      // because the upgrade content (frozen reel) doesn't move with it.
+      if (!camPark.current) {
+        camPark.current = actIPark.clone()
+      }
+
+      let cx = camPark.current.x
+      let cy = camPark.current.y
+      let cz = camPark.current.z
+
+      const ur = upgradeRef.current
+      if (ur && smoothed.current > UPGRADE_ZOOM) {
+        const parks = [
+          { ref: ur.kaggleRef, start: UPGRADE_ZOOM, end: UPGRADE_KAGGLE, fillFrac: upgrade.kagglePark.fillFrac },
+          { ref: ur.kozhikodeRef, start: UPGRADE_PAN_KZH, end: UPGRADE_KZH, fillFrac: upgrade.kozhikodePark.fillFrac },
+          { ref: ur.awsRef, start: UPGRADE_PAN_AWS, end: UPGRADE_AWS, fillFrac: upgrade.awsPark.fillFrac },
+        ]
+
+        let fromX = cx, fromY = cy, fromZ = cz
+
+        for (const pk of parks) {
+          if (smoothed.current < pk.start) break
+          const pRef = pk.ref?.current
+          if (!pRef) continue
+          pRef.getWorldPosition(polaroidPos)
+          pRef.getWorldScale(polaroidScale)
+          const ws = polaroidScale.x
+          const effPolH = upgrade.polaroidW * 1.2 * ws
+          const visH = effPolH / pk.fillFrac
+          const parkDist = visH / (2 * tanHalf)
+          const toX = polaroidPos.x
+          const toY = polaroidPos.y
+          const toZ = polaroidPos.z + parkDist
+          const pT = smoothstep(
+            clamp01((smoothed.current - pk.start) / (pk.end - pk.start)),
+          )
+          cx = THREE.MathUtils.lerp(fromX, toX, pT)
+          cy = THREE.MathUtils.lerp(fromY, toY, pT)
+          cz = THREE.MathUtils.lerp(fromZ, toZ, pT)
+          fromX = toX
+          fromY = toY
+          fromZ = toZ
+        }
+      }
+
+      cam.position.set(cx, cy, cz)
+    } else {
+      camPark.current = null
+    }
+
+    // Blend camera rotation from 0 (Act I — parallax is on the tilt group)
+    // to tilt values (Upgrade — parallax is on the camera itself).  Ramps
+    // over a 0.02-wide scroll band so the handoff is invisible.
+    const rotT = clamp01((smoothed.current - TRANSITION_END) / 0.02)
+    const gt = tilt.current
+    if (gt) {
+      cam.rotation.x = gt.rotation.x * rotT
+      cam.rotation.y = gt.rotation.y * rotT
+    } else {
+      cam.rotation.x = 0
+      cam.rotation.y = 0
+    }
+
+    cam.updateMatrixWorld()
   })
 
   return (
     <>
-      <group ref={tilt} scale={ZOOM}>
-        <Background on={phase.sky} />
-        <Starfield on={phase.sky} />
-        <ShootingStar on={phase.sky} />
-        <Moon on={phase.moon} />
-        <Clouds on={phase.moon} />
-        <Title on={phase.title} />
-        <FilmRoll
-          on={phase.film}
-          idle={phase.idle}
-          frameMarker={frameMarker}
-          focus={phase.focus}
-        />
-        <Chrome on={phase.chrome} />
-        <ScrollPrompt on={phase.prompt} />
-        <BootOverlay bootLine={phase.bootLine} maskGone={phase.maskGone} />
-      </group>
+      <group ref={actIRef}>
+        <group ref={tilt} scale={ZOOM}>
+          <Background on={phase.sky} />
+          <Starfield on={phase.sky} />
+          <ShootingStar on={phase.sky} />
+          <Moon on={phase.moon} />
+          <Clouds on={phase.moon} />
+          <Title on={phase.title} />
+          <FilmRoll
+            on={phase.film}
+            idle={phase.idle}
+            frameMarker={frameMarker}
+            focus={phase.focus}
+          />
+          <Chrome on={phase.chrome} />
+          <ScrollPrompt on={phase.prompt} />
+          <BootOverlay bootLine={phase.bootLine} maskGone={phase.maskGone} />
+        </group>
 
-      <OriginBeat
-        smoothed={smoothed}
-        frameMarker={frameMarker}
-        coneAnchor={coneAnchor}
-      />
+        <OriginBeat
+          smoothed={smoothed}
+          frameMarker={frameMarker}
+          coneAnchor={coneAnchor}
+        />
+      </group>
       <Confetti smoothed={smoothed} coneAnchor={coneAnchor} />
-      <ReelTransition smoothed={smoothed} coneAnchor={coneAnchor} />
+      <ReelTransition ref={reelRef} smoothed={smoothed} coneAnchor={coneAnchor}>
+        <UpgradeScene ref={upgradeRef} smoothed={smoothed} />
+      </ReelTransition>
 
       <EffectComposer>
         <CrtEffect />

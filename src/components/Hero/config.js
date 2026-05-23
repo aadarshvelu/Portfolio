@@ -15,11 +15,24 @@ export const coverFov = (viewportAspect, design) => {
 }
 
 // Scroll timeline — normalised marks across the runway (smoothed 0..1).
-export const DOLLY_END = 0.14 // camera dolly into FIRST LIGHT completes
-export const BEAT1_END = 0.76 // Beat 1 drum finishes scrolling
-export const CELEB_START = 0.66 // confetti + carrier frame burst from the cone
-export const CELEB_END = 0.8 // confetti settled
-export const TRANSITION_END = 0.88 // carrier locks full-screen — new screen ready
+// Runway = 1500vh. Act I marks rescaled ×0.443 (= 620/1400) from the original
+// 720vh tuning so the same physical scroll distance triggers each event.
+
+// Act I — The Origin
+export const DOLLY_END = 0.062 // camera dolly into FIRST LIGHT completes
+export const CELEB_START = 0.29 // confetti + carrier frame burst from the cone
+export const BEAT1_END = 0.34 // Beat 1 drum finishes scrolling
+export const CELEB_END = 0.355 // confetti settled
+export const TRANSITION_END = 0.39 // carrier locks full-screen
+
+// Act I.b — The Upgrade
+export const UPGRADE_ENTER = 0.40 // carrier dissolves, camera transitions
+export const UPGRADE_ZOOM = 0.41 // begin zoom into Kaggle polaroid
+export const UPGRADE_KAGGLE = 0.448 // parked on Kaggle, V.O. card visible
+export const UPGRADE_PAN_KZH = 0.460 // pan toward Kozhikode
+export const UPGRADE_KZH = 0.476 // parked on Kozhikode
+export const UPGRADE_PAN_AWS = 0.488 // pan toward AWS
+export const UPGRADE_AWS = 0.504 // parked on AWS
 
 // The night-sky Background + Starfield planes are built this many times the
 // design size, so a dollied, parked camera never pans past their edge. The

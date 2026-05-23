@@ -37,8 +37,8 @@ export default function App() {
       <Viewport>
         <Hero />
       </Viewport>
-      {/* scroll runway — dolly · Beat 1 drum · confetti · reel transition */}
-      <div style={{ height: '720vh' }} aria-hidden="true" />
+      {/* scroll runway — Act I + The Upgrade */}
+      <div style={{ height: '1500vh' }} aria-hidden="true" />
     </>
   )
 }
