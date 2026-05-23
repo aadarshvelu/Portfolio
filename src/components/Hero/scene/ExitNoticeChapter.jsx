@@ -25,10 +25,13 @@ const clamp01 = (x) => Math.min(1, Math.max(0, x))
 const smoothstep = (x) => x * x * (3 - 2 * x)
 
 // ── Chapter-local p thresholds ─────────────────────────────────────────────
-const EXIT_ENTER_P = 0.80   // backdrop + cardstock reveal begins
-const EXIT_LAND_P  = 0.90   // front content fully revealed
-const FLIP_START_P = 0.92   // tiny hold (0.90→0.92) for reading
-const FLIP_END_P   = 0.98   // flip complete; 0.98→1.00 holds on contact
+// Postcard sequence compressed into a tight window at the end so we don't
+// waste 20% of the chapter scroll on a single reveal. Newspaper now holds
+// through 0.88 before the backdrop starts ramping in.
+const EXIT_ENTER_P = 0.88   // backdrop + cardstock reveal begins
+const EXIT_LAND_P  = 0.93   // front content fully revealed
+const FLIP_START_P = 0.94   // brief hold (0.93→0.94) for reading
+const FLIP_END_P   = 0.98   // flip complete; 0.98→1.00 plays the clap
 
 // ── Render-order constants (see spec) ─────────────────────────────────────
 // Backdrop sits BELOW everything in the chapter but ABOVE the newspaper. The
@@ -181,6 +184,11 @@ const TEXT_LINE_3 = 'So is the intelligence.'
 const GOLD = '#c8a157'
 const WARM = '#ffd07a'
 
+// Clapperboard back-face palette — text reads light on dark slate
+const CLAP_INK      = '#ece5d0'   // headline + values
+const CLAP_INK_FADE = '#a8a292'   // kicker + labels
+const CLAP_DIVIDER  = '#7a7464'   // rule under headline
+
 // Contact data — same content as Contact.html
 const CONTACT_ROWS = [
   { label: 'EMAIL',    value: 'aadarshvelu@gmail.com',     href: 'mailto:aadarshvelu@gmail.com' },
@@ -261,6 +269,37 @@ const cardFrag = /* glsl */ `
     col += g - 0.04;
     vec2 ec = abs(vUv - 0.5);
     col -= length(max(ec - 0.4, 0.0)) * 0.18;
+    gl_FragColor = vec4(clamp(col, 0.0, 1.0), uOpacity);
+  }
+`
+
+// ── Clapperboard SLATE body (no stripes — arm is its own hinged mesh) ─────
+const clapboardFrag = /* glsl */ `
+  varying vec2 vUv;
+  uniform float uOpacity;
+  float hash21(vec2 p) { p = fract(p * vec2(233.34, 851.74)); p += dot(p, p + 23.45); return fract(p.x * p.y); }
+  void main() {
+    vec3 slate = vec3(0.085, 0.085, 0.095);
+    float g = (hash21(vUv * 600.0) - 0.5) * 0.025;
+    vec3 col = slate + g;
+    vec2 ec = abs(vUv - 0.5);
+    col -= length(max(ec - 0.48, 0.0)) * 0.6;
+    gl_FragColor = vec4(clamp(col, 0.0, 1.0), uOpacity);
+  }
+`
+
+// ── Clap-arm STRIPES shader (rendered on a hinged plank above the slate) ──
+const clapStripesFrag = /* glsl */ `
+  varying vec2 vUv;
+  uniform float uOpacity;
+  void main() {
+    float t = (vUv.x + (1.0 - vUv.y) * 0.3) * 9.0;
+    float stripe = step(0.5, fract(t));
+    vec3 col = mix(vec3(0.06, 0.06, 0.07), vec3(0.945, 0.928, 0.875), stripe);
+    // Dark trim along top + bottom edges so the plank reads as a solid arm
+    float topEdge = smoothstep(0.92, 1.0, vUv.y);
+    float botEdge = smoothstep(0.08, 0.0, vUv.y);
+    col -= (topEdge + botEdge) * 0.18;
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), uOpacity);
   }
 `
@@ -422,6 +461,7 @@ export default function ExitNoticeChapter({ pRef }) {
   const fsValue    = L.fontValueMul     ?? D.fontValueMul
   const fsCue      = L.fontCueMul       ?? D.fontCueMul
   const bRowGap    = L.contactRowGapMul ?? D.contactRowGapMul
+  // Arm is now a hinged plank above the slate — slate top is clean again
   const bKickerY    =  cardH / 2 - 0.10 * cardH
   const bHeadlineY  =  cardH / 2 - 0.27 * cardH
   // Divider sits midway down the card so rows have room to fit above the cue
@@ -442,8 +482,11 @@ export default function ExitNoticeChapter({ pRef }) {
   // ── Shader + refs ───────────────────────────────────────────────────────
   const cardUniforms  = useMemo(() => ({ uOpacity: { value: 0 } }), [])
   const cardUniformsB = useMemo(() => ({ uOpacity: { value: 0 } }), [])
+  const armUniforms   = useMemo(() => ({ uOpacity: { value: 0 } }), [])
+  const armRef        = useRef()
 
   const rootRef = useRef()
+  const tiltRef = useRef()
   const frontFaceRef = useRef(), backFaceRef = useRef()
   const rHeader = useRef(), rHeaderG = useRef(), rHeaderR = useRef()
   const rLine1  = useRef(), rLine2  = useRef(),  rLine3  = useRef()
@@ -521,6 +564,30 @@ export default function ExitNoticeChapter({ pRef }) {
 
     // Back-side cardstock + Contact content
     cardUniformsB.uOpacity.value = smoothstep(exitT)
+    armUniforms.uOpacity.value   = smoothstep(exitT)
+
+    // Pointer-driven 3D tilt — same parallax feel as Hero. Wraps both faces
+    // so it composes correctly with the flip and clap. Eases toward target
+    // each frame so motion feels weighted, not jittery.
+    if (tiltRef.current) {
+      const MAX_TILT  = 0.05    // ~2.9° max
+      const TILT_EASE = 0.06
+      // Tilt only kicks in once the card has revealed
+      const k = smoothstep(exitT)
+      const targetX = -state.pointer.y * MAX_TILT * k
+      const targetY =  state.pointer.x * MAX_TILT * k
+      const r = tiltRef.current.rotation
+      r.x += (targetX - r.x) * TILT_EASE
+      r.y += (targetY - r.y) * TILT_EASE
+    }
+
+    // Clap animation — fires AFTER the card's Y flip locks (p >= FLIP_END_P).
+    // The final scroll segment (FLIP_END_P → 1.0) drives a full open/close
+    // cycle: 0° → 15° → 0°. Arm sits at 0° before and stays at 0° after.
+    if (armRef.current) {
+      const clapT = clamp01((p - FLIP_END_P) / (1.0 - FLIP_END_P))
+      armRef.current.rotation.z = Math.sin(clapT * PI) * 15 * DEG
+    }
     const tBack = smoothstep(clamp01((flipT - 0.45) / 0.35))
     setText(rBKickerG, tBack)
     setText(rBKickerL, tBack)
@@ -543,6 +610,9 @@ export default function ExitNoticeChapter({ pRef }) {
     // this <group>, sort BEFORE the backdrop (which sits under ChapterPeel's
     // children group at renderOrder 72), and get painted over.
     <group ref={rootRef} renderOrder={RO_CARDSTOCK} visible={false}>
+    {/* TILT wrapper — pointer-driven 3D parallax, applied AFTER the flip so
+        it tilts whichever face is showing. renderOrder propagates. */}
+    <group ref={tiltRef} renderOrder={RO_CARDSTOCK}>
     {/* FRONT FACE — Exit Notice. renderOrder REQUIRED so this inner group's
         groupOrder doesn't fall back to 0 and let the backdrop paint over it. */}
     <group ref={frontFaceRef} renderOrder={RO_CARDSTOCK} rotation={[0, 0, L.rotationDeg * DEG]}>
@@ -756,13 +826,38 @@ export default function ExitNoticeChapter({ pRef }) {
         <planeGeometry args={[1, cardH]} />
         <shaderMaterial
           vertexShader={cardVert}
-          fragmentShader={cardFrag}
+          fragmentShader={clapboardFrag}
           uniforms={cardUniformsB}
           transparent
           depthTest={false}
           depthWrite={false}
         />
       </mesh>
+
+      {/* Hinged clap arm — pivots at bottom-left (where the slate top meets
+          the arm). Rotation driven by useFrame: 0° → 15° → 0° over the back
+          half of the flip, like a full clap. */}
+      {(() => {
+        const armH   = 0.14 * cardH
+        const armW   = 1.0
+        const hingeX = -0.5
+        const hingeY =  cardH / 2
+        return (
+          <group ref={armRef} renderOrder={RO_CARDSTOCK} position={[hingeX, hingeY, 0.012]} rotation={[0, 0, 0]}>
+            <mesh renderOrder={RO_CARDSTOCK} position={[armW / 2, armH / 2, 0]}>
+              <planeGeometry args={[armW, armH]} />
+              <shaderMaterial
+                vertexShader={cardVert}
+                fragmentShader={clapStripesFrag}
+                uniforms={armUniforms}
+                transparent
+                depthTest={false}
+                depthWrite={false}
+              />
+            </mesh>
+          </group>
+        )
+      })()}
 
       {/* Kicker — gold "REEL Nº 02" + rest in ink-fade */}
       <Text ref={rBKickerG}
@@ -773,7 +868,7 @@ export default function ExitNoticeChapter({ pRef }) {
         {CONTACT_KICKER_LEFT}
       </Text>
       <Text ref={rBKickerL}
-        font={FONTS.dmMono400} fontSize={fsKicker} color={INK_FADE}
+        font={FONTS.dmMono400} fontSize={fsKicker} color={CLAP_INK_FADE}
         anchorX="left" anchorY="middle" letterSpacing={0.42}
         fillOpacity={0} renderOrder={RO_TEXT}
         position={[bKickerSplit, bKickerY, 0.008]}>
@@ -782,24 +877,24 @@ export default function ExitNoticeChapter({ pRef }) {
 
       {/* Headline — Anton, big, with "calls." in gold */}
       <Text ref={rBHeadL}
-        font={FONTS.anton} fontSize={fsHeadline} color={INK}
+        font={FONTS.anton} fontSize={fsHeadline} color={CLAP_INK}
         anchorX="left" anchorY="top" letterSpacing={-0.012}
         maxWidth={1 - 2 * pad}
         fillOpacity={0} renderOrder={RO_TEXT}
-        position={[leftX, bHeadlineY, 0.008]}>
+        position={[leftX, bHeadlineY+.07, 0.008]}>
         {CONTACT_HEADLINE_LEFT}
       </Text>
       <Text ref={rBHeadG}
         font={FONTS.anton} fontSize={fsHeadline} color={GOLD}
         anchorX="left" anchorY="top" letterSpacing={-0.012}
         fillOpacity={0} renderOrder={RO_TEXT}
-        position={[bHeadlineSplit-.038, bHeadlineY, 0.008]}>
+        position={[bHeadlineSplit-.038, bHeadlineY+.07, 0.008]}>
         {CONTACT_HEADLINE_GOLD}
       </Text>
 
       {/* Divider rule */}
       <Line ref={rBDivider} points={bDividerPts}
-        color={INK} lineWidth={0.5} transparent opacity={0}
+        color={CLAP_DIVIDER} lineWidth={0.5} transparent opacity={0}
         renderOrder={RO_TEXT} />
 
       {/* Contact rows — label left, pip + value right */}
@@ -813,7 +908,7 @@ export default function ExitNoticeChapter({ pRef }) {
         return (
           <Fragment key={row.label}>
             <Text ref={rBLabels[i]}
-              font={FONTS.dmMono400} fontSize={fsLabel} color={INK_FADE}
+              font={FONTS.dmMono400} fontSize={fsLabel} color={CLAP_INK_FADE}
               anchorX="left" anchorY="middle" letterSpacing={0.42}
               fillOpacity={0} renderOrder={RO_TEXT}
               position={[leftX, rowY, 0.008]}>
@@ -826,7 +921,7 @@ export default function ExitNoticeChapter({ pRef }) {
               <meshBasicMaterial color={WARM} transparent depthTest={false} depthWrite={false} opacity={0} />
             </mesh>
             <Text ref={rBValues[i]}
-              font={FONTS.courierPrimeBold} fontSize={fsValue} color={INK}
+              font={FONTS.courierPrimeBold} fontSize={fsValue} color={CLAP_INK}
               anchorX="right" anchorY="middle"
               fillOpacity={0} renderOrder={RO_TEXT}
               position={[rightX, rowY, 0.008]}
@@ -850,6 +945,7 @@ export default function ExitNoticeChapter({ pRef }) {
         position={[0, bCueY, 0.008]}>
         {CONTACT_CUE}
       </Text>
+    </group>
     </group>
     </group>
   )
