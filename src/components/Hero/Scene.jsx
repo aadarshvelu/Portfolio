@@ -13,6 +13,8 @@ import {
   UPGRADE_KZH,
   UPGRADE_PAN_AWS,
   UPGRADE_AWS,
+  PEEL_START,
+  PEEL_END,
 } from './config.js'
 import { useLayout } from './breakpoint.js'
 import { useBootSequence } from '../../hooks/useBootSequence.js'
@@ -31,6 +33,8 @@ import OriginBeat from './scene/OriginBeat.jsx'
 import Confetti from './scene/Confetti.jsx'
 import ReelTransition from './scene/ReelTransition.jsx'
 import UpgradeScene from './scene/upgrade/UpgradeScene.jsx'
+import ChapterPeel from './scene/ChapterPeel.jsx'
+import CraftsChapter from './scene/CraftsChapter.jsx'
 
 const INITIAL = {
   bootLine: false,
@@ -77,6 +81,9 @@ export default function Scene({ progressRef }) {
 
   const upgradeRef = useRef()
   const reelRef = useRef()
+  const reelWrapRef = useRef()
+  const confettiWrapRef = useRef()
+  const peelCapturedRef = useRef(false)
   const actIRef = useRef()
 
   const actIPark = useMemo(() => new THREE.Vector3(), [])
@@ -220,17 +227,31 @@ export default function Scene({ progressRef }) {
     // Blend camera rotation from 0 (Act I — parallax is on the tilt group)
     // to tilt values (Upgrade — parallax is on the camera itself).  Ramps
     // over a 0.02-wide scroll band so the handoff is invisible.
+    // Suppress tilt as peel approaches so the peel mesh stays viewport-aligned.
     const rotT = clamp01((smoothed.current - TRANSITION_END) / 0.02)
+    const tiltFade = 1 - clamp01((smoothed.current - UPGRADE_PAN_AWS) / (PEEL_START - UPGRADE_PAN_AWS))
+    const finalRotT = rotT * tiltFade
     const gt = tilt.current
     if (gt) {
-      cam.rotation.x = gt.rotation.x * rotT
-      cam.rotation.y = gt.rotation.y * rotT
+      cam.rotation.x = gt.rotation.x * finalRotT
+      cam.rotation.y = gt.rotation.y * finalRotT
     } else {
       cam.rotation.x = 0
       cam.rotation.y = 0
     }
 
     cam.updateMatrixWorld()
+
+    if (reelWrapRef.current) {
+      reelWrapRef.current.visible = !peelCapturedRef.current
+    }
+    // Confetti / cone is an Act-I → Upgrade hand-off effect. Hide once the
+    // carrier locks (TRANSITION_END) — without this, the cone + foil/film
+    // instances clamp at cp=1 and keep rendering through Upgrade and Crafts.
+    if (confettiWrapRef.current) {
+      confettiWrapRef.current.visible = smoothed.current < TRANSITION_END
+    }
+    console.log('camera z:', cam.position.z.toFixed(1), 'smoothed:', smoothed.current.toFixed(3))
   })
 
   return (
@@ -260,10 +281,18 @@ export default function Scene({ progressRef }) {
           coneAnchor={coneAnchor}
         />
       </group>
-      <Confetti smoothed={smoothed} coneAnchor={coneAnchor} />
-      <ReelTransition ref={reelRef} smoothed={smoothed} coneAnchor={coneAnchor}>
-        <UpgradeScene ref={upgradeRef} smoothed={smoothed} />
-      </ReelTransition>
+      <group ref={confettiWrapRef}>
+        <Confetti smoothed={smoothed} coneAnchor={coneAnchor} />
+      </group>
+      <group ref={reelWrapRef}>
+        <ReelTransition ref={reelRef} smoothed={smoothed} coneAnchor={coneAnchor}>
+          <UpgradeScene ref={upgradeRef} smoothed={smoothed} />
+        </ReelTransition>
+      </group>
+
+      <ChapterPeel smoothed={smoothed} start={PEEL_START} end={PEEL_END} capturedRef={peelCapturedRef}>
+        <CraftsChapter smoothed={smoothed} />
+      </ChapterPeel>
 
       <EffectComposer>
         <CrtEffect />

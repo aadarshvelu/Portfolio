@@ -34,6 +34,10 @@ export const UPGRADE_KZH = 0.476 // parked on Kozhikode
 export const UPGRADE_PAN_AWS = 0.488 // pan toward AWS
 export const UPGRADE_AWS = 0.504 // parked on AWS
 
+// Act II — Page Peel transition
+export const PEEL_START = 0.525 // page peel begins (~1 scroll after AWS settles)
+export const PEEL_END = 0.608 // page peel completes
+
 // The night-sky Background + Starfield planes are built this many times the
 // design size, so a dollied, parked camera never pans past their edge. The
 // shader remaps UVs so the central design-sized region is unchanged.
@@ -51,4 +55,7 @@ export const ORDER = {
   scrollPrompt: 31,
   bootMask: 60,
   bootLine: 70,
+  nextChapter: 72,
+  peelShadow: 79,
+  peel: 80,
 }

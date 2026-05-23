@@ -5,6 +5,9 @@ import dmMono400 from '@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff?u
 import cormorant from '@fontsource/cormorant-garamond/files/cormorant-garamond-latin-400-normal.woff?url'
 import cormorantItalic from '@fontsource/cormorant-garamond/files/cormorant-garamond-latin-400-italic.woff?url'
 import cormorantItalic500 from '@fontsource/cormorant-garamond/files/cormorant-garamond-latin-500-italic.woff?url'
+import courierPrimeBold from '@fontsource/courier-prime/files/courier-prime-latin-700-normal.woff?url'
+import caveat600 from '@fontsource/caveat/files/caveat-latin-600-normal.woff?url'
+import caveat700 from '@fontsource/caveat/files/caveat-latin-700-normal.woff?url'
 
 export const FONTS = {
   anton,
@@ -12,4 +15,7 @@ export const FONTS = {
   cormorant,
   cormorantItalic,
   cormorantItalic500,
+  courierPrimeBold,
+  caveat600,
+  caveat700,
 }
