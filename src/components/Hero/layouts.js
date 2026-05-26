@@ -11,8 +11,8 @@ export const LAYOUTS = {
     starfield: { count: 180 },
     shootingStar: { count: 7, len: 120, thick: 2.4 },
     moon: { x: 550, y: 333.6, w: 560 },
-    clouds: { x: 390, y: 235, scale: 1 },
-    title: { x: 0, y: 101.3, w: 1497.6 },
+    clouds: { x: 390, y: 215, scale: 1 },
+    title: { x: 0, y: 145, w: 1050 },
     filmRoll: { y: -216, scale: 1, rise: 700, spread: 16, visibleFrames: 5 },
     chrome: {
       cornerX: 900,
@@ -126,7 +126,7 @@ export const LAYOUTS = {
     shootingStar: { count: 5, len: 70, thick: 2.0 },
     moon: { x: 350, y: 250, w: 560 },
     clouds: { x: 200, y: 200, scale: 0.6 },
-    title: { x: 10, y: 35, w: 820 },
+    title: { x: 10, y: 35, w: 575 },
     filmRoll: { y: -200, scale: 0.92, rise: 520, spread: 16, visibleFrames: 5 },
     chrome: {
       cornerX: 352,
@@ -227,7 +227,7 @@ export const LAYOUTS = {
     shootingStar: { count: 4, len: 44, thick: 1.8 },
     moon: { x: 185, y: 150, w: 532 },
     clouds: { x: 20, y: 90, scale: 0.3 },
-    title: { x: 5, y: 12, w: 435 },
+    title: { x: 5, y: 12, w: 305 },
     filmRoll: { y: -180, scale: 0.75, rise: 420, spread: 6, visibleFrames: 3 },
     chrome: {
       cornerX: 188,

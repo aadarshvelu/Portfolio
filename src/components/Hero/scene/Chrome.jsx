@@ -14,7 +14,6 @@ const META = '#9b9789'
 const TEXT = {
   full: {
     sub: 'LEAD TECHNICAL ARCHITECT · DXB',
-    nav: 'WORK    ·    RECORD    ·    CONTACT',
     cornerR: '25.2048° N · 55.2708° E\nDUBAI / U.A.E.',
     botL1: 'REEL  N° 01   ●   FRAME  001 / 248',
     botL2: 'ASA  400T    LENS  35MM ANAMORPHIC',
@@ -23,7 +22,6 @@ const TEXT = {
   },
   short: {
     sub: 'LEAD ARCHITECT · DXB',
-    nav: 'WORK · RECORD · CONTACT',
     cornerR: 'DUBAI / U.A.E.',
     botL1: 'REEL N°01 · 248F',
     botL2: '35MM ANAMORPHIC',
@@ -81,14 +79,9 @@ export default function Chrome({ on }) {
         {t.sub}
       </Text>
 
-      {/* top-right — nav */}
-      <Text font={FONTS.dmMono400} fontSize={11 * fs} color={PEARL} letterSpacing={0.26}
-        anchorX="right" anchorY="top" position={[cornerX, topY - 2 * fs, 0]}
-        renderOrder={RO} fillOpacity={op}>
-        {t.nav}
-      </Text>
+      {/* top-right — reel meta */}
       <Text font={FONTS.dmMono400} fontSize={9 * fs} color={MUTED} letterSpacing={0.22}
-        anchorX="right" anchorY="top" position={[cornerX, topY - 24 * fs, 0]}
+        anchorX="right" anchorY="top" position={[cornerX, topY - 2 * fs, 0]}
         renderOrder={RO} fillOpacity={op}>
         REEL N°01 / 2026
       </Text>

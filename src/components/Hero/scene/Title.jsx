@@ -6,15 +6,15 @@ import { ORDER } from '../config.js'
 import { useLayout } from '../breakpoint.js'
 import { useFade } from '../../../hooks/useFade.js'
 
-// DIRECTOR'S CUT title artwork — image ratio 1750:899
+// AADARSH VELU title artwork — image ratio 1656:548
 export default function Title({ on }) {
   const { title } = useLayout()
   const W = title.w
-  const H = (W * 899) / 1750
+  const H = (W * 548) / 1656
   const X = title.x
   const Y = title.y
 
-  const tex = useTexture('/assets/title-directors-cut-white.png')
+  const tex = useTexture('/assets/title-aadarsh-velu.png')
   useMemo(() => {
     tex.colorSpace = THREE.SRGBColorSpace
   }, [tex])
