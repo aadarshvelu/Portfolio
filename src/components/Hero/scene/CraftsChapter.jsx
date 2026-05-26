@@ -1,6 +1,6 @@
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Text } from '@react-three/drei'
+import { Text, useTexture } from '@react-three/drei'
 import { FONTS } from '../../../fonts.js'
 import { PEEL_END, ORDER } from '../config.js'
 import { useLayout, useBp } from '../breakpoint.js'
@@ -171,7 +171,7 @@ function _slot(o = {}) {
     headline: { dx:  0,     dy:  0,    fontSizeAdj: 0,    ...o.headline  },
     goldenHeadline: { dx:  0,     dy:  0,    fontSizeAdj: 0,    ...o.goldenHeadline  },
     deck:     { dx:  0,     dy: -1,    maxWAdj: -25,  ...o.deck     },
-    figure:   { dx:  0,     dy: -3.5,  wAdj: 0, hAdj: 0,  ...o.figure   },
+    figure:   { dx:  0,     dy: -3.5,  wAdj: 9.5, hAdj: 3,  ...o.figure   },
     figLabel: { dx:  0,     dy:  0,    ...o.figLabel  },
     body:     { dx: -2,     dy: -6,    maxWAdj: -10, fontSizeAdj: 0,  ...o.body     },
     goldBody: { dx:  19.33, dy:  4.17, maxWAdj: -10, fontSizeAdj: 0, off: false,  ...o.goldBody },
@@ -189,6 +189,7 @@ const LAYOUT_CONFIG = {
     s2: _slot({
       kicker: { dx: 0, dy: -2 },
       deck: { dx: 6, dy: -1.2 },
+      figure: { hAdj: 3, wAdj: 7, dy: -4 },
       goldenHeadline: { dx: -15.2, dy: 0},
       goldBody: { dx: 28, dy: -1.71 },
       pull: { dx: 2.5, dy: -1 },
@@ -201,6 +202,7 @@ const LAYOUT_CONFIG = {
       headline: { dx: 0, dy: -2, fontSizeAdj: -2 },
       goldenHeadline: { dx: -8.6, dy: -2, fontSizeAdj: -2 },
       deck: { dx: 4, dy: -2 },
+      figure: { hAdj: 3, wAdj: 6, dy: -5 },
       body: { dy: -5 },
       goldBody: { dx: 25.1, dy: .6 },
       pull: { dx: .5, dy: 1 },
@@ -215,7 +217,7 @@ const LAYOUT_CONFIG = {
       headline: { dy: 1 },
       goldenHeadline: { dx: -8, dy: 1, fontSizeAdj: 0 },
       deck: { dx: 1, dy: 6.5 },
-      figure: { wAdj: -2, hAdj: 0, dy: 4 },
+      figure: { wAdj: -2, hAdj: 4, dy: 4 },
       body: { dx: 1, dy: 6, maxWAdj: -30 },
       goldBody: { dx: 11.35, dy: 2.9 },
       pull: { dx: .5, dy: 6 },
@@ -227,7 +229,7 @@ const LAYOUT_CONFIG = {
       headline: { dy: -1, maxWAdj: -10, fontSizeAdj: -1.5 },
       goldenHeadline: { dx: -8, dy: -1, fontSizeAdj: -1.5 },
       deck: { dx: 1, dy: 4.5 },
-      figure: { wAdj: -2, hAdj: 0, dy: 3 },
+      figure: { wAdj: -2, hAdj: 1, dy: 3 },
       body: {  maxWAdj: -30, dx: 1, dy: 5 },
       goldBody: { dx: 11.35, dy: 4.9, off: true },
       pull: { dx: .5, dy: 2 },
@@ -239,7 +241,7 @@ const LAYOUT_CONFIG = {
       headline: { dy: 3, maxWAdj: -10, fontSizeAdj: -1.5 },
       goldenHeadline: { dx: -8, dy: 3, fontSizeAdj: -1.5 },
       deck: { dx: 1, dy: 9 },
-      figure: { wAdj: -2, hAdj: 0, dy: 7.5 },
+      figure: { wAdj: -2, hAdj: 1, dy: 7.5 },
       body: {  maxWAdj: -32, dx: 1, dy: 8.5, fontSizeAdj: -0.25 },
       goldBody: { dx: 10.5, dy: 3.98, fontSizeAdj: -0.25 },
       pull: { dx: .5, dy: 7.5 },
@@ -255,7 +257,7 @@ const LAYOUT_CONFIG = {
       headline: { dy: 6 },
       goldenHeadline: { dx: -8, dy: 6 },
       deck: { dx: 1.5, dy: 11, maxWAdj: 1.8 },
-      figure: { dy: 10 },
+      figure: { dy: 10, hAdj: 4 },
       body: { dy: 12 },
       goldBody: { dx: -9.2, dy: 0.52 },
       pull: { dx: 0, dy: 2 },
@@ -267,7 +269,7 @@ const LAYOUT_CONFIG = {
       headline: { dx: 1, dy: -.3, maxWAdj: -0, fontSizeAdj: -1.5 },
       goldenHeadline: { dx: -7, dy: -.3, fontSizeAdj: -1.5 },
       deck: { dx: 1.5, dy: 7, maxWAdj: 1.8 },
-      figure: { dy: 6.5 },
+      figure: { dy: 6.5, hAdj: 1 },
       body: { dx: 0, dy: 10, fontSizeAdj: -0.25, maxWAdj: -6 },
       goldBody: { dx: -9.5, dy: 1.4 },
       pull: { dx: 0, dy: 3 },
@@ -280,7 +282,7 @@ const LAYOUT_CONFIG = {
       headline: { dx: 1, dy: 3, maxWAdj: -0, fontSizeAdj: -1.5 },
       goldenHeadline: { dx: -7, dy: 3, fontSizeAdj: -1.5 },
       deck: { dx: 1.5, dy: 9, maxWAdj: 1.8 },
-      figure: { dy: 8.5 },
+      figure: { dy: 8.5, hAdj: 2 },
       body: { dx: 0, dy: 12, fontSizeAdj: -0.25, maxWAdj: -6 },
       goldBody: { dx: -12.2, dy: 3.5, fontSizeAdj: -0.25 },
       pull: { dx: 0, dy: 6, fontSizeAdj: -0.40 },
@@ -426,6 +428,7 @@ const STORIES = [
     outcome:  'OUTCOME — Read every morning  ·  zero cloud bill  ·  runs on his laptop',
     staff:    'STAFF — Python · DSPy · Ollama · Gemma 4 · Qwen · PWA',
     figLabel: 'FIG. 01 · SYNDICATE',
+    fig: '/assets/fig_1.png',
   },
   {
     kicker:   'STORY Nº 02  ·  Filed · Ops Desk  ·  The Workbench · 2022 — present',
@@ -439,6 +442,7 @@ const STORIES = [
     outcome:  'OUTCOME — 10× the work, same team  ·  nothing falls through anymore',
     staff:    'STAFF — React · Node.js · MS Teams · AI · Azure',
     figLabel: 'FIG. 02 · HOURGLASS',
+    fig: '/assets/fig_2.png',
   },
   {
     kicker:   'STORY Nº 03  ·  Filed · Casting Desk  ·  The Workbench · 2023',
@@ -452,6 +456,7 @@ const STORIES = [
     outcome:  'OUTCOME — 50,000+ résumés processed  ·  cost: barely anything',
     staff:    'STAFF — React · Node.js · AI / LLM · Video Processing',
     figLabel: 'FIG. 03 · HIREHOUSE',
+    fig: '/assets/fig_3.png',
   },
 ]
 
@@ -460,6 +465,7 @@ const STORIES = [
 function StorySection({ pos, size, story, gRefs, order, stacked, storyKey }) {
   const bp = useBp()
   const adj = LAYOUT_CONFIG[bp][storyKey]
+  const figTex = useTexture(story.fig)
 
   // Per-story gold headline offset (GOLD_TREATMENT global + per-story override)
   const storyOff = GOLD_TREATMENT[storyKey] ?? { offsetX: 0, offsetY: 0 }
@@ -522,16 +528,11 @@ function StorySection({ pos, size, story, gRefs, order, stacked, storyKey }) {
         {story.deck}
       </Text>
 
-      {/* Figure placeholder */}
-      <mesh renderOrder={order + 2} position={[pos.figureX + adj.figure.dx, pos.figureY + adj.figure.dy, 0]}>
+      {/* Figure */}
+      <mesh renderOrder={order + 3} position={[pos.figureX + adj.figure.dx, pos.figureY + adj.figure.dy, 0]}>
         <planeGeometry args={[pos.figureW + adj.figure.wAdj, pos.figureH + adj.figure.hAdj]} />
-        <meshBasicMaterial color="#0a0e18" transparent depthTest={false} depthWrite={false} opacity={0.9} />
+        <meshBasicMaterial map={figTex} transparent depthTest={false} depthWrite={false} toneMapped={false} />
       </mesh>
-      <Text font={FONTS.dmMono400} fontSize={size.figLabel} color="#d8e4f2" anchorX="center" anchorY="middle"
-        letterSpacing={0.2} renderOrder={order + 3}
-        position={[pos.figureX + adj.figLabel.dx, pos.figureY + adj.figLabel.dy, 0.01]} fillOpacity={0.55}>
-        {story.figLabel}
-      </Text>
 
       {/* Body + body gold */}
       <Text font={FONTS.cormorant} fontSize={size.body + adj.body.fontSizeAdj} color="#1a1410" anchorX={bodyAnchorX} anchorY={bodyAnchorY}
@@ -656,7 +657,6 @@ export default function CraftsChapter({ smoothed }) {
     const scrollNorm = Math.max(1.0, Math.min(2.5, dpr * size.height / REF_VPH))
     const p = clamp01((sm - PEEL_END) * scrollNorm / (1.0 - PEEL_END))
     pRef.current = p
-    if (p > 0.85) console.log('CraftsChapter p:', p.toFixed(3), 'sm:', sm.toFixed(3), 'scrollNorm:', scrollNorm.toFixed(2))
 
     const h_vp = 2 * peelDist * Math.tan(camera.fov * DEG / 2) * overscan
     const w_vp = h_vp * size.width / size.height
@@ -671,7 +671,6 @@ export default function CraftsChapter({ smoothed }) {
       const ph = c.paperH
       pg.position.y = sf * s * ph * (cy / ph - 0.5)
       pg.position.x = 0
-      console.log('paperGroup visible:', pg.visible, 'position y:', pg.position.y.toFixed(1), 'scale:', pg.scale.x.toFixed(3))
     }
 
     const station = stationFromP(p)

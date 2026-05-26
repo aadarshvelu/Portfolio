@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Upgrade — Aadarsh Velu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Cormorant+Garamond:ital,wght@0,500;1,400;1,500;1,600&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!--
+  =============================================================
+  AADARSH VELU — CHAPTER I (CONT'D) · THE UPGRADE
+  =============================================================
+  Minimalist single-screen layout. No scroll on this page.
+  Two clickable polaroids ("KAGGLE 2020" + "KOZHIKODE 2024")
+  each open a film-cell modal with that beat's narration.
+  A small third polaroid ("AWS 2023") sits behind them as the
+  "last but not least" closer.
+
+  >>> INTEGRATION NOTES FOR YOUR PAN/ZOOM FLOW <<<
+  In the real app you will:
+    (1) lock scroll while the title slate is in frame
+    (2) on scroll-down, DOLLY/ZOOM the camera toward the
+        KAGGLE polaroid until it fills the viewport, then
+        reveal the same narration that lives in modal #1
+    (3) on continued scroll, zoom back out a touch and PAN
+        right to the KOZHIKODE polaroid; same flow → modal #2
+    (4) then the AWS polaroid → modal #3 (the closer)
+  This file's click-to-modal behaviour is a STAND-IN until
+  that camera flow is wired. The modal content is the SAME
+  copy you'll surface on full-frame zoom — porting is a
+  drop-in. Search this file for "PAN-ZOOM TARGET" to find the
+  three polaroid elements your camera should park on.
+-->
+
+<style>
+:root{
+  --c-night-top:   #060a18;
+  --c-night-mid:   #04081a;
+  --c-night-bot:   #02050d;
+  --c-cell:        #0a1126;
+  --c-pearl:       #f2e8d8;
+  --c-pearl-dim:   rgba(242,232,216,0.62);
+  --c-pearl-fade:  rgba(242,232,216,0.32);
+  --c-pearl-edge:  rgba(242,232,216,0.14);
+  --c-gold:        #c8a157;
+  --c-gold-soft:   rgba(200,161,87,0.55);
+  --c-star:        #e8eef5;
+  --c-sprocket-h:  #1b2138;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{
+  height:100%;
+  background:#000;
+  color:var(--c-pearl);
+  font-family:'DM Mono',ui-monospace,monospace;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:geometricPrecision;
+  overflow:hidden;        /* SINGLE SCREEN — no scroll on this page */
+}
+
+/* ============== NIGHT SKY (1–3 AM) — sparse, no moon ============== */
+.skybox{
+  position:fixed;inset:0;z-index:-1;
+  background:
+    radial-gradient(ellipse 60% 40% at 78% 18%, rgba(48,68,128,0.16), transparent 70%),
+    radial-gradient(ellipse 50% 36% at 22% 70%, rgba(60,52,120,0.10), transparent 65%),
+    linear-gradient(180deg,
+      var(--c-night-top) 0%,
+      var(--c-night-mid) 50%,
+      var(--c-night-bot) 100%);
+}
+.stars{position:fixed;inset:0;z-index:-1;pointer-events:none;}
+.star{
+  position:absolute;width:1px;height:1px;
+  background:var(--c-star);border-radius:50%;opacity:0;
+  animation:twinkle var(--dur,5s) ease-in-out infinite;
+  animation-delay:var(--delay,0s);
+}
+.star.s2{width:2px;height:2px;box-shadow:0 0 4px rgba(232,238,245,0.55);}
+.star.s3{width:2px;height:2px;box-shadow:0 0 8px rgba(232,238,245,0.85),0 0 14px rgba(150,180,220,0.35);}
+@keyframes twinkle{0%,100%{opacity:0.15;}50%{opacity:0.85;}}
+
+.grain{
+  position:fixed;inset:0;z-index:50;pointer-events:none;
+  mix-blend-mode:overlay;opacity:0.12;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>");
+}
+.vignette{
+  position:fixed;inset:0;z-index:49;pointer-events:none;
+  background:radial-gradient(ellipse 80% 70% at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%);
+}
+
+/* ============== CARRIER FRAME CHROME ============== */
+.letterbox{position:fixed;left:0;right:0;height:4vh;background:#000;z-index:60;pointer-events:none;}
+.letterbox.top{top:0;}.letterbox.bot{bottom:0;}
+.letterbox.top::after,.letterbox.bot::after{
+  content:"";position:absolute;left:0;right:0;height:18px;
+  background:linear-gradient(180deg,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0) 100%);
+}
+.letterbox.top::after{bottom:-18px;}
+.letterbox.bot::after{top:-18px;transform:scaleY(-1);}
+
+.sprocket{
+  position:fixed;left:0;right:0;height:22px;z-index:59;pointer-events:none;
+  background:repeating-linear-gradient(90deg,
+    transparent 0,transparent 8px,
+    var(--c-sprocket-h) 8px,var(--c-sprocket-h) 22px,
+    transparent 22px,transparent 30px);
+  box-shadow:inset 0 1px 0 rgba(0,0,0,0.55),inset 0 -1px 0 rgba(0,0,0,0.55);
+  opacity:0.85;
+}
+.sprocket.top{top:calc(4vh - 1px);}
+.sprocket.bot{bottom:calc(4vh - 1px);}
+
+.regmark{position:fixed;width:16px;height:16px;z-index:62;opacity:0.32;pointer-events:none;}
+.regmark::before,.regmark::after{content:"";position:absolute;background:var(--c-pearl);}
+.regmark::before{left:50%;top:0;bottom:0;width:1px;margin-left:-0.5px;}
+.regmark::after{top:50%;left:0;right:0;height:1px;margin-top:-0.5px;}
+.regmark.tl{top:calc(4vh + 36px);left:28px;}
+.regmark.tr{top:calc(4vh + 36px);right:28px;}
+.regmark.bl{bottom:calc(4vh + 36px);left:28px;}
+.regmark.br{bottom:calc(4vh + 36px);right:28px;}
+
+/* ============== TOP / BOTTOM CHROME (text only) ============== */
+.chrome{
+  position:fixed;left:0;right:0;z-index:61;padding:0 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.28em;
+  text-transform:uppercase;color:var(--c-pearl-fade);pointer-events:none;
+}
+.chrome.top{top:calc(4vh + 38px);}
+.chrome.bot{bottom:calc(4vh + 32px);}
+.chrome .reel-id{display:flex;flex-direction:column;gap:6px;line-height:1.2;}
+.chrome .reel-id .val{color:var(--c-pearl);}
+.chrome .reel-id .gold{color:var(--c-gold);}
+.chrome .reel-id em{font-style:normal;color:var(--c-pearl-fade);}
+.chrome .meta-r{text-align:right;line-height:1.2;display:flex;flex-direction:column;gap:6px;}
+.chrome .meta-r .val{color:var(--c-pearl);}
+.chrome.bot .slate{display:flex;gap:14px;align-items:center;}
+.chrome.bot .slate .gold{color:var(--c-gold);}
+.chrome.bot .meta-r{flex-direction:row;gap:14px;align-items:center;}
+
+/* ============== TITLE SLATE ============== */
+.title-slate{
+  position:fixed;inset:0;z-index:2;
+  display:flex;align-items:center;justify-content:center;
+  padding:14vh 8vw;overflow:hidden;
+}
+.title-slate .inner{text-align:center;width:100%;max-width:1100px;}
+.title-slate .above{
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.42em;
+  color:var(--c-pearl-fade);text-transform:uppercase;margin-bottom:32px;
+  display:flex;justify-content:center;align-items:center;gap:14px;
+}
+.title-slate .above .pip{
+  width:5px;height:5px;background:var(--c-gold);border-radius:50%;
+  box-shadow:0 0 6px var(--c-gold);
+}
+.title-slate h1{
+  font-family:'Anton',sans-serif;font-weight:400;
+  font-size:clamp(56px,8.5vw,148px);
+  line-height:0.92;letter-spacing:-0.012em;color:var(--c-pearl);
+  text-transform:uppercase;
+  filter:drop-shadow(0 12px 30px rgba(0,0,0,0.55));
+}
+.title-slate h1 .ampere{
+  display:inline-block;color:var(--c-gold);margin:0 0.18em;
+  transform:translateY(-0.04em);font-size:0.86em;
+}
+.title-slate .sub{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
+  font-size:clamp(22px,3.2vw,36px);color:var(--c-gold);
+  letter-spacing:0.005em;margin-top:22px;
+}
+
+/* Corner slate (bottom-left) */
+.title-slate .corner{
+  position:absolute;font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:0.28em;text-transform:uppercase;color:var(--c-pearl-dim);
+  line-height:1.6;
+}
+.title-slate .corner.bl{left:48px;bottom:calc(4vh + 80px);}
+.title-slate .corner .gold{color:var(--c-gold);}
+.title-slate .corner .dim{color:var(--c-pearl-fade);}
+
+/* Scroll hint (kept as a visual cue your pan/zoom will respond to) */
+.title-slate .hint{
+  position:absolute;left:50%;bottom:calc(4vh + 110px);
+  transform:translateX(-50%);
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.42em;
+  color:var(--c-gold-soft);
+  display:flex;align-items:center;flex-direction:column;gap:8px;
+}
+.title-slate .hint .bar{
+  width:1px;height:24px;
+  background:linear-gradient(180deg,rgba(200,161,87,0) 0%,var(--c-gold) 100%);
+  animation:hint 2.4s ease-in-out infinite;transform-origin:top;
+}
+@keyframes hint{0%{transform:scaleY(0);opacity:0;}40%{opacity:1;}100%{transform:scaleY(1);opacity:0;}}
+
+/* Props layer holds the clap + polaroids + coffee */
+.title-slate .props{position:absolute;inset:0;}
+
+/* ============== PROP: CLAPPERBOARD ============== */
+.clap{
+  position:absolute;width:200px;
+  font-family:'DM Mono',monospace;color:var(--c-pearl);z-index:4;
+  transform:rotate(-4deg);
+  filter:drop-shadow(0 20px 28px rgba(0,0,0,0.6));
+  pointer-events:none;
+}
+.clap-arm{
+  height:30px;background:#0a0c14;border:1px solid rgba(242,232,216,0.22);
+  display:flex;overflow:hidden;
+  transform:skewX(-4deg) translateX(8px);transform-origin:left bottom;
+  margin-bottom:-1px;margin-left:-4px;
+}
+.clap-arm .stripe{flex:1;height:100%;}
+.clap-arm .stripe:nth-child(odd){background:#f2e8d8;}
+.clap-arm .stripe:nth-child(even){background:#0a0c14;}
+.clap-body{
+  background:#0a0c14;border:1px solid rgba(242,232,216,0.22);
+  padding:12px 14px 14px;
+  font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;
+}
+.clap-body .row{display:flex;justify-content:space-between;gap:14px;}
+.clap-body .row .k{color:var(--c-pearl-fade);}
+.clap-body .row .v{color:var(--c-pearl);}
+.clap-body .row .v.gold{color:var(--c-gold);}
+.clap-body .hr{height:1px;background:rgba(242,232,216,0.12);margin:6px 0;}
+
+/* ============== PROP: POLAROID — clickable pan/zoom targets ============== */
+.polaroid{
+  position:absolute;width:140px;
+  background:#f2e8d8;padding:7px 7px 22px;
+  box-shadow:0 22px 36px -12px rgba(0,0,0,0.75);
+  color:#2a2620;z-index:4;cursor:pointer;
+  transition:transform 0.45s cubic-bezier(.22,.61,.36,1),
+             box-shadow 0.45s ease-out,
+             filter 0.45s ease-out;
+}
+.polaroid:hover{
+  filter:brightness(1.08);
+  box-shadow:0 32px 50px -14px rgba(0,0,0,0.85),
+             0 0 0 1px rgba(200,161,87,0.35);
+}
+.polaroid:focus-visible{
+  outline:none;
+  box-shadow:0 32px 50px -14px rgba(0,0,0,0.85),
+             0 0 0 2px var(--c-gold);
+}
+.polaroid .photo{
+  width:100%;aspect-ratio:1;
+  background:linear-gradient(135deg,#1f2a3d 0%,#0a1126 100%);
+  position:relative;overflow:hidden;
+}
+.polaroid .photo::before{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,
+    transparent 0,transparent 6px,
+    rgba(255,255,255,0.035) 6px,rgba(255,255,255,0.035) 8px);
+}
+.polaroid .photo .ph{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.24em;
+  color:rgba(242,232,216,0.5);text-transform:uppercase;text-align:center;
+  padding:0 8px;line-height:1.4;
+}
+.polaroid .caption{
+  margin-top:8px;font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:13px;text-align:center;color:#2a2620;
+}
+.polaroid.tape::before{
+  content:"";position:absolute;
+  top:-8px;right:50%;transform:translateX(50%) rotate(-3deg);
+  width:60px;height:14px;
+  background:rgba(232,200,140,0.32);
+  border:1px solid rgba(232,200,140,0.18);
+}
+/* Tiny click affordance — gold dot in corner of polaroid */
+.polaroid::after{
+  content:"";position:absolute;
+  top:14px;right:14px;width:6px;height:6px;border-radius:50%;
+  background:var(--c-gold);
+  box-shadow:0 0 8px var(--c-gold);
+  animation:dot-pulse 2s ease-in-out infinite;
+}
+@keyframes dot-pulse{
+  0%,100%{opacity:0.4;transform:scale(0.7);}
+  50%{opacity:1;transform:scale(1);}
+}
+
+/* AWS polaroid — smaller, faded, sits BEHIND the other two as the closer */
+.polaroid.aws{width:110px;opacity:0.85;}
+.polaroid.aws .photo{
+  background:linear-gradient(135deg,#2a2010 0%,#1a1306 100%);
+}
+
+/* ============== REAL IMAGES inside polaroid photo cells ============== */
+.polaroid .photo .real{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  object-position:center top;
+  z-index:1;
+}
+/* IIM Kozhikode — crop tight to the group-photo portion */
+.polaroid .photo.iim{ background:#0a1126; }
+.polaroid .photo.iim .real{
+  object-fit:cover;
+  object-position:center 18%;
+  filter:brightness(0.94) contrast(1.05) saturate(0.85);
+}
+/* AWS badge — center the hex badge on AWS-style dark slate */
+.polaroid .photo.aws-photo{
+  background:linear-gradient(135deg, #232f3e 0%, #131b27 100%);
+}
+.polaroid .photo.aws-photo .real{
+  inset:auto;
+  position:relative;
+  width:70%;height:70%;
+  object-fit:contain;
+  margin:15%;
+}
+/* When a real image is shown, hide the placeholder text + stripe overlay */
+.polaroid .photo.has-real .ph{ display:none; }
+.polaroid .photo.has-real::before{ display:none; }
+
+/* ============== PROP: COFFEE RINGS ============== */
+.coffee{
+  position:absolute;width:120px;height:120px;
+  border:2px solid rgba(132,86,52,0.16);border-radius:50%;
+  pointer-events:none;z-index:1;
+  background:radial-gradient(circle,rgba(132,86,52,0.04) 62%,transparent 72%);
+  filter:blur(0.5px);opacity:0.7;
+}
+.coffee.small{width:70px;height:70px;}
+
+/* ============== PROP: P.S. NOTE (the AWS closer) ============== */
+.ps-note{
+  position:absolute;
+  bottom:calc(4vh + 80px);
+  left:50%;transform:translateX(-50%);
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:14px;color:var(--c-pearl-fade);
+  letter-spacing:0.02em;text-align:center;
+  pointer-events:none;
+  display:none;            /* surfaces only on tighter compositions */
+}
+
+/* ============== MODAL — film-cell with V.O. excerpt ============== */
+.modal-overlay{
+  position:fixed;inset:0;z-index:90;
+  background:rgba(0,0,0,0.78);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  padding:8vh 6vw;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.5s ease-out;
+}
+.modal-overlay.open{opacity:1;pointer-events:auto;}
+
+.modal{
+  position:relative;
+  width:100%;max-width:540px;
+  background:var(--c-cell);
+  border:1px solid rgba(242,232,216,0.10);
+  box-shadow:0 50px 90px -20px rgba(0,0,0,0.85),
+             0 0 0 1px rgba(200,161,87,0.08);
+  transform:translateY(28px) scale(0.96);
+  transition:transform 0.55s cubic-bezier(.22,.61,.36,1);
+}
+.modal-overlay.open .modal{transform:translateY(0) scale(1);}
+
+/* Sprocket strips top + bottom of the modal — same vocab as the carrier */
+.modal::before,.modal::after{
+  content:"";position:absolute;left:0;right:0;height:14px;
+  background:repeating-linear-gradient(90deg,
+    transparent 0,transparent 5px,
+    var(--c-sprocket-h) 5px,var(--c-sprocket-h) 11px,
+    transparent 11px,transparent 16px);
+  box-shadow:inset 0 1px 0 rgba(0,0,0,0.55),inset 0 -1px 0 rgba(0,0,0,0.55);
+}
+.modal::before{top:0;}
+.modal::after{bottom:0;}
+
+.modal-inner{padding:42px 38px 38px;}
+
+.modal-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding-bottom:14px;border-bottom:1px solid var(--c-pearl-edge);
+  margin-bottom:24px;
+}
+.modal-head .slug{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.32em;
+  color:var(--c-gold);text-transform:uppercase;
+}
+.modal-head .slug .dim{color:var(--c-pearl-fade);}
+.modal-head .year{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.32em;
+  color:var(--c-pearl-fade);text-transform:uppercase;
+}
+
+.modal-cue{
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.32em;
+  color:var(--c-pearl-dim);text-transform:uppercase;
+  text-align:center;margin-bottom:18px;
+}
+.modal-line{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
+  font-size:22px;line-height:1.55;color:var(--c-pearl);
+  text-align:center;letter-spacing:0.005em;
+}
+.modal-line .gold{color:var(--c-gold);}
+.modal-line .small{
+  display:block;margin-top:18px;
+  font-family:'DM Mono',monospace;font-style:normal;font-size:10px;
+  letter-spacing:0.32em;color:var(--c-pearl-fade);text-transform:uppercase;
+}
+
+.modal-cred{
+  margin-top:30px;padding-top:20px;
+  border-top:1px solid var(--c-pearl-edge);
+  display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--c-pearl);
+}
+.modal-cred .label{color:var(--c-pearl-fade);font-size:9px;letter-spacing:0.32em;display:block;margin-bottom:6px;}
+.modal-cred .name{color:var(--c-pearl);}
+.modal-cred .year{color:var(--c-gold);font-size:11px;letter-spacing:0.32em;}
+.modal-cred a{
+  display:inline-flex;align-items:center;gap:6px;
+  color:var(--c-gold);text-decoration:none;
+  border-bottom:1px dotted var(--c-gold-soft);padding-bottom:2px;
+  font-size:10px;letter-spacing:0.14em;text-transform:none;
+}
+.modal-cred a:hover{color:#e7c989;border-color:#e7c989;}
+
+.modal-footer{
+  margin-top:18px;
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:14px;color:var(--c-gold);text-align:right;
+  letter-spacing:0.02em;
+}
+
+/* ============== MODAL EVIDENCE — real document/badge inside modal ============== */
+.modal-evidence{
+  margin-top:26px;
+  position:relative;
+  background:#0c1326;
+  border:1px solid var(--c-pearl-edge);
+  overflow:hidden;
+  box-shadow:0 18px 30px -14px rgba(0,0,0,0.7),
+             inset 0 0 0 1px rgba(200,161,87,0.04);
+}
+.modal-evidence::before, .modal-evidence::after{
+  content:"";position:absolute;left:0;right:0;height:10px;
+  background:repeating-linear-gradient(90deg,
+    transparent 0,transparent 4px,
+    var(--c-sprocket-h) 4px,var(--c-sprocket-h) 8px,
+    transparent 8px,transparent 12px);
+  z-index:2;
+}
+.modal-evidence::before{ top:0; }
+.modal-evidence::after { bottom:0; }
+.modal-evidence .ev-img{
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:300px;
+  object-fit:cover;
+  object-position:center 22%;
+  filter:brightness(0.92) contrast(1.04) saturate(0.85);
+}
+.modal-evidence .ev-caption{
+  text-align:center;
+  font-family:'DM Mono',monospace;
+  font-size:9px;letter-spacing:0.28em;
+  color:var(--c-pearl-fade);
+  padding:10px 14px;
+  text-transform:uppercase;
+  border-top:1px solid var(--c-pearl-edge);
+  background:rgba(0,0,0,0.4);
+}
+.modal-evidence .ev-caption .gold{ color:var(--c-gold); }
+
+/* AWS badge — displayed on AWS-style slate, badge centered */
+.modal-evidence.aws{
+  background:linear-gradient(135deg, #232f3e 0%, #131b27 100%);
+  padding:34px 0;
+  display:flex;justify-content:center;align-items:center;
+}
+.modal-evidence.aws .ev-img{
+  width:auto;height:auto;
+  max-width:160px;
+  max-height:160px;
+  filter:none;
+  object-fit:contain;
+  object-position:center;
+}
+
+.modal-close{
+  position:absolute;top:-44px;right:-4px;
+  background:transparent;border:1px solid var(--c-pearl-edge);
+  color:var(--c-pearl);
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Mono',monospace;font-size:14px;cursor:pointer;
+  transition:all 0.25s;
+}
+.modal-close:hover{border-color:var(--c-gold);color:var(--c-gold);transform:rotate(90deg);}
+
+/* ============== RESPONSIVE ============== */
+@media (max-width:760px){
+  .chrome{padding:0 18px;font-size:9px;letter-spacing:0.22em;}
+  .chrome.top{top:calc(4vh + 22px);}
+  .chrome.bot{bottom:calc(4vh + 22px);}
+  .regmark.tl,.regmark.tr{top:calc(4vh + 20px);}
+  .regmark.bl,.regmark.br{bottom:calc(4vh + 20px);}
+  .regmark.tl,.regmark.bl{left:14px;}
+  .regmark.tr,.regmark.br{right:14px;}
+  .title-slate{padding:14vh 5vw;}
+  .title-slate .corner.bl{left:18px;bottom:calc(4vh + 60px);font-size:9px;}
+  .title-slate .clap{display:none;}     /* clap eats too much room on mobile */
+  .modal-inner{padding:32px 22px 26px;}
+  .modal-line{font-size:18px;}
+  .modal-cred{flex-direction:column;align-items:flex-start;gap:14px;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:0.001s !important;
+    transition-duration:0.001s !important;
+  }
+}
+</style>
+</head>
+
+<body data-screen-label="01.b The Upgrade">
+
+<!-- Night sky -->
+<div class="skybox"></div>
+<div class="stars" id="stars"></div>
+
+<!-- Carrier frame chrome -->
+<div class="letterbox top"></div>
+<div class="letterbox bot"></div>
+<div class="sprocket top"></div>
+<div class="sprocket bot"></div>
+<div class="regmark tl"></div>
+<div class="regmark tr"></div>
+<div class="regmark bl"></div>
+<div class="regmark br"></div>
+
+<!-- Top chrome: reel id only (timecode removed per direction) -->
+<div class="chrome top">
+  <div class="reel-id">
+    <div><span class="gold">REEL Nº 01</span> <em>·</em> <span class="val">CHAPTER I — CONT'D</span></div>
+    <div>THE UPGRADE <em>·</em> 2020 — PRESENT</div>
+  </div>
+  <div class="meta-r">
+    <div>NIGHT EXT. <em>·</em> ASA 800T</div>
+  </div>
+</div>
+
+<!-- Bottom chrome: scene/beat slate + page meta -->
+<div class="chrome bot">
+  <div class="slate">
+    <span>SC.</span><span class="gold">I.b</span>
+    <span style="opacity:0.4">·</span>
+    <span>BEAT</span><span class="gold">01</span>/<span>10</span>
+  </div>
+  <div class="meta-r">
+    <span style="opacity:0.5">PAGE</span><span style="color:var(--c-pearl)">14</span>
+    <span style="opacity:0.4">·</span>
+    <span style="opacity:0.5">DRAFT 02 / REV. C</span>
+  </div>
+</div>
+
+<!-- Post FX -->
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<!-- =========================================================
+     TITLE SLATE — single screen, no scroll
+     ========================================================= -->
+<section class="title-slate" data-screen-label="01.b.00 Title">
+
+  <div class="props" aria-hidden="true">
+
+    <!-- Clapperboard (decorative) -->
+    <div class="clap" style="top:13vh; left:5vw;">
+      <div class="clap-arm">
+        <span class="stripe"></span><span class="stripe"></span>
+        <span class="stripe"></span><span class="stripe"></span>
+        <span class="stripe"></span><span class="stripe"></span>
+        <span class="stripe"></span><span class="stripe"></span>
+      </div>
+      <div class="clap-body">
+        <div class="row"><span class="k">Prod.</span><span class="v gold">A. VELU</span></div>
+        <div class="hr"></div>
+        <div class="row"><span class="k">Scene</span><span class="v">I.B</span></div>
+        <div class="row"><span class="k">Shot</span><span class="v">01</span></div>
+        <div class="row"><span class="k">Take</span><span class="v">02</span></div>
+        <div class="hr"></div>
+        <div class="row"><span class="k">Date</span><span class="v">— 2020 / present</span></div>
+        <div class="row"><span class="k">Dir.</span><span class="v gold">SELF</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="inner">
+    <div class="above">
+      <span class="pip"></span>
+      <span>The Origin <span style="color:var(--c-gold)">·</span> Continued</span>
+      <span class="pip"></span>
+    </div>
+    <h1>THE<span class="ampere">·</span>UPGRADE</h1>
+    <div class="sub">after the first light</div>
+  </div>
+
+  <!-- Bottom-left corner slate -->
+  <div class="corner bl">
+    <div class="gold">CHAPTER I — CONT'D</div>
+    <div class="dim">2020 — PRESENT</div>
+  </div>
+
+  <!-- Scroll hint (visual cue — your pan/zoom flow responds to scroll input here) -->
+  <div class="hint">
+    <span>SCROLL · ENTER THE SCENE</span>
+    <span class="bar"></span>
+  </div>
+
+  <!--
+    =========================================================
+    PAN-ZOOM TARGETS — three polaroids your dolly parks on.
+    Click for now → opens a modal with that beat's content.
+    In production: replace the click handler with the camera
+    landing animation; the modal's text becomes the full-frame
+    reveal text once the polaroid fills the viewport.
+    =========================================================
+  -->
+
+  <!-- PAN-ZOOM TARGET #1 — Kaggle / "how I learnt AI" -->
+  <button
+    class="polaroid tape"
+    style="bottom:9vh; right:17vw; transform:rotate(-4deg);"
+    data-modal="kaggle"
+    aria-label="Open: how I learnt AI">
+    <div class="photo"><div class="ph">2020<br>KAGGLE</div></div>
+    <div class="caption">first run</div>
+  </button>
+
+  <!-- PAN-ZOOM TARGET #2 — IIM Kozhikode / "why I went to IIM" -->
+  <button
+    class="polaroid"
+    style="bottom:13vh; right:8vw; transform:rotate(6deg);"
+    data-modal="iimk"
+    aria-label="Open: why Kozhikode">
+    <div class="photo"><div class="ph">2024<br>KOZHIKODE</div></div>
+    <div class="caption">the upgrade.</div>
+  </button>
+
+  <!-- PAN-ZOOM TARGET #3 — AWS / the "last but not least" closer -->
+  <button
+    class="polaroid aws"
+    style="bottom:24vh; right:15vw; transform:rotate(6deg); z-index:3;"
+    data-modal="aws"
+    aria-label="Open: AWS Solutions Architect">
+    <div class="photo"><div class="ph">2023<br>AWS</div></div>
+    <div class="caption">p.s.</div>
+  </button>
+
+</section>
+
+<!-- =========================================================
+     MODALS — stand-in for the full-frame pan/zoom reveal.
+     Each modal mirrors the copy your camera will surface
+     when it lands on the corresponding polaroid.
+     ========================================================= -->
+
+<!-- MODAL #1 — KAGGLE / HOW I LEARNT AI -->
+<div class="modal-overlay" data-modal-for="kaggle" role="dialog" aria-labelledby="kaggle-title" aria-hidden="true">
+  <div class="modal">
+    <button class="modal-close" data-close aria-label="Close">✕</button>
+    <div class="modal-inner">
+      <div class="modal-head">
+        <div class="slug"><span>INSERT —</span> <span class="dim">KAGGLE</span></div>
+        <div class="year">2020 — 2025</div>
+      </div>
+      <div class="modal-cue" id="kaggle-title">AADARSH (V.O.)</div>
+      <p class="modal-line">
+        I wanted to understand the machines —<br>
+        not just <em>build</em> with them.<br><br>
+        So I went to the foundations:<br>
+        math, statistics, the slow parts.<br><br>
+        Practiced on <span class="gold">Kaggle</span><br>
+        until the intuition came.
+      </p>
+      <div class="modal-cred">
+        <div>
+          <span class="label">Credential</span>
+          <span class="name">Kaggle — 3× Expert</span>
+        </div>
+        <div style="text-align:right;">
+          <span class="year">2022 — 2025</span><br>
+          <a href="https://kaggle.com/aadarshvelu" target="_blank" rel="noopener">→ kaggle.com/aadarshvelu</a>
+        </div>
+      </div>
+      <div class="modal-footer">— first intuition.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL #2 — IIM KOZHIKODE / WHY I WENT -->
+<div class="modal-overlay" data-modal-for="iimk" role="dialog" aria-labelledby="iimk-title" aria-hidden="true">
+  <div class="modal">
+    <button class="modal-close" data-close aria-label="Close">✕</button>
+    <div class="modal-inner">
+      <div class="modal-head">
+        <div class="slug"><span>INSERT —</span> <span class="dim">IIM KOZHIKODE</span></div>
+        <div class="year">2024 — 2026</div>
+      </div>
+      <div class="modal-cue" id="iimk-title">AADARSH (V.O.)</div>
+      <p class="modal-line">
+        Then the ground <span class="gold">shifted</span>.<br><br>
+        When the tool writes the code,<br>
+        the bottleneck moves —<br>
+        the business problem<br>
+        under the ticket.<br><br>
+        So I went back for what<br>
+        code can't teach: <span class="gold">judgment</span>.
+      </p>
+      <div class="modal-cred">
+        <div>
+          <span class="label">Credential</span>
+          <span class="name">IIM Kozhikode — Strategic Management</span>
+        </div>
+        <div style="text-align:right;">
+          <span class="year">2026</span>
+        </div>
+      </div>
+      <div class="modal-evidence">
+        <img class="ev-img" src="assets/iim-kozhikode.png" alt="IIM Kozhikode — eMDP Strategic Management certificate">
+        <div class="ev-caption">eMDP · STRATEGIC MANAGEMENT · BATCH <span class="gold">06</span> · JUN 2025 — APR 2026</div>
+      </div>
+      <div class="modal-footer">— not a pivot. an upgrade.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL #3 — AWS / LAST BUT NOT LEAST -->
+<div class="modal-overlay" data-modal-for="aws" role="dialog" aria-labelledby="aws-title" aria-hidden="true">
+  <div class="modal">
+    <button class="modal-close" data-close aria-label="Close">✕</button>
+    <div class="modal-inner">
+      <div class="modal-head">
+        <div class="slug"><span>P.S. —</span> <span class="dim">FOR THE RECORD</span></div>
+        <div class="year">2023</div>
+      </div>
+      <div class="modal-cue" id="aws-title">AADARSH (V.O.)</div>
+      <p class="modal-line">
+        And — last but not least —<br>
+        an <span class="gold">AWS Solutions Architect</span>, too.<br>
+        <span class="small">(the cloud, on paper.)</span>
+      </p>
+      <div class="modal-cred">
+        <div>
+          <span class="label">Credential</span>
+          <span class="name">AWS Solutions Architect — Associate</span>
+        </div>
+        <div style="text-align:right;">
+          <span class="year">2023</span>
+        </div>
+      </div>
+      <div class="modal-evidence aws">
+        <img class="ev-img" src="assets/aws-badge.png" alt="AWS Certified Solutions Architect — Associate badge">
+      </div>
+      <div class="modal-footer">— end of reel.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ============== STARS ============== */
+  (function makeStars(){
+    const root = document.getElementById('stars');
+    if (!root) return;
+    const N = 70;
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < N; i++) {
+      const s = document.createElement('span');
+      s.className = 'star';
+      const sz = Math.random();
+      if (sz > 0.92) s.classList.add('s3');
+      else if (sz > 0.74) s.classList.add('s2');
+      s.style.left  = (Math.random() * 100) + '%';
+      s.style.top   = (Math.random() * 100) + '%';
+      s.style.setProperty('--dur',   (4 + Math.random() * 6) + 's');
+      s.style.setProperty('--delay', (Math.random() * 6) + 's');
+      frag.appendChild(s);
+    }
+    root.appendChild(frag);
+  })();
+
+  /* =========================================================
+     MODAL OPEN/CLOSE — stand-in for the pan/zoom reveal.
+     In production, replace these click handlers with the
+     camera dolly animation that flies the polaroid full-frame.
+     ========================================================= */
+  const overlays = document.querySelectorAll('.modal-overlay');
+  const triggers = document.querySelectorAll('[data-modal]');
+
+  function open(key){
+    overlays.forEach(o => {
+      const match = o.dataset.modalFor === key;
+      o.classList.toggle('open', match);
+      o.setAttribute('aria-hidden', match ? 'false' : 'true');
+    });
+  }
+  function closeAll(){
+    overlays.forEach(o => {
+      o.classList.remove('open');
+      o.setAttribute('aria-hidden', 'true');
+    });
+  }
+
+  triggers.forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      open(el.dataset.modal);
+    });
+  });
+
+  // Close on backdrop click, ✕ button, or Esc
+  overlays.forEach(o => {
+    o.addEventListener('click', (e) => {
+      if (e.target === o || e.target.matches('[data-close]')) closeAll();
+    });
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAll();
+  });
+})();
+</script>
+
+</body>
+</html>

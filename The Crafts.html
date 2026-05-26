@@ -1,0 +1,1345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Crafts — Aadarsh Velu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!--
+  =============================================================
+  AADARSH VELU — CHAPTER II · THE CRAFTS
+  =============================================================
+  THE CUTTING ROOM — late-edition broadsheet.
+
+  Director's Cut grammar held: night sky, gold accents, grain,
+  vignette, carrier-frame chrome (letterbox + sprocket + reel-
+  id top/bot). The chapter's content lives ON a printed paper
+  prop that sits over the night sky.
+
+  Scroll-driven camera dollies VERTICALLY down the broadsheet
+  with a subtle push-in at each headline:
+
+     0.00 — 0.06   WIDE          masthead+lede establish
+     0.06 — 0.14   PUSH IN       lead headline
+     0.14 — 0.30   HOLD          STORY 01 · SYNDICATE
+     0.30 — 0.38   TURN PAGE     pan down (scale dips)
+     0.38 — 0.46   PUSH IN       STORY 02 headline
+     0.46 — 0.60   HOLD          STORY 02 · HOURGLASS
+     0.60 — 0.68   TURN PAGE     pan down
+     0.68 — 0.76   PUSH IN       STORY 03 headline
+     0.76 — 0.92   HOLD          STORY 03 · HIREHOUSE
+     0.92 — 1.00   PULL OUT      whole-page final shot · CUT
+
+  Reveals shift to the page's own grammar: each article is
+  printed but dim/desaturated until the camera lands. On
+  arrival, the article ignites (opacity + saturation lift)
+  and gold sweep-underlines draw under marked phrases.
+
+  Image-slots persist across reloads via .image-slots.state.json
+  sidecar (shared ids — drop once, shows everywhere).
+-->
+
+<style>
+:root{
+  --c-redpen:      #8a2a20;
+  /* Director's Cut night palette — held */
+  --c-night-top:   #0a1430;
+  --c-night-mid:   #07112a;
+  --c-night-bot:   #050b1c;
+  --c-horizon:     rgba(80,130,180,0.20);
+  --c-pearl:       #f2e8d8;
+  --c-pearl-dim:   rgba(242,232,216,0.62);
+  --c-pearl-fade:  rgba(242,232,216,0.32);
+  --c-pearl-edge:  rgba(242,232,216,0.14);
+  --c-gold:        #c8a157;
+  --c-gold-soft:   rgba(200,161,87,0.55);
+  --c-star:        #d8e4f2;
+  --c-sprocket-h:  #1b2138;
+
+  /* Paper palette — cream stock, warm dark ink, gold rules */
+  --c-paper:       #f1e6cf;
+  --c-paper-mid:   #e8dabe;
+  --c-paper-deep:  #ddc9a3;
+  --c-ink:         #1a1612;
+  --c-ink-soft:    #3a3128;
+  --c-ink-fade:    rgba(26,22,18,0.55);
+  --c-ink-edge:    rgba(26,22,18,0.18);
+  --c-paper-gold:  #a37e2f;   /* darker gold for ink on paper */
+
+  /* Live camera state — set from JS */
+  --cam-tx:    0vw;
+  --cam-ty:    0vh;
+  --cam-scale: 0.78;
+  --cam-blur:  0px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{
+  background:#000;
+  color:var(--c-pearl);
+  font-family:'DM Mono',ui-monospace,monospace;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:geometricPrecision;
+}
+html, body { min-height:100%; }
+
+/* ============== NIGHT SKY (3–5 AM) — paper sits on this ============== */
+.skybox{
+  position:fixed;inset:0;z-index:-1;
+  background:
+    radial-gradient(ellipse 100% 30% at 50% 102%, var(--c-horizon), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 78% 16%, rgba(60,95,160,0.20), transparent 70%),
+    radial-gradient(ellipse 50% 36% at 22% 70%, rgba(70,60,140,0.10), transparent 65%),
+    linear-gradient(180deg,
+      var(--c-night-top) 0%,
+      var(--c-night-mid) 55%,
+      var(--c-night-bot) 100%);
+}
+.stars{position:fixed;inset:0;z-index:-1;pointer-events:none;}
+.star{
+  position:absolute;width:1px;height:1px;
+  background:var(--c-star);border-radius:50%;opacity:0;
+  animation:twinkle var(--dur,5s) ease-in-out infinite;
+  animation-delay:var(--delay,0s);
+}
+.star.s2{width:2px;height:2px;box-shadow:0 0 4px rgba(216,228,242,0.55);}
+.star.s3{width:2px;height:2px;box-shadow:0 0 8px rgba(216,228,242,0.85),0 0 14px rgba(150,180,220,0.35);}
+@keyframes twinkle{0%,100%{opacity:0.12;}50%{opacity:0.75;}}
+
+.grain{
+  position:fixed;inset:0;z-index:50;pointer-events:none;
+  mix-blend-mode:overlay;opacity:0.10;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>");
+}
+.vignette{
+  position:fixed;inset:0;z-index:49;pointer-events:none;
+  background:radial-gradient(ellipse 85% 75% at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%);
+}
+
+/* ============== CARRIER FRAME CHROME (pinned) ============== */
+.letterbox{position:fixed;left:0;right:0;height:4vh;background:#000;z-index:60;pointer-events:none;}
+.letterbox.top{top:0;}.letterbox.bot{bottom:0;}
+.letterbox.top::after,.letterbox.bot::after{
+  content:"";position:absolute;left:0;right:0;height:18px;
+  background:linear-gradient(180deg,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0) 100%);
+}
+.letterbox.top::after{bottom:-18px;}
+.letterbox.bot::after{top:-18px;transform:scaleY(-1);}
+
+.sprocket{
+  position:fixed;left:0;right:0;height:22px;z-index:59;pointer-events:none;
+  background:repeating-linear-gradient(90deg,
+    transparent 0,transparent 8px,
+    var(--c-sprocket-h) 8px,var(--c-sprocket-h) 22px,
+    transparent 22px,transparent 30px);
+  box-shadow:inset 0 1px 0 rgba(0,0,0,0.55),inset 0 -1px 0 rgba(0,0,0,0.55);
+  opacity:0.85;
+}
+.sprocket.top{top:calc(4vh - 1px);}
+.sprocket.bot{bottom:calc(4vh - 1px);}
+
+.regmark{position:fixed;width:16px;height:16px;z-index:62;opacity:0.32;pointer-events:none;}
+.regmark::before,.regmark::after{content:"";position:absolute;background:var(--c-pearl);}
+.regmark::before{left:50%;top:0;bottom:0;width:1px;margin-left:-0.5px;}
+.regmark::after{top:50%;left:0;right:0;height:1px;margin-top:-0.5px;}
+.regmark.tl{top:calc(4vh + 36px);left:28px;}
+.regmark.tr{top:calc(4vh + 36px);right:28px;}
+.regmark.bl{bottom:calc(4vh + 36px);left:28px;}
+.regmark.br{bottom:calc(4vh + 36px);right:28px;}
+
+/* ============== TOP / BOTTOM CHROME ============== */
+.chrome{
+  position:fixed;left:0;right:0;z-index:61;padding:0 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.28em;
+  text-transform:uppercase;color:var(--c-pearl-fade);pointer-events:none;
+}
+.chrome.top{top:calc(4vh + 38px);}
+.chrome.bot{bottom:calc(4vh + 32px);}
+.chrome .reel-id{display:flex;flex-direction:column;gap:6px;line-height:1.2;}
+.chrome .reel-id .val{color:var(--c-pearl);}
+.chrome .reel-id .gold{color:var(--c-gold);}
+.chrome .reel-id em{font-style:normal;color:var(--c-pearl-fade);}
+.chrome .meta-r{text-align:right;line-height:1.2;display:flex;flex-direction:column;gap:6px;}
+.chrome .meta-r .val{color:var(--c-pearl);}
+.chrome.bot .slate{display:flex;gap:14px;align-items:center;}
+.chrome.bot .slate .gold{color:var(--c-gold);}
+.chrome.bot .meta-r{flex-direction:row;gap:14px;align-items:center;}
+
+/* ============== CAMERA HUD ============== */
+.cam-hud{
+  position:fixed; top:calc(4vh + 38px); left:50%; transform:translateX(-50%);
+  z-index:63; pointer-events:none;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.32em;
+  color:var(--c-pearl-fade); text-transform:uppercase;
+}
+.cam-hud .dolly-state{
+  display:flex; align-items:center; gap:8px;
+  padding:4px 12px;
+  border:1px solid var(--c-pearl-edge);
+  color:var(--c-gold);
+  background: rgba(0,0,0,0.4);
+}
+.cam-hud .dolly-state .dot{
+  width:5px; height:5px; border-radius:50%;
+  background: var(--c-gold);
+  box-shadow: 0 0 6px var(--c-gold);
+  animation: cam-blink 1.8s ease-in-out infinite;
+}
+@keyframes cam-blink{ 0%,100%{opacity:0.4;} 50%{opacity:1;} }
+.cam-hud .lens-info{ color:var(--c-pearl-dim); }
+
+/* =========================================================
+   INTRO CARD — pinned chapter title
+   ========================================================= */
+.intro-chapter{ position:relative; height:160vh; }
+.intro-stick{
+  position:sticky; top:0; height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding: 0 6vw;
+}
+.intro-card{
+  text-align:center; max-width:760px;
+  opacity:0; transition: opacity 0.6s ease-out;
+}
+.intro-card.visible{ opacity:1; }
+.intro-card .above{
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.42em;
+  color:var(--c-pearl-fade);text-transform:uppercase;
+  display:flex;justify-content:center;align-items:center;gap:14px;
+  margin-bottom:28px;
+}
+.intro-card .above .pip{
+  width:5px;height:5px;background:var(--c-gold);border-radius:50%;
+  box-shadow:0 0 6px var(--c-gold);
+}
+.intro-card h1{
+  font-family:'Anton',sans-serif;font-weight:400;
+  font-size:clamp(56px, 8vw, 140px);
+  line-height:0.92;letter-spacing:-0.012em;color:var(--c-pearl);
+  text-transform:uppercase;
+  filter:drop-shadow(0 12px 30px rgba(0,0,0,0.55));
+}
+.intro-card h1 .ampere{
+  display:inline-block;color:var(--c-gold);margin:0 0.16em;
+  transform:translateY(-0.04em);font-size:0.86em;
+}
+.intro-card .sub{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
+  font-size:clamp(20px, 2.2vw, 30px);color:var(--c-gold);
+  letter-spacing:0.005em;margin-top:24px;
+}
+.intro-card .runtime{
+  margin-top: 36px;
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.42em;
+  color:var(--c-pearl-fade);text-transform:uppercase;
+}
+.intro-card .runtime .gold{ color: var(--c-gold); }
+
+.scroll-prompt{
+  position:fixed; left:50%; bottom: calc(4vh + 90px);
+  transform: translateX(-50%); z-index:6;
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.42em;
+  color:var(--c-gold-soft);text-transform:uppercase;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  opacity:0; transition: opacity 0.5s ease-out; pointer-events:none;
+}
+.scroll-prompt.on{ opacity:1; }
+.scroll-prompt .bar{
+  width:1px; height:24px;
+  background: linear-gradient(180deg, rgba(200,161,87,0) 0%, var(--c-gold) 100%);
+  animation: scroll-bar 2.2s ease-in-out infinite;
+  transform-origin: top;
+}
+@keyframes scroll-bar{
+  0%{ transform: scaleY(0); opacity:0; }
+  40%{ opacity:1; }
+  100%{ transform: scaleY(1); opacity:0; }
+}
+
+/* =========================================================
+   THE BAY — pinned camera over the broadsheet
+   ========================================================= */
+.bay-chapter{
+  position:relative;
+  height: 650vh;   /* generous scroll budget for 3 holds */
+  z-index: 2;
+}
+.bay-viewport{
+  position:sticky; top:0;
+  height:100vh;
+  overflow:hidden;
+  /* Fallback night sky — ensures background is always visible even when
+     the paper scales down and the .skybox z-index:-1 fails to paint behind. */
+  background:
+    radial-gradient(ellipse 100% 30% at 50% 102%, var(--c-horizon), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 78% 16%, rgba(60,95,160,0.20), transparent 70%),
+    radial-gradient(ellipse 50% 36% at 22% 70%, rgba(70,60,140,0.10), transparent 65%),
+    linear-gradient(180deg,
+      var(--c-night-top) 0%,
+      var(--c-night-mid) 55%,
+      var(--c-night-bot) 100%);
+}
+
+/* =========================================================
+   THE PAPER — a broadsheet prop on the night sky.
+   Sized 100vw × ~260vh in its own coordinate space.
+   Transformed by JS (translate + scale) via --cam-* vars.
+   ========================================================= */
+.paper{
+  position:absolute;
+  left:0; top:0;
+  width:100vw;
+  height: 260vh;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 50%, var(--c-paper) 0%, var(--c-paper-mid) 70%, var(--c-paper-deep) 100%);
+  color: var(--c-ink);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  transform-origin: 0 0;
+  transform: translate(var(--cam-tx), var(--cam-ty)) scale(var(--cam-scale));
+  filter: blur(var(--cam-blur));
+  will-change: transform;
+  box-shadow:
+    0 60px 120px -20px rgba(0,0,0,0.85),
+    0 30px 60px -10px rgba(0,0,0,0.6),
+    inset 0 0 0 1px rgba(0,0,0,0.18);
+}
+/* Paper grain — subtle multiply over cream */
+.paper::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.1 0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23p)' opacity='0.4'/></svg>");
+  opacity: 0.10; mix-blend-mode: multiply;
+}
+/* Paper edge wear — corner tone */
+.paper::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 100% at 50% 50%, transparent 60%, rgba(120,80,30,0.10) 100%),
+    radial-gradient(circle at 0 0,   rgba(120,80,30,0.10), transparent 18%),
+    radial-gradient(circle at 100% 0, rgba(120,80,30,0.10), transparent 18%),
+    radial-gradient(circle at 0 100%, rgba(120,80,30,0.10), transparent 18%),
+    radial-gradient(circle at 100% 100%, rgba(120,80,30,0.10), transparent 18%);
+}
+
+/* ========== MASTHEAD ========== */
+.masthead{
+  padding: 5vh 8vw 3vh;
+  text-align:center;
+  border-bottom: 3px double var(--c-ink);
+  position:relative;
+}
+.masthead .strap{
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.28em;
+  text-transform:uppercase; color: var(--c-ink-fade);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--c-ink-edge);
+  margin-bottom: 22px;
+}
+.masthead .strap .center{ flex:1; text-align:center; }
+.masthead .strap .gold{ color: var(--c-paper-gold); }
+.masthead h1{
+  font-family: 'Anton', sans-serif; font-weight: 400;
+  font-size: clamp(56px, 10vw, 180px);
+  line-height: 0.92; letter-spacing: -0.012em;
+  color: var(--c-ink);
+  text-transform: uppercase;
+  margin: 4px 0 8px;
+}
+.masthead h1 .ampere{
+  color: var(--c-paper-gold);
+  display:inline-block; margin: 0 0.12em;
+  font-size:0.86em; transform:translateY(-0.04em);
+}
+.masthead .tagline{
+  font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:500;
+  font-size: clamp(15px, 1.6vw, 24px);
+  color: var(--c-ink-soft);
+  margin-top: 6px;
+}
+.masthead .editorial-rule{
+  display:flex; justify-content:center; align-items:center; gap:18px;
+  margin: 18px 0 0;
+  font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.36em;
+  text-transform:uppercase; color: var(--c-ink-fade);
+}
+.masthead .editorial-rule .dot{
+  width:5px; height:5px; background: var(--c-paper-gold); border-radius:50%;
+}
+.masthead .editorial-rule .gold{ color: var(--c-paper-gold); }
+
+/* Skyline (above the masthead) */
+.skyline{
+  display:flex; justify-content:space-between; align-items:center;
+  padding: 1.5vh 8vw;
+  font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.32em;
+  text-transform:uppercase; color: var(--c-ink-fade);
+  border-bottom: 1px solid var(--c-ink-edge);
+}
+.skyline span{ display:inline-flex; gap:8px; align-items:center; }
+.skyline .gold{ color: var(--c-paper-gold); }
+
+/* ========== ARTICLES ========== */
+.article{
+  position: relative;
+  padding: 6vh 8vw 5vh;
+  border-bottom: 1px solid var(--c-ink-edge);
+  opacity: 0.62;
+  filter: saturate(0.7) brightness(0.92);
+  transition: opacity 0.7s cubic-bezier(.22,.61,.36,1),
+              filter   0.7s cubic-bezier(.22,.61,.36,1);
+}
+.article.in-focus{
+  opacity: 1;
+  filter: saturate(1) brightness(1);
+}
+
+/* Section rule between articles — small caption like "—— STATION 02 ——" */
+.section-rule{
+  display:flex; align-items:center; justify-content:center; gap: 16px;
+  padding: 0 8vw;
+  font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.42em;
+  text-transform:uppercase; color: var(--c-ink-fade);
+}
+.section-rule .ln{
+  flex:1; height:1px;
+  background: linear-gradient(90deg, transparent, var(--c-ink-edge) 30%, var(--c-ink-edge) 70%, transparent);
+}
+.section-rule .gold{ color: var(--c-paper-gold); }
+
+/* Article internals */
+.article .kicker{
+  display:flex; align-items:center; gap: 14px;
+  font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.34em;
+  text-transform:uppercase; color: var(--c-ink-fade);
+  margin-bottom: 16px;
+}
+.article .kicker .ko-tag{
+  color: var(--c-paper-gold);
+  border: 1px solid var(--c-paper-gold);
+  padding: 3px 9px;
+  letter-spacing: 0.3em;
+}
+.article .headline{
+  font-family:'Anton',sans-serif; font-weight:400;
+  font-size: clamp(40px, 6.4vw, 96px);
+  line-height: 0.92; letter-spacing: -0.012em;
+  color: var(--c-ink); text-transform: uppercase;
+  margin-bottom: 14px;
+  text-wrap: balance;
+}
+.article .deck{
+  font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:500;
+  font-size: clamp(18px, 2vw, 28px);
+  line-height: 1.4; color: var(--c-ink-soft);
+  margin-bottom: 24px;
+  max-width: 78ch;
+  text-wrap: pretty;
+}
+
+/* Two-col grid: figure left, prose right */
+.article .body-grid{
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 4vw;
+  align-items: start;
+}
+.article.mobile-feature .body-grid{
+  grid-template-columns: 0.55fr 1.45fr;   /* skinny portrait figure */
+}
+
+/* Figure (photo block) */
+.article .figure{
+  position:relative;
+  background: #0a0e18;       /* dark backing so empty slot reads ok */
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), 0 18px 30px -16px rgba(0,0,0,0.4);
+}
+.article .figure .frames{
+  position:relative;
+  display:flex; align-items:stretch;
+  filter: grayscale(0.78) sepia(0.10) contrast(1.05);  /* newsprint tint */
+}
+.article.mobile-feature .figure .frames{ aspect-ratio: 10/14; }
+.article.dual-feature  .figure .frames{ aspect-ratio: 16/10; }
+
+.article .figure .frames image-slot{
+  --omc-slot-radius:0;
+  background:transparent; border:none;
+}
+.article.mobile-feature .figure .frames{ justify-content:center; }
+.article.mobile-feature .figure .frames image-slot{
+  height:100%; aspect-ratio: 9/16; flex:0 0 auto;
+}
+.article.mobile-feature .figure .frames::before,
+.article.mobile-feature .figure .frames::after{
+  content:""; flex:1;
+  background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.78));
+}
+.article.dual-feature .figure .frames image-slot{ flex:1; height:100%; }
+.article.dual-feature .figure .frames .divider{
+  width:1px; flex:0 0 1px; background: rgba(0,0,0,0.65);
+}
+
+/* Photo halftone overlay — cheap newsprint stipple */
+.article .figure::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background-image: radial-gradient(circle at center, rgba(0,0,0,0.18) 0.6px, transparent 0.8px);
+  background-size: 2.6px 2.6px;
+  mix-blend-mode: multiply; opacity: 0.55; z-index: 2;
+}
+.article .figure .cutline{
+  position: relative;
+  padding: 10px 14px;
+  background: var(--c-paper-mid);
+  font-family: 'Cormorant Garamond', serif; font-style:italic;
+  font-size: clamp(12px, 1vw, 14px); line-height: 1.4;
+  color: var(--c-ink-soft);
+  border-top: 1px solid var(--c-ink-edge);
+}
+.article .figure .cutline .stamp{
+  font-family:'DM Mono',monospace; font-style:normal;
+  font-size: 9px; letter-spacing: 0.32em; text-transform: uppercase;
+  color: var(--c-paper-gold);
+  margin-right: 8px;
+}
+
+/* Prose column */
+.article .prose .lede{
+  font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:500;
+  font-size: clamp(18px, 1.5vw, 22px);
+  line-height: 1.5; color: var(--c-ink);
+  margin-bottom: 16px;
+  text-wrap: pretty;
+}
+.article .prose .lede::first-letter{
+  font-family:'Anton',sans-serif;
+  font-style: normal; font-weight: 400;
+  font-size: 4.4em; line-height: 0.86;
+  float: left; padding: 4px 10px 0 0;
+  color: var(--c-paper-gold);
+}
+.article .prose .body{
+  font-family:'Cormorant Garamond',serif; font-weight:400;
+  font-size: clamp(15px, 1.18vw, 18px);
+  line-height: 1.55; color: var(--c-ink-soft);
+  margin-bottom: 14px;
+  text-wrap: pretty;
+}
+.article .prose .pull{
+  margin: 22px 0;
+  padding: 16px 0 16px 16px;
+  border-left: 3px solid var(--c-paper-gold);
+  font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:500;
+  font-size: clamp(17px, 1.5vw, 22px);
+  line-height: 1.45;
+  color: var(--c-ink);
+}
+
+/* Staff/credits row — sits under each article */
+.article .staff{
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid var(--c-ink-edge);
+  display:flex; flex-wrap:wrap; gap: 6px 14px;
+  font-family:'DM Mono',monospace; font-size: 10px; letter-spacing:0.26em;
+  text-transform:uppercase; color: var(--c-ink-fade);
+}
+.article .staff .label{
+  color: var(--c-paper-gold); margin-right: 6px;
+}
+.article .staff span.tech{ color: var(--c-ink-soft); }
+.article .staff .sep{ color: var(--c-ink-edge); }
+
+/* Cross-heads — PROBLEM / SOLUTION sub-section markers inside the article */
+.article .prose .cross-head{
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(10px, 0.9vw, 12px);
+  letter-spacing: 0.34em; text-transform: uppercase;
+  font-weight: 500;
+  margin: 22px 0 8px;
+}
+.article .prose .cross-head.problem  { color: var(--c-redpen, #8a2a20); }
+.article .prose .cross-head.solution { color: var(--c-paper-gold); }
+
+/* OUTCOME row — impact strip at the foot of the article */
+.article .prose .outcome-row{
+  margin: 22px 0 18px;
+  padding: 12px 14px 10px;
+  border-top: 1px dashed var(--c-ink-edge);
+  border-bottom: 1px dashed var(--c-ink-edge);
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(11px, 0.95vw, 13px);
+  letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--c-ink-soft);
+  text-align: center;
+  display: flex; justify-content: center; align-items: baseline; flex-wrap: wrap;
+  gap: 6px 0;
+}
+.article .prose .outcome-row .lab{ color: var(--c-paper-gold); margin-right: 0.6em; }
+.article .prose .outcome-row .val{ color: var(--c-ink); }
+.article .prose .outcome-row .gold{ color: var(--c-paper-gold); }
+.article .prose .outcome-row .sep{ color: var(--c-ink-edge); margin: 0 0.5em; }
+
+/* ========== INK SHIFT — the word ignites from black to gold ==========
+   No underline / no background. As the camera lands on a story, the
+   marked words simply shift from the page's black ink to the warm
+   gold ink — like a printer using a second plate, or a director's
+   eye finding the phrase. .strong variant adds a subtle inkpress
+   shadow + slight tracking so it reads as "stamped harder". */
+.h-mark{
+  display: inline;
+  color: var(--c-ink);
+  transition:
+    color 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
+    letter-spacing 0.85s cubic-bezier(0.22, 0.61, 0.36, 1),
+    text-shadow 0.85s ease-out;
+}
+.h-mark.in-view{
+  color: var(--c-paper-gold);
+}
+.h-mark.strong{
+  font-weight: 500;
+}
+.h-mark.strong.in-view{
+  color: var(--c-paper-gold);
+  letter-spacing: 0.012em;
+  text-shadow: 0 1px 0 rgba(120,90,30,0.22);
+}
+
+/* ========== PAPER FOOTER ========== */
+.colophon{
+  padding: 4vh 8vw;
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:'DM Mono',monospace; font-size: 10px; letter-spacing: 0.32em;
+  text-transform: uppercase; color: var(--c-ink-fade);
+  border-top: 3px double var(--c-ink);
+}
+.colophon .gold{ color: var(--c-paper-gold); }
+.colophon .anchor{
+  font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:500;
+  font-size: clamp(14px, 1.2vw, 17px);
+  color: var(--c-ink-soft); letter-spacing: 0.005em;
+  text-transform: none;
+  flex:1; text-align:center;
+}
+
+/* =========================================================
+   EXIT CARD
+   ========================================================= */
+.exit-chapter{ position:relative; height:120vh; }
+.exit-stick{
+  position:sticky; top:0; height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  text-align:center; padding: 0 6vw;
+  /* Same night-sky fallback so the exit card never sits on a black void. */
+  background:
+    radial-gradient(ellipse 100% 30% at 50% 102%, var(--c-horizon), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 78% 16%, rgba(60,95,160,0.20), transparent 70%),
+    radial-gradient(ellipse 50% 36% at 22% 70%, rgba(70,60,140,0.10), transparent 65%),
+    linear-gradient(180deg,
+      var(--c-night-top) 0%,
+      var(--c-night-mid) 55%,
+      var(--c-night-bot) 100%);
+}
+.exit-card{
+  max-width: 720px; opacity:0;
+  transition: opacity 0.6s ease-out;
+}
+.exit-card.visible{ opacity:1; }
+.exit-card .end-slug{
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.42em;
+  color:var(--c-pearl-fade);text-transform:uppercase;
+  margin-bottom: 28px;
+}
+.exit-card .end-slug .gold{ color: var(--c-gold); }
+.exit-card .end-line{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
+  font-size: clamp(22px, 3vw, 38px);
+  color: var(--c-pearl); line-height: 1.4;
+}
+.exit-card .end-line .gold{ color: var(--c-gold); }
+.exit-card .next-arrow{
+  margin-top: 38px;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.42em;
+  color: var(--c-gold-soft); text-transform:uppercase;
+}
+
+/* =========================================================
+   REDUCED MOTION + MOBILE FALLBACK
+   ========================================================= */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:0.001s !important;
+    transition-duration:0.001s !important;
+  }
+  .bay-chapter{ height:auto; }
+  .bay-viewport{ position:static; height:auto; overflow:visible; }
+  .paper{
+    position:static; height:auto;
+    transform:none !important; filter:none !important;
+    box-shadow: 0 30px 60px -10px rgba(0,0,0,0.6);
+  }
+  .article{ opacity:1 !important; filter:none !important; }
+  .h-mark{ color: var(--c-paper-gold) !important; }
+  .h-mark.strong{ color: var(--c-paper-gold) !important; letter-spacing: 0.012em; }
+}
+@media (max-width: 760px){
+  .chrome{padding:0 18px;font-size:9px;letter-spacing:0.22em;}
+  .chrome.top{top:calc(4vh + 22px);}
+  .chrome.bot{bottom:calc(4vh + 22px);}
+  .cam-hud{ display:none; }
+  .regmark.tl,.regmark.tr{top:calc(4vh + 20px);}
+  .regmark.bl,.regmark.br{bottom:calc(4vh + 20px);}
+  .regmark.tl,.regmark.bl{left:14px;}
+  .regmark.tr,.regmark.br{right:14px;}
+
+  .bay-chapter{ height:auto; }
+  .bay-viewport{ position:static; height:auto; overflow:visible; }
+  .paper{
+    position:static; height:auto;
+    transform:none !important; filter:none !important;
+    box-shadow: 0 30px 60px -10px rgba(0,0,0,0.6);
+  }
+  .article{ opacity:1 !important; filter:none !important; padding: 5vh 6vw; }
+  .article .body-grid,
+  .article.mobile-feature .body-grid{ grid-template-columns: 1fr; gap: 4vh; }
+  .masthead{ padding: 4vh 5vw 3vh; }
+  .h-mark{ color: var(--c-paper-gold) !important; }
+  .h-mark.strong{ color: var(--c-paper-gold) !important; letter-spacing: 0.012em; }
+  .exit-chapter{ height:auto; }
+  .exit-stick{ position:static; height:auto; padding: 10vh 6vw; }
+  .exit-card{ opacity:1; }
+  .scroll-prompt{ display:none; }
+}
+</style>
+</head>
+
+<body data-screen-label="02 The Crafts">
+
+<!-- Night sky -->
+<div class="skybox"></div>
+<div class="stars" id="stars"></div>
+
+<!-- Carrier frame chrome -->
+<div class="letterbox top"></div>
+<div class="letterbox bot"></div>
+<div class="sprocket top"></div>
+<div class="sprocket bot"></div>
+<div class="regmark tl"></div>
+<div class="regmark tr"></div>
+<div class="regmark bl"></div>
+<div class="regmark br"></div>
+
+<!-- Top chrome -->
+<div class="chrome top">
+  <div class="reel-id">
+    <div><span class="gold">REEL Nº 02</span> <em>·</em> <span class="val">CHAPTER II</span></div>
+    <div>THE CRAFTS <em>·</em> 2022 — PRESENT</div>
+  </div>
+  <div class="meta-r">
+    <div>INT. DESK <em>·</em> NIGHT</div>
+    <div>3:42 AM <em>·</em> ASA 800T</div>
+  </div>
+</div>
+
+<!-- Camera HUD -->
+<div class="cam-hud">
+  <div class="dolly-state">
+    <span class="dot"></span>
+    <span id="dollyState">WIDE · ESTABLISH</span>
+  </div>
+  <div class="lens-info"><span>CAM A</span> · <span>50MM</span> · <span>F2.0</span> · <span id="lensFocus">FOCUS ∞</span></div>
+</div>
+
+<!-- Bottom chrome -->
+<div class="chrome bot">
+  <div class="slate">
+    <span>SC.</span><span class="gold" id="sceneTag">II.a</span>
+    <span style="opacity:0.4">·</span>
+    <span id="beatTag">BEAT 00 / 12</span>
+  </div>
+  <div class="meta-r">
+    <span style="opacity:0.5">PAGE</span><span style="color:var(--c-pearl)">22</span>
+    <span style="opacity:0.4">·</span>
+    <span style="opacity:0.5">DRAFT 02 / REV. C</span>
+  </div>
+</div>
+
+<!-- Post FX -->
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<!-- Scroll prompt -->
+<div class="scroll-prompt" id="scrollPrompt">
+  <span>Scroll · Roll Camera</span>
+  <span class="bar"></span>
+</div>
+
+
+<!-- =========================================================
+     SECTION 1 — THE BAY (camera over the broadsheet)
+     The page opens directly on the wide establishing shot of
+     the broadsheet — the masthead IS the title card.
+     ========================================================= -->
+<section class="bay-chapter" id="bayChapter" data-screen-label="02.a The Cutting Room">
+  <div class="bay-viewport">
+
+    <!-- THE PAPER — broadsheet prop on the night sky -->
+    <article class="paper" id="paperWorld">
+
+      <!-- ========= SKYLINE STRAP ========= -->
+      <div class="skyline">
+        <span>VOL <span class="gold">II</span> · NO. <span class="gold">03</span></span>
+        <span>★ ★ ★</span>
+        <span>LATE EDITION · NIGHT FILE</span>
+        <span>★ ★ ★</span>
+        <span>SIX PAGES · <span class="gold">₹0</span></span>
+      </div>
+
+      <!-- ========= MASTHEAD ========= -->
+      <header class="masthead" data-station="0">
+        <div class="strap">
+          <span>FILED · 03:42 AM</span>
+          <span class="center"><span class="gold">EDITOR ·</span> A. VELU</span>
+          <span>TUE · MAY 2026</span>
+        </div>
+        <h1>The Cutting<span class="ampere">·</span>Room</h1>
+        <div class="tagline">all the news the workbench saw fit to file</div>
+        <div class="editorial-rule">
+          <span>REEL Nº</span><span class="gold">02</span>
+          <span class="dot"></span>
+          <span>CHAPTER</span><span class="gold">II</span>
+          <span class="dot"></span>
+          <span class="gold">THE CRAFTS</span>
+          <span class="dot"></span>
+          <span>2022 — PRESENT</span>
+        </div>
+      </header>
+
+      <!-- ========================================================
+           STORY 01 — SYNDICATE  (lead, portrait figure)
+           ======================================================== -->
+      <section class="article mobile-feature" data-station="1" id="story-syndicate">
+        <div class="kicker">
+          <span class="ko-tag">STORY Nº 01</span>
+          <span>Filed · Late Night</span>
+          <span>·</span>
+          <span>The Workbench · <span style="color:var(--c-paper-gold)">2024</span></span>
+        </div>
+
+        <h2 class="headline"><span class="h-mark strong" data-reveal-at="0.10">One Feed.</span> Mine.</h2>
+        <div class="deck">
+          Five newsletters were telling him the same AI news every day.
+          So he built one feed that reads them all, removes the duplicates,
+          and sends a single summary every morning.
+        </div>
+
+        <div class="body-grid">
+          <figure class="figure">
+            <div class="frames">
+              <image-slot id="syndicate-1" shape="rect" placeholder="SYNDICATE · mobile screen"></image-slot>
+            </div>
+            <figcaption class="cutline">
+              <span class="stamp">FIG. 01</span>
+              The Syndicate feed on a phone — runs on his own laptop, costs nothing.
+            </figcaption>
+          </figure>
+
+          <div class="prose">
+            <p class="lede">
+              Five sources. Same story. Told to him five times a day.
+            </p>
+
+            <div class="cross-head problem">— The Problem</div>
+            <p class="body">
+              Every AI announcement was being repeated across <span class="h-mark" data-reveal-at="0.18">five newsletters, two blogs, and a Twitter feed</span>. He was reading the same headline five times — and learning nothing new.
+            </p>
+
+            <div class="cross-head solution">— The Solution</div>
+            <p class="body">
+              A small program pulls every source overnight, <span class="h-mark" data-reveal-at="0.21">removes the duplicates</span>, and writes a short summary. <span class="h-mark strong" data-reveal-at="0.23">It runs on his own laptop</span> while he sleeps. <span class="h-mark" data-reveal-at="0.25">No cloud. No cost.</span>
+            </p>
+
+            <blockquote class="pull">
+              "<span class="h-mark strong" data-reveal-at="0.27">Five sources in. One summary out.</span>"
+            </blockquote>
+
+            <div class="outcome-row">
+              <span class="lab">OUTCOME —</span>
+              <span class="val">Read every morning</span>
+              <span class="sep">·</span>
+              <span class="gold">zero cloud bill</span>
+              <span class="sep">·</span>
+              <span class="val">runs on his laptop</span>
+            </div>
+
+            <div class="staff">
+              <span class="label">STAFF —</span>
+              <span class="tech">Python</span><span class="sep">·</span>
+              <span class="tech">DSPy</span><span class="sep">·</span>
+              <span class="tech">Ollama</span><span class="sep">·</span>
+              <span class="tech">Gemma 4</span><span class="sep">·</span>
+              <span class="tech">Qwen</span><span class="sep">·</span>
+              <span class="tech">PWA</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== section rule ====== -->
+      <div class="section-rule">
+        <span class="ln"></span>
+        <span>STORY Nº <span class="gold">02</span></span>
+        <span>·</span>
+        <span>OPS DESK</span>
+        <span class="ln"></span>
+      </div>
+
+      <!-- ========================================================
+           STORY 02 — HOURGLASS  (dual frames)
+           ======================================================== -->
+      <section class="article dual-feature" data-station="2" id="story-hourglass">
+        <div class="kicker">
+          <span class="ko-tag">STORY Nº 02</span>
+          <span>Filed · Ops Desk</span>
+          <span>·</span>
+          <span>The Workbench · <span style="color:var(--c-paper-gold)">2022 — present</span></span>
+        </div>
+
+        <h2 class="headline">
+          The Tool That <span class="h-mark strong" data-reveal-at="0.42">Ran</span> the Team.
+        </h2>
+        <div class="deck">
+          Twelve people. Daily standups stretching to an hour.
+          Tasks slipping through the cracks. So he built one tool to
+          track everything — and eventually it ran the meetings too.
+        </div>
+
+        <div class="body-grid">
+          <figure class="figure">
+            <div class="frames">
+              <image-slot id="hourglass-1" shape="rect" placeholder="HOURGLASS · frame A"></image-slot>
+              <div class="divider"></div>
+              <image-slot id="hourglass-2" shape="rect" placeholder="HOURGLASS · frame B"></image-slot>
+            </div>
+            <figcaption class="cutline">
+              <span class="stamp">FIG. 02</span>
+              Two views of Hourglass — the timesheet it started as on the left, the operations tool it grew into on the right.
+            </figcaption>
+          </figure>
+
+          <div class="prose">
+            <p class="lede">
+              It started as a timesheet. By the time the team had doubled, it was running the standup.
+            </p>
+
+            <div class="cross-head problem">— The Problem</div>
+            <p class="body">
+              The team <span class="h-mark" data-reveal-at="0.48">grew 2×</span>. Excel timesheets weren't enough. Daily standups <span class="h-mark" data-reveal-at="0.50">stretched to an hour</span>, and tasks kept slipping through the cracks.
+            </p>
+
+            <div class="cross-head solution">— The Solution</div>
+            <p class="body">
+              Hourglass tracked work, leave, and expenses in <span class="h-mark" data-reveal-at="0.52">one place</span>. Then it <span class="h-mark strong" data-reveal-at="0.54">joined the team's Teams calls</span>, wrote down what was said, and reminded everyone in the next standup what they had forgotten.
+            </p>
+
+            <blockquote class="pull">
+              "Started as a spreadsheet. <span class="h-mark strong" data-reveal-at="0.56">Ended up running the team.</span>"
+            </blockquote>
+
+            <div class="outcome-row">
+              <span class="lab">OUTCOME —</span>
+              <span class="val">10× the work, same team</span>
+              <span class="sep">·</span>
+              <span class="gold">nothing falls through anymore</span>
+            </div>
+
+            <div class="staff">
+              <span class="label">STAFF —</span>
+              <span class="tech">React</span><span class="sep">·</span>
+              <span class="tech">Node.js</span><span class="sep">·</span>
+              <span class="tech">MS Teams</span><span class="sep">·</span>
+              <span class="tech">AI</span><span class="sep">·</span>
+              <span class="tech">Azure</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== section rule ====== -->
+      <div class="section-rule">
+        <span class="ln"></span>
+        <span>STORY Nº <span class="gold">03</span></span>
+        <span>·</span>
+        <span>CASTING</span>
+        <span class="ln"></span>
+      </div>
+
+      <!-- ========================================================
+           STORY 03 — HIREHOUSE  (dual frames)
+           ======================================================== -->
+      <section class="article dual-feature" data-station="3" id="story-hirehouse">
+        <div class="kicker">
+          <span class="ko-tag">STORY Nº 03</span>
+          <span>Filed · Casting Desk</span>
+          <span>·</span>
+          <span>The Workbench · <span style="color:var(--c-paper-gold)">2023</span></span>
+        </div>
+
+        <h2 class="headline">
+          <span class="h-mark strong" data-reveal-at="0.71">50,000 Résumés.</span> One Decision.
+        </h2>
+        <div class="deck">
+          His manager spent three hours a day on hiring calls — most with
+          the wrong people. So he built a way to find the best candidates
+          automatically, and left the final call to the human.
+        </div>
+
+        <div class="body-grid">
+          <figure class="figure">
+            <div class="frames">
+              <image-slot id="hirehouse-1" shape="rect" placeholder="HIREHOUSE · frame A"></image-slot>
+              <div class="divider"></div>
+              <image-slot id="hirehouse-2" shape="rect" placeholder="HIREHOUSE · frame B"></image-slot>
+            </div>
+            <figcaption class="cutline">
+              <span class="stamp">FIG. 03</span>
+              The Hirehouse interface — résumés and videos ranked tournament-style. A human still makes the final call.
+            </figcaption>
+          </figure>
+
+          <div class="prose">
+            <p class="lede">
+              His manager wasn't avoiding meetings. He was <span class="h-mark" data-reveal-at="0.76">three hours deep</span> in candidate calls every day.
+            </p>
+
+            <div class="cross-head problem">— The Problem</div>
+            <p class="body">
+              Most of those calls were with people who shouldn't have made it past the résumé. He built the filter his manager needed — without removing the <span class="h-mark strong" data-reveal-at="0.79">human</span> from the final decision.
+            </p>
+
+            <div class="cross-head solution">— The Solution</div>
+            <p class="body">
+              Drop a résumé. No form, no questions. The AI reads it and <span class="h-mark" data-reveal-at="0.82">ranks it against the others</span> — like a tournament. The top résumés get an automated video interview. <span class="h-mark strong" data-reveal-at="0.85">The best videos rise to the top.</span> A human still picks.
+            </p>
+
+            <blockquote class="pull">
+              "Résumés compete. Videos compete. The best rise. <span class="h-mark strong" data-reveal-at="0.87">You decide.</span>"
+            </blockquote>
+
+            <div class="outcome-row">
+              <span class="lab">OUTCOME —</span>
+              <span class="gold">50,000+ résumés processed</span>
+              <span class="sep">·</span>
+              <span class="val">cost: barely anything</span>
+            </div>
+
+            <div class="staff">
+              <span class="label">STAFF —</span>
+              <span class="tech">React</span><span class="sep">·</span>
+              <span class="tech">Node.js</span><span class="sep">·</span>
+              <span class="tech">AI / LLM</span><span class="sep">·</span>
+              <span class="tech">Video Processing</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========= COLOPHON ========= -->
+      <footer class="colophon">
+        <span>PAGE <span class="gold">22</span> · OF 22</span>
+        <div class="anchor">— end of reel. continued in <span style="color:var(--c-paper-gold);font-style:normal;letter-spacing:0.32em;text-transform:uppercase;font-family:'DM Mono',monospace;font-size:0.78em">CHAPTER III · THE RECORD</span> —</div>
+        <span><span class="gold">REEL Nº 02</span> · 2026</span>
+      </footer>
+
+    </article>
+
+  </div>
+</section>
+
+
+<!-- =========================================================
+     SECTION 3 — EXIT CARD
+     ========================================================= -->
+<section class="exit-chapter" data-screen-label="02.z End of Reel">
+  <div class="exit-stick">
+    <div class="exit-card" id="exitCard">
+      <div class="end-slug">
+        <span class="gold">CUT.</span> &nbsp; END OF REEL Nº 02
+      </div>
+      <p class="end-line">
+        Three things he built. Three problems that <span class="gold">wouldn't leave</span>.<br>
+        The fourth one is still <span class="gold">running</span>.
+      </p>
+      <div class="next-arrow">↳ &nbsp; Chapter III · The Record</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Image-slot web component -->
+<script src="image-slot.js"></script>
+
+<script>
+(() => {
+  'use strict';
+
+  /* =========================================================
+     STARS — sparse, biased upward
+     ========================================================= */
+  (function makeStars(){
+    const root = document.getElementById('stars');
+    if (!root) return;
+    const N = 55;
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < N; i++){
+      const s = document.createElement('span');
+      s.className = 'star';
+      const sz = Math.random();
+      if (sz > 0.92) s.classList.add('s3');
+      else if (sz > 0.74) s.classList.add('s2');
+      s.style.left = (Math.random() * 100) + '%';
+      s.style.top  = (Math.random() * 70)  + '%';
+      s.style.setProperty('--dur',   (4 + Math.random() * 6) + 's');
+      s.style.setProperty('--delay', (Math.random() * 6) + 's');
+      frag.appendChild(s);
+    }
+    root.appendChild(frag);
+  })();
+
+  /* =========================================================
+     CAMERA CHOREOGRAPHY
+     Paper is 100vw × 260vh (in its own coords).
+     Each "park" centers the named paper-y in viewport center
+     at the parked scale.
+     World transform: translate(tx, ty) scale(s)  with origin 0 0
+     To center paper-y P at viewport vertical center 50vh:
+        ty = 50vh - P * s          (vh)
+     For X: paper centered horizontally always:
+        tx = 50vw - 50vw * s = 50vw * (1 - s)
+     ========================================================= */
+
+  const bayChapter = document.getElementById('bayChapter');
+  const paperWorld = document.getElementById('paperWorld');
+  const dollyState = document.getElementById('dollyState');
+  const lensFocus  = document.getElementById('lensFocus');
+  const beatTag    = document.getElementById('beatTag');
+  const sceneTag   = document.getElementById('sceneTag');
+  const exitCard   = document.getElementById('exitCard');
+  const scrollPrompt = document.getElementById('scrollPrompt');
+  const articles   = Array.from(document.querySelectorAll('.article'));
+
+  // Scroll prompt: show on initial paint, hide once user begins scrolling
+  if (scrollPrompt) scrollPrompt.classList.add('on');
+
+  /* Park positions and camera keyframes — recalibrated at runtime
+     from the actual rendered article positions (see recalibrateCamera). */
+  let PARK_Y = {
+    masthead:   18,
+    story1:     85,
+    story2:    150,
+    story3:    220,
+    whole:     130,
+  };
+
+  // Camera keyframes — [progress, paperY, scale, label]
+  // Recomputed by recalibrateCamera() so each story actually fits.
+  let KEYS = [
+    { p: 0.000, cy: PARK_Y.masthead, s: 0.78, lbl: 'WIDE · ESTABLISH' },
+    { p: 0.060, cy: PARK_Y.masthead, s: 0.82, lbl: 'OPEN PAGE'        },
+    { p: 0.140, cy: PARK_Y.story1,   s: 1.05, lbl: 'PUSH IN · STORY 01' },
+    { p: 0.300, cy: PARK_Y.story1,   s: 1.05, lbl: 'HOLD · STORY 01'    },
+    { p: 0.380, cy: 118,             s: 0.86, lbl: 'TURN PAGE'          },
+    { p: 0.460, cy: PARK_Y.story2,   s: 1.05, lbl: 'PUSH IN · STORY 02' },
+    { p: 0.600, cy: PARK_Y.story2,   s: 1.05, lbl: 'HOLD · STORY 02'    },
+    { p: 0.680, cy: 185,             s: 0.86, lbl: 'TURN PAGE'          },
+    { p: 0.760, cy: PARK_Y.story3,   s: 1.05, lbl: 'PUSH IN · STORY 03' },
+    { p: 0.920, cy: PARK_Y.story3,   s: 1.05, lbl: 'HOLD · STORY 03'    },
+    { p: 1.000, cy: PARK_Y.whole,    s: 0.62, lbl: 'PULL OUT · CUT'     },
+  ];
+
+  function ease(t){ return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2; }
+
+  /* =========================================================
+     CAMERA RECALIBRATION
+     Measure each article's actual position & height (in vh of
+     the paper's coord space) and rebuild PARK_Y + KEYS so the
+     camera centers on the article and the hold scale fits the
+     article inside the viewport with breathing room. Called on
+     load, font-ready, and resize — keeps the choreography
+     correct even when copy length changes.
+     ========================================================= */
+  function recalibrateCamera(){
+    const vh = window.innerHeight / 100;
+    if (!vh) return;
+
+    const stations = {};
+    document.querySelectorAll('[data-station]').forEach(el => {
+      const s = parseInt(el.dataset.station, 10);
+      stations[s] = {
+        top:    el.offsetTop / vh,
+        height: el.offsetHeight / vh,
+        center: (el.offsetTop + el.offsetHeight / 2) / vh,
+      };
+    });
+
+    // Center each park on the actual middle of its article
+    if (stations[0]) PARK_Y.masthead = stations[0].center;
+    if (stations[1]) PARK_Y.story1   = stations[1].center;
+    if (stations[2]) PARK_Y.story2   = stations[2].center;
+    if (stations[3]) PARK_Y.story3   = stations[3].center;
+
+    // Whole-paper center for the final pull-out
+    const paper = document.getElementById('paperWorld');
+    if (paper) PARK_Y.whole = (paper.offsetHeight / vh) / 2;
+
+    // Hold scale per article: viewport shows 100vh / scale of paper-vh.
+    // We want: 100vh / s >= articleHeight + BUFFER
+    //   =>    s <= 100 / (articleHeight + BUFFER)
+    // Cap at 1.0 so we don't push closer than "100%".
+    const BUFFER = 10;
+    const safeScale = (h) => Math.min(1.0, 100 / (h + BUFFER));
+    const s1 = stations[1] ? safeScale(stations[1].height) : 1.0;
+    const s2 = stations[2] ? safeScale(stations[2].height) : 1.0;
+    const s3 = stations[3] ? safeScale(stations[3].height) : 1.0;
+
+    // Turn-page midpoints between stories
+    const turn12 = (PARK_Y.story1 + PARK_Y.story2) / 2;
+    const turn23 = (PARK_Y.story2 + PARK_Y.story3) / 2;
+
+    KEYS = [
+      { p: 0.000, cy: PARK_Y.masthead, s: 0.78, lbl: 'WIDE · ESTABLISH' },
+      { p: 0.060, cy: PARK_Y.masthead, s: 0.82, lbl: 'OPEN PAGE'        },
+      { p: 0.140, cy: PARK_Y.story1,   s: s1,   lbl: 'PUSH IN · STORY 01' },
+      { p: 0.300, cy: PARK_Y.story1,   s: s1,   lbl: 'HOLD · STORY 01'    },
+      { p: 0.380, cy: turn12,          s: 0.84, lbl: 'TURN PAGE'          },
+      { p: 0.460, cy: PARK_Y.story2,   s: s2,   lbl: 'PUSH IN · STORY 02' },
+      { p: 0.600, cy: PARK_Y.story2,   s: s2,   lbl: 'HOLD · STORY 02'    },
+      { p: 0.680, cy: turn23,          s: 0.84, lbl: 'TURN PAGE'          },
+      { p: 0.760, cy: PARK_Y.story3,   s: s3,   lbl: 'PUSH IN · STORY 03' },
+      { p: 0.920, cy: PARK_Y.story3,   s: s3,   lbl: 'HOLD · STORY 03'    },
+      { p: 1.000, cy: PARK_Y.whole,    s: 0.55, lbl: 'PULL OUT · CUT'     },
+    ];
+  }
+
+  function interpolateCamera(p){
+    p = Math.max(0, Math.min(1, p));
+    let a = KEYS[0], b = KEYS[KEYS.length - 1];
+    for (let i = 0; i < KEYS.length - 1; i++){
+      if (p >= KEYS[i].p && p <= KEYS[i+1].p){
+        a = KEYS[i]; b = KEYS[i+1]; break;
+      }
+    }
+    const span = b.p - a.p;
+    const t = span > 0 ? ease((p - a.p) / span) : 0;
+    const cy = a.cy + (b.cy - a.cy) * t;
+    const s  = a.s  + (b.s  - a.s)  * t;
+    const cyRate = Math.abs(b.cy - a.cy) / Math.max(span, 0.001);
+    const blurPeak = Math.min(cyRate / 1100, 0.0035) * 1000;
+    const blur = blurPeak * Math.sin(t * Math.PI);
+    return { cy, s, blur, label: a.lbl };
+  }
+
+  function getBayProgress(){
+    const rect = bayChapter.getBoundingClientRect();
+    const vh   = window.innerHeight;
+    const scrolled = -rect.top;
+    const total = bayChapter.offsetHeight - vh;
+    return Math.max(0, Math.min(1, scrolled / total));
+  }
+
+  /* Which station is currently in focus? Used to ignite the article. */
+  function focusedStation(p){
+    if (p < 0.08) return 0;     // masthead
+    if (p < 0.38) return 1;     // story 1
+    if (p < 0.68) return 2;     // story 2
+    if (p < 0.93) return 3;     // story 3
+    return 0;                   // back to wide
+  }
+
+  /* Reveals (gold highlights) — all elements with data-reveal-at */
+  const revealEls = Array.from(document.querySelectorAll('[data-reveal-at]'));
+  const totalBeats = revealEls.length;
+
+  /* Exit IO trigger */
+  if (exitCard){
+    new IntersectionObserver((es)=> es.forEach(e=>{
+      if (e.isIntersecting && e.intersectionRatio > 0.5) exitCard.classList.add('visible');
+    }), { threshold:[0,0.5] }).observe(exitCard.parentElement);
+  }
+
+  /* =========================================================
+     MAIN SCROLL LOOP (rAF)
+     ========================================================= */
+  let ticking = false;
+  function onScroll(){
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }
+
+  function update(){
+    ticking = false;
+    const p = getBayProgress();
+
+    const { cy, s, blur, label } = interpolateCamera(p);
+    // tx = 50vw * (1 - s)   — paper stays horizontally centered
+    const txVW = 50 * (1 - s);
+    const tyVH = 50 - cy * s;
+    paperWorld.style.setProperty('--cam-tx',    txVW.toFixed(3) + 'vw');
+    paperWorld.style.setProperty('--cam-ty',    tyVH.toFixed(3) + 'vh');
+    paperWorld.style.setProperty('--cam-scale', s.toFixed(4));
+    paperWorld.style.setProperty('--cam-blur',  blur.toFixed(2) + 'px');
+
+    if (dollyState && dollyState.textContent !== label) dollyState.textContent = label;
+    const focusVal = s > 0.95 ? '1.4 m' : (s > 0.78 ? '2.8 m' : '∞');
+    if (lensFocus && lensFocus.textContent !== 'FOCUS ' + focusVal){
+      lensFocus.textContent = 'FOCUS ' + focusVal;
+    }
+
+    // Article focus (ignite the parked story)
+    const stn = focusedStation(p);
+    articles.forEach(a => {
+      const myStn = parseInt(a.dataset.station, 10);
+      a.classList.toggle('in-focus', myStn === stn);
+    });
+
+    // Reveals — gold highlights draw when threshold crossed
+    let revealed = 0;
+    revealEls.forEach(el => {
+      const th = parseFloat(el.dataset.revealAt);
+      const on = p >= th;
+      el.classList.toggle('in-view', on);
+      if (on) revealed++;
+    });
+    if (beatTag){
+      const total = String(totalBeats).padStart(2,'0');
+      const cur   = String(revealed).padStart(2,'0');
+      const txt = `BEAT ${cur} / ${total}`;
+      if (beatTag.textContent !== txt) beatTag.textContent = txt;
+    }
+    if (sceneTag){
+      const tag = stn <= 1 ? 'II.a' : (stn === 2 ? 'II.b' : 'II.c');
+      if (sceneTag.textContent !== tag) sceneTag.textContent = tag;
+    }
+
+    if (scrollPrompt && p > 0.02) scrollPrompt.classList.remove('on');
+  }
+
+  update();
+  recalibrateCamera();
+  update();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', () => { recalibrateCamera(); onScroll(); });
+  if (document.fonts && document.fonts.ready){
+    document.fonts.ready.then(() => { recalibrateCamera(); update(); });
+  }
+  window.addEventListener('load', () => { recalibrateCamera(); update(); });
+})();
+</script>
+
+</body>
+</html>

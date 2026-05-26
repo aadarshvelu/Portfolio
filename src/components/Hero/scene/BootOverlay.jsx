@@ -53,6 +53,9 @@ export default function BootOverlay({ bootLine, maskGone }) {
         position={[0, 0, 0]}
         renderOrder={ORDER.bootLine}
         fillOpacity={lineOpacity}
+        depthOffset={-1}
+        material-depthTest={false}
+        material-depthWrite={false}
       >
         {typed}
       </Text>

@@ -131,7 +131,7 @@ void main() {
 }
 `
 
-export default function PagePeel({ smoothed, start, end, capturedRef, children }) {
+export default function PagePeel({ smoothed, start, end, capturedRef, reelWrapRef, children }) {
   const { peel: peelLayout } = useLayout()
   const peelDist = peelLayout.peelDist
   const overscan = peelLayout.overscan
@@ -166,6 +166,9 @@ export default function PagePeel({ smoothed, start, end, capturedRef, children }
     uWidth: { value: 1 },
     uHeight: { value: 1 },
   }), [])
+
+  const maskRef = useRef()
+  const maskMatRef = useRef()
 
   useEffect(() => () => fboRef.current?.dispose(), [])
 
@@ -210,9 +213,11 @@ export default function PagePeel({ smoothed, start, end, capturedRef, children }
       state.gl.outputColorSpace = prevColorSpace
       peelUniforms.uSceneTexture.value = fboRef.current.texture
       if (capturedRef) capturedRef.current = true
+      if (reelWrapRef?.current) reelWrapRef.current.visible = false
     }
     if (!isPeeling && wasPeeling.current) {
       if (capturedRef) capturedRef.current = false
+      if (reelWrapRef?.current) reelWrapRef.current.visible = true
     }
     wasPeeling.current = isPeeling
 
@@ -235,6 +240,16 @@ export default function PagePeel({ smoothed, start, end, capturedRef, children }
     if (peelMeshRef.current) peelMeshRef.current.visible = !peelDone
     if (shadowMeshRef.current) shadowMeshRef.current.visible = !peelDone
 
+    // Backing mask: covers all newspaper content that extends beyond the peel
+    // mesh edges. Fades out as peel progresses so newspaper dissolves in.
+    if (maskRef.current) {
+      maskRef.current.scale.set(w * 4, h * 4, 1)
+      maskRef.current.visible = !peelDone
+    }
+    if (maskMatRef.current) {
+      maskMatRef.current.opacity = 1 - peelVal
+    }
+
     peelUniforms.uPeel.value = peelVal
     peelUniforms.uOverscan.value = overscan
     peelUniforms.uWidth.value = w
@@ -251,6 +266,21 @@ export default function PagePeel({ smoothed, start, end, capturedRef, children }
       <group ref={childrenRef} renderOrder={ORDER.nextChapter}>
         {children}
       </group>
+
+      {/* Backing mask — blocks newspaper content that extends beyond the peel
+          mesh's viewport-sized coverage. 4× viewport so even the tallest paper
+          layout is fully covered. Fades out with peel progress. */}
+      <mesh ref={maskRef} renderOrder={ORDER.nextChapter + 5} position={[0, 0, -0.5]}>
+        <planeGeometry args={[1, 1]} />
+        <meshBasicMaterial
+          ref={maskMatRef}
+          color="#101824"
+          transparent
+          depthTest={false}
+          depthWrite={false}
+          opacity={1}
+        />
+      </mesh>
 
       <mesh ref={shadowMeshRef} renderOrder={ORDER.peelShadow} position={[0, 0, -1]}>
         <planeGeometry args={[1, 1]} />

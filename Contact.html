@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contact — Aadarsh Velu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Mono:wght@300;400;500&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --c-pearl:       #f2e8d8;
+  --c-pearl-dim:   rgba(242,232,216,0.62);
+  --c-pearl-fade:  rgba(242,232,216,0.32);
+  --c-pearl-edge:  rgba(242,232,216,0.14);
+  --c-gold:        #c8a157;
+  --c-gold-soft:   rgba(200,161,87,0.55);
+  --c-warm:        #ffd07a;
+  --c-warm-soft:   rgba(255,208,122,0.45);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{
+  background:#050505;
+  color:var(--c-pearl);
+  font-family:'DM Mono',ui-monospace,monospace;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:geometricPrecision;
+  min-height: 100vh;
+}
+
+/* ============== STAGE — full page, centered ============== */
+.stage{
+  min-height: 100vh;
+  width: 100vw;
+  display:flex; align-items:center; justify-content:center;
+  padding: 6vh 6vw;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 50%, rgba(255,208,122,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 100% 80% at 50% 100%, #1a1410 0%, #050505 70%),
+    #050505;
+  position: relative;
+  isolation: isolate;
+}
+
+.stage::before{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 50% 65% at 50% 50%, rgba(255,208,122,0.08) 0%, transparent 60%);
+  mix-blend-mode: screen;
+}
+
+/* ============== CONTACT CARD ============== */
+.contact{
+  position: relative;
+  z-index: 4;
+  text-align: left;
+  width: min(820px, 92vw);
+  padding: clamp(36px, 5vw, 72px) clamp(32px, 5vw, 72px);
+  background:
+    linear-gradient(180deg, rgba(20,16,12,0.55) 0%, rgba(10,8,6,0.78) 100%);
+  border: 1px solid var(--c-pearl-edge);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    0 60px 120px -20px rgba(0,0,0,0.85),
+    0 0 0 1px rgba(0,0,0,0.4);
+  backdrop-filter: blur(2px);
+}
+
+/* Gold corner ticks */
+.contact::before,
+.contact::after{
+  content:""; position:absolute;
+  width: 22px; height: 22px;
+  border: 1px solid var(--c-gold-soft);
+  pointer-events: none;
+}
+.contact::before{
+  top: 14px; left: 14px;
+  border-right: none; border-bottom: none;
+}
+.contact::after{
+  bottom: 14px; right: 14px;
+  border-left: none; border-top: none;
+}
+
+.contact .kicker{
+  font-family:'DM Mono',monospace;
+  font-size: 11px; letter-spacing: 0.42em;
+  text-transform: uppercase; color: var(--c-pearl-fade);
+  margin-bottom: 22px;
+}
+.contact .kicker .gold{ color: var(--c-gold); }
+
+.contact h2{
+  font-family:'Anton',sans-serif; font-weight:400;
+  font-size: clamp(48px, 7vw, 104px);
+  line-height: 0.9; letter-spacing: -0.012em;
+  text-transform: uppercase;
+  color: var(--c-pearl);
+  margin-bottom: 32px;
+  text-wrap: balance;
+}
+.contact h2 .gold{ color: var(--c-gold); }
+
+.contact .lines{
+  display:flex; flex-direction:column; gap: 6px;
+  margin-top: 36px;
+  border-top: 1px solid var(--c-pearl-edge);
+  padding-top: 28px;
+}
+.contact .line{
+  display:flex; justify-content:space-between; align-items:baseline;
+  gap: 18px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--c-pearl-edge);
+}
+.contact .line:last-child{ border-bottom: none; }
+.contact .line .lab{
+  font-family:'DM Mono',monospace;
+  font-size: 11px; letter-spacing: 0.42em;
+  text-transform: uppercase; color: var(--c-pearl-fade);
+  flex: 0 0 110px;
+}
+.contact .line .val{
+  font-family:'Courier Prime',monospace;
+  font-size: clamp(15px, 1.5vw, 20px);
+  color: var(--c-pearl);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  flex: 1; text-align: right;
+  transition: color 0.2s ease;
+}
+.contact .line .val:hover{ color: var(--c-gold); }
+.contact .line .val .pip{
+  display:inline-block;
+  width: 6px; height: 6px;
+  background: var(--c-warm);
+  margin-right: 10px; transform: translateY(-2px);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--c-warm-soft);
+}
+.contact .cue{
+  margin-top: 32px;
+  font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:500;
+  font-size: clamp(17px, 1.5vw, 22px);
+  color: var(--c-gold);
+  letter-spacing: 0.005em;
+}
+
+/* ============== MOBILE ============== */
+@media (max-width: 760px){
+  .stage{ padding: 4vh 4vw; }
+  .contact .line{ flex-direction: column; align-items: flex-start; gap: 4px; }
+  .contact .line .val{ text-align: left; }
+  .contact .line .lab{ flex: none; }
+}
+</style>
+</head>
+
+<body data-screen-label="04 Contact">
+
+<main class="stage">
+  <section class="contact">
+    <div class="kicker">
+      <span class="gold">REEL Nº 02</span> · CONTACT · WHERE TO REACH HIM
+    </div>
+    <h2>The director takes <span class="gold">calls.</span></h2>
+    <div class="lines">
+      <div class="line">
+        <span class="lab">Email</span>
+        <a class="val" href="/cdn-cgi/l/email-protection#c1a0a0a5a0b3b2a9efb7a4adb481a6aca0a8adefa2aeac"><span class="pip"></span><span class="__cf_email__" data-cfemail="325353565340415a1c44575e4772555f535b5e1c515d5f">[email&#160;protected]</span></a>
+      </div>
+      <div class="line">
+        <span class="lab">LinkedIn</span>
+        <a class="val" href="https://linkedin.com/in/aadarshvelu"><span class="pip"></span>linkedin.com/in/aadarshvelu</a>
+      </div>
+      <div class="line">
+        <span class="lab">India</span>
+        <a class="val" href="tel:+919876543210"><span class="pip"></span>+91&nbsp;98765&nbsp;43210</a>
+      </div>
+      <div class="line">
+        <span class="lab">UAE</span>
+        <a class="val" href="tel:+971501234567"><span class="pip"></span>+971&nbsp;50&nbsp;123&nbsp;4567</a>
+      </div>
+    </div>
+    <p class="cue">— Two phones · one inbox · always answering.</p>
+  </section>
+</main>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script></body>
+</html>

@@ -75,6 +75,7 @@ export default function OriginBeat({ smoothed, frameMarker, coneAnchor }) {
   const texts = useRef([])
   const dots = useRef([])
   const icon = useRef()
+
   const opacities = useRef([])
   const worldPos = useMemo(() => new THREE.Vector3(), [])
 
@@ -184,6 +185,7 @@ export default function OriginBeat({ smoothed, frameMarker, coneAnchor }) {
         }
       }
 
+
       // expose the end of the final line so the confetti cone can pin to it
       if (coneAnchor && i === LINES.length - 1) {
         const info = text.textRenderInfo
@@ -217,7 +219,7 @@ export default function OriginBeat({ smoothed, frameMarker, coneAnchor }) {
         >
           <Text
             ref={(el) => (texts.current[i] = el)}
-            font={FONTS.cormorant}
+            font={FONTS.cormorantItalic500}
             fontSize={fontSize}
             color={line.base || CREAM}
             colorRanges={line.colorRanges}
@@ -228,9 +230,13 @@ export default function OriginBeat({ smoothed, frameMarker, coneAnchor }) {
             textAlign={originBeat.anchorX === 'center' ? 'center' : 'left'}
             renderOrder={32}
             fillOpacity={0}
+            depthOffset={-1}
+            material-depthTest={false}
+            material-depthWrite={false}
           >
             {line.t}
           </Text>
+
 
           {line.deco && (
             <>

@@ -136,7 +136,7 @@ const Polaroid = forwardRef(function Polaroid(
   const headerY = cardH * 0.46
   const cueY = headerY - lineHeight * 1.5
   const textStartY = cueY - lineHeight * 1.3
-  const fontSize = cardW * 0.048
+  const fontSize = cardW * 0.054
   const smallFont = fontSize * 0.72
 
   // Compute per-line Y positions — blank lines get half-height gaps

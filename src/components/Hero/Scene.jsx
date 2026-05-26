@@ -251,7 +251,6 @@ export default function Scene({ progressRef }) {
     if (confettiWrapRef.current) {
       confettiWrapRef.current.visible = smoothed.current < TRANSITION_END
     }
-    console.log('camera z:', cam.position.z.toFixed(1), 'smoothed:', smoothed.current.toFixed(3))
   })
 
   return (
@@ -290,7 +289,7 @@ export default function Scene({ progressRef }) {
         </ReelTransition>
       </group>
 
-      <ChapterPeel smoothed={smoothed} start={PEEL_START} end={PEEL_END} capturedRef={peelCapturedRef}>
+      <ChapterPeel smoothed={smoothed} start={PEEL_START} end={PEEL_END} capturedRef={peelCapturedRef} reelWrapRef={reelWrapRef}>
         <CraftsChapter smoothed={smoothed} />
       </ChapterPeel>
 
