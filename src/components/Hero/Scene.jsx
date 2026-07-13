@@ -26,6 +26,8 @@ import Moon from './scene/Moon.jsx'
 import Clouds from './scene/Clouds.jsx'
 import Title from './scene/Title.jsx'
 import FilmRoll from './scene/FilmRoll.jsx'
+import { FRAMES } from './scene/FilmFrame.jsx'
+import CarouselArrows from './scene/CarouselArrows.jsx'
 import Chrome from './scene/Chrome.jsx'
 import ScrollPrompt from './scene/ScrollPrompt.jsx'
 import BootOverlay from './scene/BootOverlay.jsx'
@@ -63,7 +65,7 @@ const FRAME_CONTENT_LEFT = -116
 
 const DEG = Math.PI / 180
 
-export default function Scene({ progressRef }) {
+export default function Scene({ progressRef, carouselOffset = 0, onPrev, onNext, onEnter, onReelSettled }) {
   const [phase, setPhases] = useState(INITIAL)
   const setPhase = useCallback(
     (key, value) => setPhases((p) => ({ ...p, [key]: value })),
@@ -71,6 +73,10 @@ export default function Scene({ progressRef }) {
   )
   useBootSequence({ setPhase })
   const { park, filmRoll, upgrade } = useLayout()
+
+  // The focused (centred) carousel chapter drives the big broadcast title.
+  const focusedChapter =
+    FRAMES[((carouselOffset % FRAMES.length) + FRAMES.length) % FRAMES.length]
 
   const tilt = useRef()
   const frameMarker = useRef()
@@ -262,12 +268,21 @@ export default function Scene({ progressRef }) {
           <ShootingStar on={phase.sky} />
           <Moon on={phase.moon} />
           <Clouds on={phase.moon} />
-          <Title on={phase.title} />
+          <Title on={phase.title} chapter={focusedChapter} />
           <FilmRoll
             on={phase.film}
             idle={phase.idle}
             frameMarker={frameMarker}
             focus={phase.focus}
+            carouselOffset={carouselOffset}
+            onEnter={onEnter}
+            smoothed={smoothed}
+            onSettled={onReelSettled}
+          />
+          <CarouselArrows
+            show={phase.idle && !phase.focus}
+            onPrev={onPrev}
+            onNext={onNext}
           />
           <Chrome on={phase.chrome} />
           <ScrollPrompt on={phase.prompt} />

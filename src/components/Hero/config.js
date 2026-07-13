@@ -38,6 +38,12 @@ export const UPGRADE_AWS = 0.504 // parked on AWS
 export const PEEL_START = 0.525 // page peel begins (~1 scroll after AWS settles)
 export const PEEL_END = 0.608 // page peel completes
 
+// Carousel "junction" → where each chapter lives on the one scroll runway,
+// indexed in FRAMES order [Origin, Upgrade, Work, Contact]. FIRST LIGHT enters
+// by scrolling into Act I (this is its smooth-scroll target); the others are
+// reached by the PRESS PLAY button, which jumps here under the countdown cover.
+export const CHAPTER_PROGRESS = [0.09, 0.45, 0.64, 0.96]
+
 // The night-sky Background + Starfield planes are built this many times the
 // design size, so a dollied, parked camera never pans past their edge. The
 // shader remaps UVs so the central design-sized region is unchanged.

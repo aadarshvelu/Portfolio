@@ -8,6 +8,11 @@
     <meta name="description" content="Aadarsh Velu — Director's Cut" />
     <link rel="preload" as="image" href="/assets/moon-crescent.png" />
     <link rel="preload" as="image" href="/assets/title-directors-cut-white.png" />
+    <!-- Concept-room GLBs (~270KB total, meshopt-compressed). Kicked off before
+         React mounts so the R3F Canvas doesn't wait on the network. -->
+    <link rel="preload" as="fetch" href="/assets/3d/lamp.glb" crossorigin="anonymous" />
+    <link rel="preload" as="fetch" href="/assets/3d/tv.glb"   crossorigin="anonymous" />
+    <link rel="preload" as="fetch" href="/assets/3d/pen.glb"  crossorigin="anonymous" />
     <title>Aadarsh Velu — Director's Cut</title>
     <style>
       html,

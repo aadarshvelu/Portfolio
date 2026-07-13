@@ -11,8 +11,12 @@ export default function App() {
     const root = document.documentElement
     const coarse = window.matchMedia('(pointer: coarse)').matches
     let lockedW = -1
-    const lock = () => {
-      lockedW = window.innerWidth
+    let lockedH = -1
+    // Measure the LARGE viewport height (100lvh) — the height with mobile
+    // toolbars retracted. It is invariant to the URL/toolbar showing or hiding
+    // (so it's a stable lock value), but it DOES shrink on a genuine window
+    // resize: split-screen, foldable divider, multi-window.
+    const measure = () => {
       const probe = document.createElement('div')
       probe.style.cssText =
         'position:fixed;top:0;left:0;width:1px;height:100lvh;visibility:hidden;pointer-events:none;'
@@ -20,16 +24,36 @@ export default function App() {
       let h = probe.offsetHeight
       document.body.removeChild(probe)
       if (!h || h < window.innerHeight) h = window.innerHeight + 150
-      root.style.setProperty('--app-h', `${h}px`)
+      return h
+    }
+    const lock = () => {
+      lockedW = window.innerWidth
+      lockedH = measure()
+      root.style.setProperty('--app-h', `${lockedH}px`)
     }
     lock()
+    let t = 0
     const onResize = () => {
-      // a real resize changes the width (orientation / desktop window);
-      // the chrome bars only change height — ignore those
-      if (!coarse || window.innerWidth !== lockedW) lock()
+      // A width change is always a real resize (orientation / desktop window).
+      if (!coarse || window.innerWidth !== lockedW) {
+        lock()
+        return
+      }
+      // Width unchanged on a touch device: usually the URL/toolbar animating,
+      // which we IGNORE (100lvh is invariant to it). But split-screen /
+      // foldable / multi-window genuinely shrink the large viewport — caught by
+      // a change in measured 100lvh. Debounce so we don't probe on every
+      // scroll-driven resize, then re-lock only if lvh actually moved.
+      clearTimeout(t)
+      t = setTimeout(() => {
+        if (Math.abs(measure() - lockedH) > 24) lock()
+      }, 300)
     }
     window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('resize', onResize)
+    }
   }, [])
 
   return (
