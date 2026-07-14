@@ -87,6 +87,41 @@
   100% { transform: translate(2%, 2%); }
 }
 
+/* Faint animated grain over the black boot splash — gives it a film-stock
+   texture instead of pitch black. A child of the splash, so it fades with it. */
+.concept-boot-grain {
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  opacity: 0.1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grainShift 0.6s steps(4) infinite;
+}
+
+/* The film's opening line, typed over the black splash before the room reveals.
+   Sits just above the splash (z 20). */
+.concept-boot-line {
+  position: fixed;
+  inset: 0;
+  z-index: 21;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8vw;
+  text-align: center;
+  pointer-events: none;
+  font-family: "DM Mono", ui-monospace, "Courier New", monospace;
+  font-size: clamp(15px, 2.4vw, 26px);
+  font-weight: 400;
+  letter-spacing: 0.26em;
+  text-indent: 0.26em;
+  line-height: 1.5;
+  color: #f2e8d8;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.7);
+}
+
 .concept-hint {
   position: fixed;
   left: 68%;

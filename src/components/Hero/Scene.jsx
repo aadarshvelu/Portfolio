@@ -36,6 +36,7 @@ import Confetti from './scene/Confetti.jsx'
 import ReelTransition from './scene/ReelTransition.jsx'
 import UpgradeScene from './scene/upgrade/UpgradeScene.jsx'
 import ChapterPeel from './scene/ChapterPeel.jsx'
+import RosterChapter from './scene/RosterChapter.jsx'
 import CraftsChapter from './scene/CraftsChapter.jsx'
 
 const INITIAL = {
@@ -286,7 +287,7 @@ export default function Scene({ progressRef, carouselOffset = 0, onPrev, onNext,
           />
           <Chrome on={phase.chrome} />
           <ScrollPrompt on={phase.prompt} />
-          <BootOverlay bootLine={phase.bootLine} maskGone={phase.maskGone} />
+          <BootOverlay maskGone={phase.maskGone} />
         </group>
 
         <OriginBeat
@@ -305,6 +306,7 @@ export default function Scene({ progressRef, carouselOffset = 0, onPrev, onNext,
       </group>
 
       <ChapterPeel smoothed={smoothed} start={PEEL_START} end={PEEL_END} capturedRef={peelCapturedRef} reelWrapRef={reelWrapRef}>
+        <RosterChapter smoothed={smoothed} />
         <CraftsChapter smoothed={smoothed} />
       </ChapterPeel>
 

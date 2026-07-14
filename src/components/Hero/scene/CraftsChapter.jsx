@@ -2,7 +2,7 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text, useTexture } from '@react-three/drei'
 import { FONTS } from '../../../fonts.js'
-import { PEEL_END, ORDER } from '../config.js'
+import { CRAFTS_START, ORDER } from '../config.js'
 import { useLayout, useBp } from '../breakpoint.js'
 import ExitNoticeChapter, { ExitNoticeBackdrop } from './ExitNoticeChapter.jsx'
 
@@ -307,8 +307,8 @@ function buildKeys(c) {
     { p: 0.600, cy: c.cy.story2,     s: c.s.park     },
     { p: 0.680, cy: c.cy.turn23,     s: c.s.turn     },
     { p: 0.760, cy: c.cy.story3,     s: c.s.park     },
-    { p: 0.860, cy: c.cy.story3,     s: c.s.park     },
-    { p: 0.940, cy: c.cy.postcard,   s: c.s.postcard },
+    { p: 0.835, cy: c.cy.story3,     s: c.s.park     },
+    { p: 0.900, cy: c.cy.postcard,   s: c.s.postcard },
     { p: 1.000, cy: c.cy.postcard,   s: c.s.postcard },
   ]
 }
@@ -328,7 +328,7 @@ function stationFromP(p) {
   if (p < 0.08) return 0
   if (p < 0.38) return 1
   if (p < 0.68) return 2
-  if (p < 0.86) return 3
+  if (p < 0.84) return 3
   return 0
 }
 
@@ -655,8 +655,11 @@ export default function CraftsChapter({ smoothed }) {
     // browser chrome) still reach p=1.0 at end of scroll — otherwise the
     // postcard dolly (which arrives at p≈0.94) is unreachable.
     const scrollNorm = Math.max(1.0, Math.min(2.5, dpr * size.height / REF_VPH))
-    const p = clamp01((sm - PEEL_END) * scrollNorm / (1.0 - PEEL_END))
+    const p = clamp01((sm - CRAFTS_START) * scrollNorm / (1.0 - CRAFTS_START))
     pRef.current = p
+    // The Roster (Chapter III) owns the scroll band before CRAFTS_START — hide
+    // the newspaper there so the peel reveals the reel-road, not this paper.
+    if (paperGroupRef.current) paperGroupRef.current.visible = sm > CRAFTS_START - 0.01
 
     const h_vp = 2 * peelDist * Math.tan(camera.fov * DEG / 2) * overscan
     const w_vp = h_vp * size.width / size.height

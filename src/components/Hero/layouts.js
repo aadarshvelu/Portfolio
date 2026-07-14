@@ -76,6 +76,11 @@ export const LAYOUTS = {
     peel: {
       curlRadiusFrac: 0.08, peelDist: 150, overscan: 1.05,
       titleSize: 18, subSize: 6, titleY: 12, subY: -12,
+      // The Roster (Chapter III) reel-road. k = type/HUD scale (fonts + row
+      // spacing ×k); seg/amp/roadY = wave geometry; beacon = reel size ×;
+      // stars = backdrop star count. Portrait bumps k/amp/beacon so the
+      // width-relative layout stays legible on a narrow screen.
+      roster: { k: 1.0, seg: 26, amp: 5, roadY: 6, beacon: 1.0, stars: 70 },
       // The Crafts chapter — desktop landscape: two-column layout (figure left,
       // prose right). All positions in paper-local design units (1 du = 1% of
       // paper width). Paper is 100du × paperH; +y up, x centred at 0.
@@ -179,6 +184,7 @@ export const LAYOUTS = {
     peel: {
       curlRadiusFrac: 0.08, peelDist: 150, overscan: 1.05,
       titleSize: 8, subSize: 2.8, titleY: 6, subY: -6,
+      roster: { k: 1.5, seg: 30, amp: 9, roadY: 4, beacon: 1.4, stars: 90 },
       // Tablet portrait — stacked layout: figure above body, both centred.
       // Paper extended to 300du (vs 260 desktop) so taller stacked articles
       // fit. Higher s_park because portrait viewport is taller than wide.
@@ -281,6 +287,7 @@ export const LAYOUTS = {
     peel: {
       curlRadiusFrac: 0.08, peelDist: 150, overscan: 1.05,
       titleSize: 4.5, subSize: 1.6, titleY: 3, subY: -3,
+      roster: { k: 1.95, seg: 32, amp: 12, roadY: 3, beacon: 1.65, stars: 90 },
       // Mobile portrait — narrowest column. Stacked, larger relative font
       // sizes for legibility. Paper extended to 300du; positions match the
       // tablet portrait so the layout reads the same shape on every

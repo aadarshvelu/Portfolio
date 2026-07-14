@@ -25,13 +25,16 @@ const clamp01 = (x) => Math.min(1, Math.max(0, x))
 const smoothstep = (x) => x * x * (3 - 2 * x)
 
 // ── Chapter-local p thresholds ─────────────────────────────────────────────
-// Postcard sequence compressed into a tight window at the end so we don't
-// waste 20% of the chapter scroll on a single reveal. Newspaper now holds
-// through 0.88 before the backdrop starts ramping in.
-const EXIT_ENTER_P = 0.88   // backdrop + cardstock reveal begins
-const EXIT_LAND_P  = 0.93   // front content fully revealed
-const FLIP_START_P = 0.94   // brief hold (0.93→0.94) for reading
-const FLIP_END_P   = 0.98   // flip complete; 0.98→1.00 plays the clap
+// The postcard is the closing message and was flying past too fast to read
+// ("everyone is missing it"). Story3's park now ends at p=0.835 (CraftsChapter
+// KEYS) and the runway is 1650vh, so the finale gets more of both the chapter
+// budget AND physical scroll. Budget: a longer newspaper→note reveal 0.84→0.89,
+// a LONG reading hold 0.89→0.955 before it flips, the flip to the Contact
+// "director takes calls" back-face 0.955→0.99, then the clap 0.99→1.0.
+const EXIT_ENTER_P = 0.84   // backdrop + cardstock reveal begins (after story3 park)
+const EXIT_LAND_P  = 0.89   // front content fully revealed
+const FLIP_START_P = 0.955  // reading hold 0.89→0.955 so the note can actually be read
+const FLIP_END_P   = 0.99   // flip complete; 0.99→1.00 plays the clap
 
 // ── Render-order constants (see spec) ─────────────────────────────────────
 // Backdrop sits BELOW everything in the chapter but ABOVE the newspaper. The

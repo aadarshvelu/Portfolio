@@ -169,6 +169,9 @@ export default function FilmFrame({ frame, focus, center = false, slot = 0, base
     // develop-in / browse-out cross-fade at centre.
     if (titleRef.current) titleRef.current.fillOpacity = center ? edge * f : edge
     if (emRef.current) emRef.current.fillOpacity = center ? edge * (1 - f) : edge
+    // Sprocket header (chapter tag + years) on EVERY frame, riding the live edge.
+    if (tagRef.current) tagRef.current.fillOpacity = edge
+    if (metaRef.current) metaRef.current.fillOpacity = edge
     if (!center) return
 
     // The centre frame's heading duplicates the big broadcast title in browse,
@@ -179,7 +182,7 @@ export default function FilmFrame({ frame, focus, center = false, slot = 0, base
     // pulse breathes to signal a button; hovering pins it solid + bright
     const pulse = hovered.current
       ? 1
-      : 0.62 + 0.38 * Math.sin(state.clock.elapsedTime * 2.4)
+      : 0.82 + 0.18 * Math.sin(state.clock.elapsedTime * 2.4)
     if (playRef.current) playRef.current.fillOpacity = browse * pulse
     if (playTriRef.current) playTriRef.current.material.opacity = browse * pulse
     if (focalRef.current) focalRef.current.fillOpacity = browse
@@ -187,8 +190,6 @@ export default function FilmFrame({ frame, focus, center = false, slot = 0, base
 
     // Focus title card — develops in on scroll-in (opacity ∝ fade)
     const card = edge * f
-    if (tagRef.current) tagRef.current.fillOpacity = card
-    if (metaRef.current) metaRef.current.fillOpacity = card
     if (emCardRef.current) emCardRef.current.fillOpacity = card
     if (selfRef.current) selfRef.current.fillOpacity = card
     if (focalCardRef.current) focalCardRef.current.fillOpacity = card
@@ -295,45 +296,48 @@ export default function FilmFrame({ frame, focus, center = false, slot = 0, base
         {em}
       </Text>
 
+      {/* Sprocket header — chapter tag + years, on EVERY frame's top band (both
+          browse and, at centre, the scroll-in title card). */}
+      <Text
+        ref={tagRef}
+        font={FONTS.dmMono400}
+        fontSize={lay.label}
+        color={center ? '#efe7d6' : '#c4bfb0'}
+        anchorX="left"
+        anchorY="top"
+        letterSpacing={0.2}
+        position={[-118, 90, 2]}
+        fillOpacity={edge0}
+        renderOrder={ro + 0.2}
+        depthOffset={-1}
+        material-depthTest={false}
+        material-depthWrite={false}
+      >
+        {`${roman}  ${tag}`}
+      </Text>
+      <Text
+        ref={metaRef}
+        font={FONTS.dmMono400}
+        fontSize={lay.label}
+        color="#b7ae9b"
+        anchorX="right"
+        anchorY="top"
+        letterSpacing={0.16}
+        position={[118, 90, 2]}
+        fillOpacity={edge0}
+        renderOrder={ro + 0.2}
+        depthOffset={-1}
+        material-depthTest={false}
+        material-depthWrite={false}
+      >
+        {meta}
+      </Text>
+
       {center && (
         <>
           {/* ── Focus title card (left-aligned) — the full FIRST LIGHT card that
-              develops in on scroll-in (opacity ∝ fade). Heading is the shared
-              Anton text above. These are the inverse of the browse elements. ── */}
-          <Text
-            ref={tagRef}
-            font={FONTS.dmMono400}
-            fontSize={11}
-            color="#dcd9c8"
-            anchorX="left"
-            anchorY="top"
-            letterSpacing={0.2}
-            position={[-118, 92, 2]}
-            fillOpacity={0}
-            renderOrder={ro + 0.2}
-            depthOffset={-1}
-            material-depthTest={false}
-            material-depthWrite={false}
-          >
-            {`${roman}  ${tag}`}
-          </Text>
-          <Text
-            ref={metaRef}
-            font={FONTS.dmMono400}
-            fontSize={11}
-            color="#9b9789"
-            anchorX="left"
-            anchorY="top"
-            letterSpacing={0.16}
-            position={[44, 92, 2]}
-            fillOpacity={0}
-            renderOrder={ro + 0.2}
-            depthOffset={-1}
-            material-depthTest={false}
-            material-depthWrite={false}
-          >
-            {meta}
-          </Text>
+              develops in on scroll-in (opacity ∝ fade). Its tag/year header is
+              the shared sprocket header above (shown in browse and the card). ── */}
           <Text
             ref={emCardRef}
             font={FONTS.cormorantItalic}
@@ -465,12 +469,16 @@ export default function FilmFrame({ frame, focus, center = false, slot = 0, base
             FOCAL
           </Text>
 
-          {/* Invisible click target over the CTA (browse only). A mesh is a
-              reliable raycast target; the room canvas above is pointer-events
-              none so the click reaches the Hero canvas. */}
+          {/* Invisible click target over the focal frame's content (browse only),
+              so tapping the reel plays it — not just the CTA. WIDTH is kept clear
+              of the flanking arrows: on a narrow (mobile) viewport the arrows sit
+              inside the frame's projected area and this mesh is nearer the camera,
+              so a full-width target would swallow arrow taps (play instead of
+              paginate). A mesh is a reliable raycast target; the room canvas above
+              is pointer-events:none so the click reaches the Hero canvas. */}
           {onEnter && !focus && (
             <mesh
-              position={[0, -14, 3]}
+              position={[0, 0, 3]}
               onClick={(e) => {
                 e.stopPropagation()
                 onEnter()
@@ -485,7 +493,7 @@ export default function FilmFrame({ frame, focus, center = false, slot = 0, base
                 document.body.style.cursor = 'auto'
               }}
             >
-              <planeGeometry args={[172, 44]} />
+              <planeGeometry args={[170, FH]} />
               <meshBasicMaterial transparent opacity={0} depthTest={false} depthWrite={false} />
             </mesh>
           )}

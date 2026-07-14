@@ -34,15 +34,27 @@ export const UPGRADE_KZH = 0.476 // parked on Kozhikode
 export const UPGRADE_PAN_AWS = 0.488 // pan toward AWS
 export const UPGRADE_AWS = 0.504 // parked on AWS
 
-// Act II — Page Peel transition
-export const PEEL_START = 0.525 // page peel begins (~1 scroll after AWS settles)
-export const PEEL_END = 0.608 // page peel completes
+// Act II — Page Peel: the Upgrade curls away to REVEAL Chapter III (The Roster).
+export const PEEL_START = 0.515 // page peel begins (~1 scroll after AWS settles)
+export const PEEL_END = 0.575 // page peel completes → reel-road behind it
+
+// Chapter III — The Roster (reel-road "night flight", a WebGL scene rendered as
+// a camera-aligned child of the page-peel, so it lives inside the CRT tube like
+// every other chapter). The peel reveals it; it flies the 5 postings across
+// ROSTER_START→ROSTER_END, then hands off to The Work at CRAFTS_START.
+export const ROSTER_IN = 0.55 // (reserved) fade-in band as the peel finishes
+export const ROSTER_START = 0.59 // fly begins (roster-local progress = 0)
+export const ROSTER_END = 0.74 // fly ends (roster-local progress = 1)
+export const ROSTER_OUT = 0.775 // (reserved) hand-off band into The Work
+
+// The Work (Crafts newspaper) now begins AFTER the Roster instead of at the peel.
+export const CRAFTS_START = 0.76
 
 // Carousel "junction" → where each chapter lives on the one scroll runway,
 // indexed in FRAMES order [Origin, Upgrade, Work, Contact]. FIRST LIGHT enters
 // by scrolling into Act I (this is its smooth-scroll target); the others are
 // reached by the PRESS PLAY button, which jumps here under the countdown cover.
-export const CHAPTER_PROGRESS = [0.09, 0.45, 0.64, 0.96]
+export const CHAPTER_PROGRESS = [0.09, 0.45, 0.86, 0.97]
 
 // The night-sky Background + Starfield planes are built this many times the
 // design size, so a dollied, parked camera never pans past their edge. The

@@ -47,6 +47,15 @@ function ReadySignal({ readyRef }) {
 
 const READY_FADE_MS = 500;
 
+// The film's opening line — played over the black splash before the Room
+// reveals (moved here from the Hero's boot). The splash is held for BOOT_HOLD_MS
+// so the line reads, then the reveal lifts it.
+const BOOT_TEXT = "Life is a film. This is my story.";
+const BOOT_TYPE_MS = 52; // per character
+const BOOT_START_MS = 400; // pause on black before the line starts typing
+const BOOT_READ_MS = 1000; // linger after the line finishes, before the reveal
+const BOOT_MAX_MS = 7000; // absolute cap so the splash can never stick on black
+
 export default function ConceptIntro({ introPx }) {
   const device = useDeviceType();
   const quality = qualityFor(device);
@@ -56,11 +65,16 @@ export default function ConceptIntro({ introPx }) {
   const fxRef = useRef(null);
   const hintRef = useRef(null);
   const splashRef = useRef(null);
+  const blockRef = useRef(null); // blocks Hero clicks while the room covers it
   const dbgRef = useRef(null);
   const introPxRef = useRef(introPx);
   introPxRef.current = introPx;
   const readyRef = useRef(false);
   const readyAtRef = useRef(0);
+  const introRef = useRef(null); // the opening-line DOM element
+  const firstTickRef = useRef(0); // mount time, for the boot cap
+  const typeRef = useRef(0); // typewriter interval id
+  const typedDoneAtRef = useRef(0); // when the line finished typing (real time)
 
   // Failsafe: the black splash only lifts once the room's first useFrame fires
   // (readyRef). If that never happens — a 0-size canvas at some viewport, a lost
@@ -71,6 +85,37 @@ export default function ConceptIntro({ introPx }) {
       readyRef.current = true;
     }, 1500);
     return () => clearTimeout(id);
+  }, []);
+
+  // Type the opening line onto the black splash (direct DOM — no re-render).
+  useEffect(() => {
+    const el = introRef.current;
+    if (!el) return;
+    const reduced =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      el.textContent = BOOT_TEXT;
+      typedDoneAtRef.current = performance.now();
+      return;
+    }
+    let i = 0;
+    const start = setTimeout(() => {
+      typeRef.current = setInterval(() => {
+        i += 1;
+        el.textContent = BOOT_TEXT.slice(0, i);
+        if (i >= BOOT_TEXT.length) {
+          clearInterval(typeRef.current);
+          // Record real completion (the interval lags while GLBs parse) so the
+          // reveal waits for the whole line, not a guessed duration.
+          typedDoneAtRef.current = performance.now();
+        }
+      }, BOOT_TYPE_MS);
+    }, BOOT_START_MS);
+    return () => {
+      clearTimeout(start);
+      if (typeRef.current) clearInterval(typeRef.current);
+    };
   }, []);
 
   // Window scroll → intro phase (0 → 1). Reversible by construction.
@@ -103,12 +148,29 @@ export default function ConceptIntro({ introPx }) {
       const rf = smooth(p, TRANSITION_CONFIG.roomFadeStart, TRANSITION_CONFIG.roomFadeEnd);
       const vis = 1 - rf;
 
+      // Hold the black splash until the room is ready AND the opening line has
+      // FINISHED typing (+ a read pause) — not a guessed duration, since the
+      // typewriter lags while GLBs parse. A hard cap guarantees it never sticks.
+      const now = performance.now();
+      if (firstTickRef.current === 0) firstTickRef.current = now;
+      const typedDone =
+        typedDoneAtRef.current > 0 && now - typedDoneAtRef.current >= BOOT_READ_MS;
+      const capped = now - firstTickRef.current >= BOOT_MAX_MS;
       let reveal = 0;
-      if (readyRef.current) {
-        if (readyAtRef.current === 0) readyAtRef.current = performance.now();
-        const t = (performance.now() - readyAtRef.current) / READY_FADE_MS;
+      if (readyRef.current && (typedDone || capped)) {
+        if (readyAtRef.current === 0) readyAtRef.current = now;
+        const t = (now - readyAtRef.current) / READY_FADE_MS;
         reveal = Math.min(1, Math.max(0, t));
       }
+
+      // Block pointer events only while the room SUBSTANTIALLY covers the Hero
+      // (vis > 0.5 — includes the boot splash at vis 1). The room fades over a
+      // narrow scroll band, so a tight threshold would keep blocking the reel
+      // when it already looks fully revealed (room only a few % left). Releasing
+      // at half-cover lets the Hero's 3D carousel controls work as soon as the
+      // reel is mostly visible, while the room-proper still swallows bleed.
+      if (blockRef.current)
+        blockRef.current.style.pointerEvents = vis > 0.5 ? "auto" : "none";
 
       const eff = vis * reveal;
       if (canvasWrap.current) canvasWrap.current.style.opacity = String(eff);
@@ -121,6 +183,12 @@ export default function ConceptIntro({ introPx }) {
         const splash = 1 - reveal;
         splashRef.current.style.opacity = String(splash);
         if (splash <= 0.001) splashRef.current.style.display = "none";
+      }
+      // The opening line fades out ahead of the splash (gone by reveal ~0.4) so
+      // it doesn't ghost over the room as the black lifts.
+      if (introRef.current) {
+        introRef.current.style.opacity = String(Math.max(0, 1 - reveal * 2.5));
+        if (reveal >= 1) introRef.current.style.display = "none";
       }
       if (DEBUG_TRANSITION.showTransitionProgress && dbgRef.current) {
         dbgRef.current.textContent = `phase ${p.toFixed(3)}`;
@@ -171,6 +239,16 @@ export default function ConceptIntro({ introPx }) {
         <div className="concept-grain" />
       </div>
 
+      {/* Invisible pointer-events blocker: swallows clicks/hover while the room
+          covers the Hero, so the Hero's 3D buttons don't fire through the
+          pointer-events:none room canvas. Released (none) once the room fades.
+          Scroll still works — pointer-events doesn't capture wheel/touch. */}
+      <div
+        ref={blockRef}
+        aria-hidden="true"
+        style={{ position: "fixed", inset: 0, zIndex: 6, pointerEvents: "auto" }}
+      />
+
       {/* Scroll cue — a word + a downward manicule glyph (U+261F forced to text
           presentation with U+FE0E so it renders as a typographic hand, not a
           colour emoji). Opacity driven per-frame by the rAF loop above. */}
@@ -196,7 +274,13 @@ export default function ConceptIntro({ introPx }) {
           opacity: 1,
           pointerEvents: "none",
         }}
-      />
+      >
+        <div className="concept-boot-grain" />
+      </div>
+
+      {/* The film's opening line, over the black splash. Typed in on load, faded
+          out just ahead of the splash lift. */}
+      <div ref={introRef} className="concept-boot-line" aria-hidden="true" style={{ opacity: 1 }} />
 
       {DEBUG_TRANSITION.showTransitionProgress && (
         <div

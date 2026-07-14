@@ -142,8 +142,15 @@ export default function Hero() {
     } else {
       jumpingRef.current = true // this scroll is a jump — don't retune
       setCountdown({ chapterIdx: idx })
-      // let the leader cover the screen before the scene starts moving
-      setTimeout(() => jumpTo(progress, false), 200)
+      // Under the leader: jump to the chapter AND snap the reel back to FIRST
+      // LIGHT. The scroll timeline (Act I → …) is always FIRST LIGHT's story, so
+      // leaving the reel parked on the played chapter would make the Act I title
+      // card show the wrong chapter (e.g. THE WORK) over the Origin beat when you
+      // scroll back up. The spin is hidden behind the overlay + the jump.
+      setTimeout(() => {
+        setCarouselOffset(0)
+        jumpTo(progress, false)
+      }, 200)
     }
   }, [jumpTo])
 
