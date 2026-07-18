@@ -1,12 +1,12 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useResumeData } from "./resumeStore.js";
 // Resume webfont — bundled into this lazy chunk only (never the main app).
-// Prompt: a single geometric-sans family. Light (300) for running body text,
-// Medium (500) for headings/emphasis — a deliberate two-weight system.
-import "@fontsource/prompt/300.css";
-import "@fontsource/prompt/400.css";
-import "@fontsource/prompt/500.css";
-import "@fontsource/prompt/600.css";
+// Inter: clean geometric sans, straight l/I strokes (no stylistic flourish).
+// Light (300) for running body text, Medium (500) for headings/emphasis.
+import "@fontsource/inter/300.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
 import "./resume.css";
 
 // A4 height in CSS px at 96dpi — used to convert overflow into millimetres.
@@ -118,16 +118,18 @@ const SheetView = React.forwardRef(function SheetView({ data, over }, ref) {
         <div className="sheet__contact">
           {contact.map((c, i) => {
             const icon = contactIcon(c);
+            // pin + icon + label stay glued as one unbreakable unit (c-item),
+            // so a wrap can only happen BETWEEN items, never inside one.
             const inner = (
-              <>
+              <span className="c-item">
+                {c.pin && "📍 "}
                 {icon}
                 {c.label}
-              </>
+              </span>
             );
             return (
               <React.Fragment key={i}>
                 {i > 0 && <span className="sep">|</span>}
-                {c.pin && "📍 "}
                 {c.href ? (
                   <a href={c.href} target="_blank" rel="noreferrer">
                     {inner}
@@ -144,15 +146,20 @@ const SheetView = React.forwardRef(function SheetView({ data, over }, ref) {
       <SectionTitle>Professional Summary</SectionTitle>
       <p className="summary-text">{summary}</p>
 
-      {skills?.length > 0 && (
+      {/* Never print a row/bullet that's still blank (e.g. a "+ Add" click left
+          unfilled) — it would otherwise show up as a bare label with nothing
+          after it, like "Group:" with no items. */}
+      {skills?.filter((s) => s.items?.trim()).length > 0 && (
         <>
           <SectionTitle>Skills</SectionTitle>
           <div className="skills">
-            {skills.map((s, i) => (
-              <p className="skill-row" key={i}>
-                <b>{s.group}:</b> {s.items}
-              </p>
-            ))}
+            {skills
+              .filter((s) => s.items?.trim())
+              .map((s, i) => (
+                <p className="skill-row" key={i}>
+                  <b>{s.group}:</b> {s.items}
+                </p>
+              ))}
           </div>
         </>
       )}
@@ -162,9 +169,11 @@ const SheetView = React.forwardRef(function SheetView({ data, over }, ref) {
         <div className="entry" key={i}>
           <LeaderRow title={e.role} date={e.date} />
           <ul className="bullets">
-            {e.bullets.map((b, j) => (
-              <li key={j}>{b}</li>
-            ))}
+            {e.bullets
+              .filter((b) => b.trim())
+              .map((b, j) => (
+                <li key={j}>{b}</li>
+              ))}
           </ul>
         </div>
       ))}
@@ -536,7 +545,17 @@ export default function Resume() {
             ← Portfolio
           </a>
           {over && <span className="stage-alert">⚠ Over one page by ~{overMm}mm</span>}
-          <button type="button" className="resume-btn resume-btn--print" onClick={() => window.print()}>
+          <button
+            type="button"
+            className="resume-btn resume-btn--print"
+            onClick={async () => {
+              // Guarantee Inter has actually finished downloading before the
+              // browser rasterizes the page for print — printing mid-load can
+              // silently substitute a fallback font into the PDF.
+              await document.fonts.ready;
+              window.print();
+            }}
+          >
             ⭳ Download PDF
           </button>
         </div>

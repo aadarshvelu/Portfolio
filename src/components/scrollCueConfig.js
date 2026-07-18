@@ -22,7 +22,7 @@
 //               horizontally on left:'50%', '0, -50%' to centre vertically on
 //               top:'50%'. Omit for none.
 //   rotate    : tilt in degrees; the ticket sits slightly "up" at -4.
-//   vertical  : true → label runs vertically (upright). Used for desktop "work".
+//   vertical  : true → label runs vertically (upright).
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Centred at the bottom — the default resting spot for most sections.
@@ -42,7 +42,7 @@ export const SCROLL_CUE = {
     origin:  { ...BOTTOM_CENTER, bottom: '5%' },
     upgrade: { ...BOTTOM_CENTER, bottom: '13%' },
     roster:  { ...BOTTOM_CENTER, left: '75%', bottom: '35%' },
-    work:    { ...BOTTOM_CENTER, left: '175%', bottom: '35%' },
+    work:    { ...BOTTOM_CENTER },
   },
 
   desktop: {
@@ -51,8 +51,7 @@ export const SCROLL_CUE = {
     upgrade: { ...BOTTOM_CENTER },
     // Roster: tuck into the empty right-middle space (clear of the marquee).
     roster:  { right: '9%', top: '44%', translate: '0, -50%', rotate: -4 },
-    // Work / newspaper: vertical stamp on the right margin.
-    work:    { right: '6%', top: '50%', translate: '0, -50%', rotate: -4, vertical: true },
+    work:    { left: '-100%', top: '30%', translate: '0, -50%', rotate: -0 },
   },
 }
 
