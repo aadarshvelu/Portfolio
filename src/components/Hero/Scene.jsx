@@ -29,7 +29,6 @@ import FilmRoll from './scene/FilmRoll.jsx'
 import { FRAMES } from './scene/FilmFrame.jsx'
 import CarouselArrows from './scene/CarouselArrows.jsx'
 import Chrome from './scene/Chrome.jsx'
-import ScrollPrompt from './scene/ScrollPrompt.jsx'
 import BootOverlay from './scene/BootOverlay.jsx'
 import OriginBeat from './scene/OriginBeat.jsx'
 import Confetti from './scene/Confetti.jsx'
@@ -286,7 +285,6 @@ export default function Scene({ progressRef, carouselOffset = 0, onPrev, onNext,
             onNext={onNext}
           />
           <Chrome on={phase.chrome} />
-          <ScrollPrompt on={phase.prompt} />
           <BootOverlay maskGone={phase.maskGone} />
         </group>
 

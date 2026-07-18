@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import App from "./App.jsx";
 import ConceptIntro from "./concept/ConceptIntro.jsx";
 import { IntroFreezeContext } from "./concept/IntroFreeze.js";
+import ScrollCue from "./components/ScrollCue.jsx";
+import SoundControl from "./audio/SoundControl.jsx";
 
 // How many viewport-heights of scroll the room intro occupies before the Hero
 // takes over. The whole thing is one continuous, reversible scroll.
@@ -62,6 +64,13 @@ export default function PortfolioExperience() {
 
       {/* The room overlays it and reveals it — always mounted, scroll-driven. */}
       <ConceptIntro introPx={introPx} />
+
+      {/* Persistent "scroll · <section>" cue for the whole journey, all
+          breakpoints (fades out at the end). */}
+      <ScrollCue introPx={introPx} />
+
+      {/* Minimal audio (reel tick + polaroid woff), on by default + mute. */}
+      <SoundControl introPx={introPx} />
     </IntroFreezeContext.Provider>
   );
 }

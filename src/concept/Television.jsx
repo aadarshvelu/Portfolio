@@ -13,9 +13,10 @@ import "@fontsource/dm-mono/400.css";
 import "@fontsource/cormorant-garamond/400-italic.css";
 
 /**
- * A late-night broadcast already in progress. The CRT plays chapter title cards
- * ONE at a time, each held ~4.5s like a paused documentary frame, then dissolving
- * into the next over ~1.2s (easeInOutCubic) with the signal destabilizing.
+ * A late-night broadcast already in progress. The CRT cycles funky old-school
+ * "bumper" cards on a timer — each a bright saturated background with a chunky,
+ * outlined, extruded heading (the WE'RE-BACK look), held ~4.5s then dissolving
+ * into the next as the signal destabilizes. The final abstract card is left plain.
  *
  * The title text is NOT a separate layer — it is PAINTED INTO THE SIGNAL: drawn
  * to a canvas texture and composited inside the CRT shader, so scanlines, the
@@ -25,49 +26,46 @@ import "@fontsource/cormorant-garamond/400-italic.css";
  * Each frame carries a vibrant color that glows the whole screen and eases the
  * room's ambient reflection (desk, paper, pen, clock, wall) toward it.
  */
-// One consistent typeface + weight across every frame (DM Mono 400), sizes ~half.
+// Each channel is a funky old-school BUMPER: a bright saturated background (the
+// `color` = the phosphor tint) with a chunky, outlined, extruded heading in a
+// contrasting ink (block: true). The final "abstract" closing card is LEFT plain
+// (DM Mono, no block) on purpose.
+// NOTE: text must be ASCII only — sanitizeText() strips every non-ASCII glyph
+// (accents, middle-dots, em-dashes), which is why "RÉSUMÉS" came out "RSUMS".
 const FRAMES = [
   {
-    color: [0.20, 0.42, 1.0], // THE ORIGIN — deep / cool blue
+    color: [0.12, 0.19, 0.95], ink: "#ffd23f", outline: "#0b1030", // blue / yellow
     lines: [
-      { t: "I.   THE ORIGIN", fam: "DM Mono", size: 0.034, y: 0.045, ls: 0.2, a: 1.0 },
-      { t: "2018 - 2020", fam: "DM Mono", size: 0.02, y: -0.07, ls: 0.26, a: 0.72 },
+      { t: "THE ORIGIN", size: 0.092, y: 0.06, block: true, rot: -2 },
+      { t: "my self-taught journey", fam: "DM Mono", size: 0.037, y: -0.15, ls: 0.04, a: 1, plate: true },
     ],
   },
   {
-    color: [1.0, 0.86, 0.6], // FIRST LIGHT — warm cream
+    color: [1.0, 0.46, 0.08], ink: "#fff2cf", outline: "#5a2606", // orange / cream
     lines: [
-      { t: "FIRST LIGHT", fam: "DM Mono", size: 0.042, y: 0.045, ls: 0.16, a: 1.0 },
-      { t: "before anyone was watching", fam: "DM Mono", size: 0.022, y: -0.075, ls: 0.06, a: 0.82 },
+      { t: "THE UPGRADE", size: 0.092, y: 0.06, block: true, rot: -2 },
+      { t: "the years I got sharp", fam: "DM Mono", size: 0.037, y: -0.15, ls: 0.04, a: 1, plate: true },
     ],
   },
   {
-    color: [1.0, 0.6, 0.18], // THE UPGRADE — amber
+    color: [0.08, 0.73, 0.30], ink: "#ff54cf", outline: "#05200e", // green / magenta
     lines: [
-      { t: "II.   THE UPGRADE", fam: "DM Mono", size: 0.032, y: 0.045, ls: 0.2, a: 1.0 },
-      { t: "2020 - 2023", fam: "DM Mono", size: 0.02, y: -0.07, ls: 0.26, a: 0.72 },
+      { t: "50,000 RESUMES", size: 0.075, y: 0.06, block: true, rot: -2 },
+      { t: "the hiring AI I built", fam: "DM Mono", size: 0.037, y: -0.15, ls: 0.04, a: 1, plate: true },
     ],
   },
   {
-    color: [0.42, 0.66, 0.42], // 50,000 RESUMES — desaturated office green
+    color: [0.48, 0.18, 0.97], ink: "#ffe14d", outline: "#140630", // purple / yellow
     lines: [
-      { t: "50,000 RESUMES", fam: "DM Mono", size: 0.038, y: 0.05, ls: 0.12, a: 1.0 },
-      { t: "ONE DECISION", fam: "DM Mono", size: 0.024, y: -0.07, ls: 0.3, a: 0.85 },
+      { t: "THE BOARDROOM", size: 0.082, y: 0.06, block: true, rot: 2 },
+      { t: "now I run the room", fam: "DM Mono", size: 0.037, y: -0.15, ls: 0.04, a: 1, plate: true },
     ],
   },
   {
-    color: [0.92, 0.72, 0.3], // THE BOARDROOM — deep gold / bronze
-    lines: [{ t: "III.   THE BOARDROOM", fam: "DM Mono", size: 0.03, y: 0.0, ls: 0.18, a: 1.0 }],
-  },
-  {
-    color: [1.0, 0.55, 0.24], // CONTACT — warm orange / tungsten
-    lines: [{ t: "THE DIRECTOR TAKES CALLS", fam: "DM Mono", size: 0.03, y: 0.0, ls: 0.18, a: 1.0 }],
-  },
-  {
-    color: [1.0, 0.9, 0.74], // warm cream
+    color: [0.95, 0.15, 0.24], ink: "#3de6f0", outline: "#2a060a", // red / cyan
     lines: [
-      { t: "AI HELPED WRITE THE CODE.", fam: "DM Mono", size: 0.028, y: 0.05, ls: 0.1, a: 0.95 },
-      { t: "THE CREATIVITY IS MINE.", fam: "DM Mono", size: 0.028, y: -0.06, ls: 0.1, a: 1.0 },
+      { t: "LET'S TALK", size: 0.092, y: 0.06, block: true, rot: -2 },
+      { t: "the director takes calls", fam: "DM Mono", size: 0.037, y: -0.15, ls: 0.04, a: 1, plate: true },
     ],
   },
 ];
@@ -118,19 +116,19 @@ const ScreenMaterial = {
       float r2 = dot(cc, cc);
       vec2 uv = vUv + cc * r2 * 0.16; // subtle barrel distortion (curved glass)
 
-      // Signal drift — a little always, more while changing frames.
+      // Signal drift — a little always (CRT life), more across a bumper change.
       float band = floor(uv.y * 18.0);
-      uv.x += step(0.95, hash(vec2(band, floor(uTime*2.0)))) * (hash(vec2(band, floor(uTime*7.0)))-0.5) * 0.04;
+      uv.x += step(0.95, hash(vec2(band, floor(uTime*2.0)))) * (hash(vec2(band, floor(uTime*7.0)))-0.5) * 0.035;
       uv.x += inst * (hash(vec2(band, floor(uTime*30.0)))-0.5) * 0.05;
 
-      // Vibrant phosphor field glowing in the current broadcast color.
+      // Phosphor field in the broadcast color — bright bumper bg, abstract grain kept.
       float n = hash(uv * vec2(210.0,150.0) + floor(uTime*24.0));
-      vec3 col = uTint * (0.78 + 0.42*n);
-      col += uTint * inst * 0.35 * n;
+      vec3 col = uTint * (0.80 + 0.30*n);
+      col += uTint * inst * 0.4 * n;
 
       // ---- Paint the broadcast TEXT into the signal (curves + drifts with it) ----
       vec4 txt = texture2D(uText, vec2(uv.x, uv.y));
-      col = col * (1.0 - txt.a) + txt.rgb * 1.35 * txt.a; // bright phosphor core + dark halo
+      col = col * (1.0 - txt.a) + txt.rgb * 1.18 * txt.a; // bright phosphor core + dark halo
 
       // Scanlines + shadow-mask triads run THROUGH the text.
       col *= 0.82 + 0.18*sin(uv.y*900.0 + inst*sin(uTime*12.0)*5.0);
@@ -187,16 +185,53 @@ function drawFrame(ctx, frame, alpha) {
     const px = ln.size * PX;
     const cx = TEX_W / 2;
     const cy = TEX_H / 2 - (ln.y / 0.3725) * (TEX_H / 2);
-    ctx.font = `${ln.italic ? "italic " : ""}400 ${px}px "${ln.fam}", sans-serif`;
-    ctx.letterSpacing = `${(ln.ls || 0) * px}px`;
+    const text = sanitizeText(ln.t);
+    ctx.save();
+    ctx.translate(cx, cy);
+    if (ln.rot) ctx.rotate((ln.rot * Math.PI) / 180);
     ctx.globalAlpha = alpha * (ln.a ?? 1);
-    // Soft dark phosphor halo (separates the text from any vibrant frame color).
-    ctx.shadowColor = "rgba(0,0,0,0.65)";
-    ctx.shadowBlur = px * 0.12;
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(sanitizeText(ln.t), cx, cy);
+    ctx.letterSpacing = `${(ln.ls || 0) * px}px`;
+
+    if (ln.block) {
+      // Funky old-school block letters: chunky extruded 3D drop, bold dark
+      // outline, bright ink. Sized big so it reads over the CRT grain.
+      ctx.font = `400 ${px}px "Anton", "DM Mono", sans-serif`;
+      ctx.lineJoin = "round";
+      ctx.miterLimit = 2;
+      const depth = px * 0.09;
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
+      for (let d = depth; d >= 1; d -= 1.5) ctx.fillText(text, d, d);
+      ctx.lineWidth = px * 0.09;
+      ctx.strokeStyle = frame.outline || "#101018";
+      ctx.strokeText(text, 0, 0);
+      ctx.fillStyle = frame.ink || "#ffffff";
+      ctx.fillText(text, 0, 0);
+    } else if (ln.plate) {
+      // Lower-third PLATE: a solid dark bar behind the sub. Its contrast is now
+      // LOCAL (bright text on its own bar), so it survives the CRT scanlines +
+      // grain instead of fighting the grainy colour field. This is the reliable fix.
+      ctx.font = `${ln.italic ? "italic " : ""}400 ${px}px "${ln.fam || "DM Mono"}", sans-serif`;
+      const w = ctx.measureText(text).width;
+      const padX = px * 0.85, h = px * 1.6, r = Math.min(h * 0.32, 20);
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-w / 2 - padX, -h / 2, w + padX * 2, h, r);
+      else ctx.rect(-w / 2 - padX, -h / 2, w + padX * 2, h);
+      ctx.fillStyle = "rgba(7,7,15,0.92)";
+      ctx.fill();
+      ctx.fillStyle = frame.ink || "#ffffff";
+      ctx.fillText(text, 0, 0);
+    } else {
+      // Plain text (the abstract closing) — dark ink on cream, soft shadow.
+      ctx.font = `${ln.italic ? "italic " : ""}400 ${px}px "${ln.fam || "DM Mono"}", sans-serif`;
+      ctx.shadowColor = "rgba(0,0,0,0.55)";
+      ctx.shadowBlur = px * 0.12;
+      ctx.fillStyle = frame.ink || "#ffffff";
+      ctx.fillText(text, 0, 0);
+      ctx.shadowBlur = 0;
+    }
+    ctx.restore();
   }
-  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
 }
 
 export default function Television({ phase }) {
@@ -284,6 +319,8 @@ export default function Television({ phase }) {
     const re = TRANSITION_CONFIG.heroRevealEnd;
     const reveal = THREE.MathUtils.clamp((t - rs) / (re - rs), 0, 1);
 
+    // Broadcast plays on its own timer: each bumper holds, then dissolves into
+    // the next with the signal destabilizing across the switch.
     const N = FRAMES.length;
     const cur = Math.floor(el / CYCLE) % N;
     const nxt = (cur + 1) % N;
@@ -292,7 +329,7 @@ export default function Television({ phase }) {
     const e = easeInOutCubic(THREE.MathUtils.clamp(tf, 0, 1));
     const instab = tf > 0 ? Math.sin(Math.PI * tf) : 0;
 
-    // Repaint the title canvas only when the picture actually changes.
+    // Repaint the bumper canvas only when the picture actually changes.
     const key = `${cur}|${e.toFixed(3)}`;
     if (key !== lastKey.current) {
       lastKey.current = key;

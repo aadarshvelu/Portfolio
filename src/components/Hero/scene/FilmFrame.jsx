@@ -35,7 +35,7 @@ const DISSOLVE_OUT = 0.095
 // cellA/cellB are sRGB 0..1.
 export const FRAMES = [
   { roman: 'I.', tag: 'THE ORIGIN', meta: '2018 — 2020', title: 'First\nLight',
-    em: 'before anyone was watching', cellA: [0.110, 0.165, 0.322], cellB: [0.020, 0.039, 0.110] },
+    em: 'I taught myself to code', cellA: [0.110, 0.165, 0.322], cellB: [0.020, 0.039, 0.110] },
   { roman: 'II.', tag: 'THE UPGRADE', meta: '2020 — 2023', title: 'The\nUpgrade',
     em: 'the years I got sharp', cellA: [0.102, 0.133, 0.220], cellB: [0.039, 0.063, 0.141] },
   { roman: 'III.', tag: 'THE WORK', meta: '2022 — now', title: 'The\nWork',

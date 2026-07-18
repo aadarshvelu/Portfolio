@@ -254,6 +254,7 @@ export default function ConceptIntro({ introPx }) {
           colour emoji). Opacity driven per-frame by the rAF loop above. */}
       <div ref={hintRef} className="concept-hint" style={{ opacity: 0 }}>
         <span className="concept-hint__word">scroll down</span>
+        <span className="concept-hint__sub">to enter the world</span>
         <span className="concept-hint__hand" aria-hidden="true">
           {"☟︎"}
         </span>

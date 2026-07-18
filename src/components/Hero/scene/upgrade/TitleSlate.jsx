@@ -213,22 +213,6 @@ export default function TitleSlate({ opacityRef }) {
         2020 — PRESENT
       </Text>
 
-      {/* scroll hint */}
-      <Text
-        ref={(el) => (texts.current[5] = el)}
-        font={FONTS.dmMono400}
-        fontSize={9}
-        color={GOLD}
-        anchorX="center"
-        anchorY="middle"
-        letterSpacing={0.42}
-        position={[0, upgrade.chrome.bottomY + 110, 0]}
-        renderOrder={53}
-        fillOpacity={1}
-      >
-        SCROLL · ENTER THE SCENE
-      </Text>
-
     </group>
   )
 }

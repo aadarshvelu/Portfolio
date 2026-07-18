@@ -155,6 +155,16 @@
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.75);
 }
 
+.concept-hint__sub {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  color: rgba(232, 220, 200, 0.9);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.75);
+  margin-top: -5px;
+}
+
 .concept-hint__hand {
   font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols2",
     "Noto Sans Symbols", sans-serif;
