@@ -187,6 +187,11 @@ export default function Confetti({ smoothed, coneAnchor }) {
     const ready = smoothstep(clamp01((sm - (CELEB_START - CONE_READY)) / CONE_READY))
     // idle only when fully before the ready window (one final settling write)
     const active = cp > 0 || ready > 0
+    // Pieces exist only from the burst onward. Hide them otherwise so the
+    // not-yet-placed instances don't sit at the world origin (screen centre) —
+    // that was the stray dark "chip" visible in First Light before the pop.
+    if (foilRef.current) foilRef.current.visible = cp > 0
+    if (filmRef.current) filmRef.current.visible = cp > 0
     if (!active && !lastActive.current) return
     lastActive.current = active
 
@@ -276,6 +281,7 @@ export default function Confetti({ smoothed, coneAnchor }) {
         ref={foilRef}
         args={[undefined, undefined, FOIL_COUNT]}
         frustumCulled={false}
+        visible={false}
       >
         <planeGeometry args={[8, 5]} />
         <meshBasicMaterial toneMapped={false} side={THREE.DoubleSide} />
@@ -285,6 +291,7 @@ export default function Confetti({ smoothed, coneAnchor }) {
         ref={filmRef}
         args={[undefined, undefined, FILM_COUNT]}
         frustumCulled={false}
+        visible={false}
       >
         <planeGeometry args={[7, 10.5]} />
         <meshBasicMaterial

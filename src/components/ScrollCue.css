@@ -1,10 +1,8 @@
 /* The scroll cue is a little LOTTERY-TICKET / STAMP — warm paper with a
    perforated (dashed) edge, tilted slightly "up" rather than straight, carrying
    "SCROLL" + a downward manicule hand (same glyph as the room's welcome cue).
-   Position/orientation switch by section:
-     • default  → centred at the bottom
-     • Roster   → the empty right-middle space
-     • Work/newspaper (DESKTOP only) → vertical, on the right */
+   This file styles ONLY the look; placement (per breakpoint × section) lives in
+   scrollCueConfig.js and is applied as inline styles by ScrollCue.jsx. */
 .scrollcue {
   position: fixed;
   z-index: 9998;
@@ -17,8 +15,17 @@
   background: #e2d2ab; /* warm ticket paper — reads on dark scenes AND the cream newspaper */
   border-radius: 3px;
   box-shadow: 0 3px 14px rgba(0, 0, 0, 0.5);
-  transition: opacity 0.4s ease;
-  will-change: opacity;
+  opacity: 0; /* start hidden — the scroll effect fades it in; prevents a 1s flash over the boot screen before the effect runs */
+  /* Glide (don't snap) when the per-section position changes between chapters.
+     Positions are set imperatively by ScrollCue.jsx; these transitions smooth
+     the hand-off. Same-anchor moves (e.g. bottom→bottom) animate; the rare
+     anchor switch (bottom→top on desktop) still snaps, which reads fine. */
+  transition: opacity 0.4s ease,
+    bottom 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    left 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    right 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, bottom, left;
 }
 
 /* perforated ticket edge */
@@ -54,22 +61,9 @@
   animation: scrollcueBob 1.7s ease-in-out infinite;
 }
 
-/* ── positions (tilt baked in so the ticket sits "slightly up", not straight) ── */
-.scrollcue--center {
-  left: 50%;
-  bottom: 6%;
-  transform: translateX(-50%) rotate(-4deg);
-}
-.scrollcue--roster {
-  right: 9%;
-  top: 44%;
-  transform: translateY(-50%) rotate(-4deg);
-}
-.scrollcue--vertical {
-  right: 6%;
-  top: 50%;
-  transform: translateY(-50%) rotate(-4deg);
-}
+/* Positions live in scrollCueConfig.js (applied as inline styles per breakpoint
+   × section). The only placement styling that stays here is the vertical-label
+   treatment, toggled by the .scrollcue--vertical class from the config. */
 .scrollcue--vertical .scrollcue__label {
   writing-mode: vertical-rl;
   text-orientation: upright;
@@ -106,4 +100,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .scrollcue__hand { animation: none; opacity: 0.9; }
+  /* no position glides for reduced-motion — keep only the opacity fade */
+  .scrollcue { transition-property: opacity; }
 }
