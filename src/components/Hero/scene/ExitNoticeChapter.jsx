@@ -199,6 +199,7 @@ const CONTACT_ROWS = [
   { label: 'LINKEDIN', value: 'linkedin.com/in/aadarshvelu', href: 'https://linkedin.com/in/aadarshvelu' },
   { label: 'INDIA',    value: '+91 86100 47522',             href: 'tel:+918610047522' },
   { label: 'UAE',      value: '+971 52 807 0820',            href: 'tel:+971528070820' },
+  { label: 'RÉSUMÉ',   value: 'Download the PDF',            href: '/resume', gold: true },
 ]
 const CONTACT_KICKER_LEFT   = 'REEL Nº 02'
 const CONTACT_KICKER_RIGHT  = ' · CONTACT · WHERE TO REACH HIM'
@@ -464,23 +465,18 @@ export default function ExitNoticeChapter({ pRef }) {
   const fsLabel    = L.fontLabelMul     ?? D.fontLabelMul
   const fsValue    = L.fontValueMul     ?? D.fontValueMul
   const fsCue      = L.fontCueMul       ?? D.fontCueMul
-  const bRowGap    = L.contactRowGapMul ?? D.contactRowGapMul
   // Arm is now a hinged plank above the slate — slate top is clean again
   const bKickerY    =  cardH / 2 - 0.10 * cardH
   const bHeadlineY  =  cardH / 2 - 0.27 * cardH
-  // Divider sits midway down the card so rows have room to fit above the cue
-  const bDividerY   =  cardH * 0.05
-  const bRowYs = [
-    bDividerY - 0.05 - 0 * bRowGap,
-    bDividerY - 0.05 - 1 * bRowGap,
-    bDividerY - 0.05 - 2 * bRowGap,
-    bDividerY - 0.05 - 3 * bRowGap,
-  ]
-  const bCueY          = -cardH / 2 + 0.10 * cardH
-  // Résumé CTA — a gold pill in the gap between the contact rows and the cue.
-  const bResumeY       = (bRowYs[3] + bCueY) / 2
-  const bResumeW       = 0.66
-  const bResumeH       = fsValue * 2.6
+  // Divider under the headline; rows fill the band down to just above the cue
+  const bDividerY   =  cardH * 0.10
+  const bCueY       = -cardH / 2 + 0.10 * cardH
+  // Contact rows (incl. the RÉSUMÉ row) fill the band between the divider and
+  // just above the cue, evenly spaced — so any row count stays clear of both.
+  const bRowTop = bDividerY - 0.05
+  const bRowBot = bCueY + 0.05
+  const bRowGap = (bRowTop - bRowBot) / Math.max(1, CONTACT_ROWS.length - 1)
+  const bRowYs  = CONTACT_ROWS.map((_, i) => bRowTop - i * bRowGap)
   const chKicker       = fsKicker * 0.604 * (1 + 0.42)
   const bKickerSplit   = leftX + 10 * chKicker
   const chHeadline     = fsHeadline * 0.43
@@ -504,11 +500,10 @@ export default function ExitNoticeChapter({ pRef }) {
   const rBKickerG = useRef(), rBKickerL = useRef()
   const rBHeadL   = useRef(), rBHeadG   = useRef()
   const rBDivider = useRef()
-  const rBLabels  = [useRef(), useRef(), useRef(), useRef()]
-  const rBValues  = [useRef(), useRef(), useRef(), useRef()]
-  const rBPips    = [useRef(), useRef(), useRef(), useRef()]
+  const rBLabels  = [useRef(), useRef(), useRef(), useRef(), useRef()]
+  const rBValues  = [useRef(), useRef(), useRef(), useRef(), useRef()]
+  const rBPips    = [useRef(), useRef(), useRef(), useRef(), useRef()]
   const rBCue     = useRef()
-  const rBResume  = useRef(), rBResumeBg = useRef()
 
   useFrame((state) => {
     const cam = state.camera
@@ -604,13 +599,11 @@ export default function ExitNoticeChapter({ pRef }) {
     setText(rBHeadG,   tBack)
     setText(rBCue,     tBack)
     setLine(rBDivider, tBack)
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < CONTACT_ROWS.length; i++) {
       setText(rBLabels[i], tBack)
       setText(rBValues[i], tBack)
       if (rBPips[i].current) rBPips[i].current.material.opacity = tBack
     }
-    setText(rBResume, tBack)
-    if (rBResumeBg.current) rBResumeBg.current.material.opacity = tBack
   })
 
   return (
@@ -932,13 +925,13 @@ export default function ExitNoticeChapter({ pRef }) {
               <meshBasicMaterial color={WARM} transparent depthTest={false} depthWrite={false} opacity={0} />
             </mesh>
             <Text ref={rBValues[i]}
-              font={FONTS.courierPrimeBold} fontSize={fsValue} color={CLAP_INK}
+              font={FONTS.courierPrimeBold} fontSize={fsValue} color={row.gold ? GOLD : CLAP_INK}
               anchorX="right" anchorY="middle"
               fillOpacity={0} renderOrder={RO_TEXT}
               position={[rightX, rowY, 0.008]}
               onClick={(e) => {
                 e.stopPropagation()
-                if (row.href) window.open(row.href, row.href.startsWith('http') ? '_blank' : '_self')
+                if (row.href) window.open(row.href, (row.href.startsWith('http') || row.href.startsWith('/')) ? '_blank' : '_self')
               }}
               onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer' }}
               onPointerOut ={(e) => { e.stopPropagation(); document.body.style.cursor = '' }}>
@@ -947,28 +940,6 @@ export default function ExitNoticeChapter({ pRef }) {
           </Fragment>
         )
       })}
-
-      {/* Résumé CTA — gold pill; opens the print-ready /resume page in a new tab
-          (save-as-PDF there). Handlers on both the pill and its label so a click
-          anywhere on it registers. Fades in with the back face (tBack). */}
-      <mesh ref={rBResumeBg}
-        position={[0, bResumeY, 0.008]} renderOrder={RO_TEXT}
-        onClick={(e) => { e.stopPropagation(); window.open('/resume', '_blank', 'noopener,noreferrer') }}
-        onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer' }}
-        onPointerOut ={(e) => { e.stopPropagation(); document.body.style.cursor = '' }}>
-        <planeGeometry args={[bResumeW, bResumeH]} />
-        <meshBasicMaterial color={GOLD} transparent opacity={0} depthTest={false} depthWrite={false} toneMapped={false} />
-      </mesh>
-      <Text ref={rBResume}
-        font={FONTS.dmMono400} fontSize={fsLabel} color="#1a1410"
-        anchorX="center" anchorY="middle" letterSpacing={0.3}
-        fillOpacity={0} renderOrder={RO_TEXT}
-        position={[0, bResumeY, 0.012]}
-        onClick={(e) => { e.stopPropagation(); window.open('/resume', '_blank', 'noopener,noreferrer') }}
-        onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer' }}
-        onPointerOut ={(e) => { e.stopPropagation(); document.body.style.cursor = '' }}>
-        {'DOWNLOAD RÉSUMÉ'}
-      </Text>
 
       {/* Cue — italic Cormorant, gold */}
       <Text ref={rBCue}

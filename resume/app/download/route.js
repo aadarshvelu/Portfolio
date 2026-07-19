@@ -8,8 +8,6 @@
 // exactly this path) — see the project README for the exact steps.
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-export const runtime = "edge";
-
 const R2_KEY = "resume.pdf";
 
 export async function GET() {

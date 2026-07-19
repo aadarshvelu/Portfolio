@@ -6,8 +6,6 @@
 // check below is defense-in-depth on top of that, not the primary gate.
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-export const runtime = "edge";
-
 const KV_KEY = "resume";
 const MAX_BODY_BYTES = 200_000; // generous; a resume JSON is a few KB
 

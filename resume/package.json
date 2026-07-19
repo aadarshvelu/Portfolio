@@ -20,6 +20,6 @@
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "^1",
-    "wrangler": "^3"
+    "wrangler": "^4.86.0"
   }
 }

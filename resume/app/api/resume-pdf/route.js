@@ -4,8 +4,6 @@
 // route can serve them. Same Access-protection assumptions as /api/resume.
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-export const runtime = "edge";
-
 const R2_KEY = "resume.pdf";
 const MAX_BYTES = 10 * 1024 * 1024; // 10MB — a one-page text resume is <1MB
 
