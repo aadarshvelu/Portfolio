@@ -27,6 +27,14 @@
   --w-light: 400;
   --w-medium: 500;
 
+  /* Portfolio palette — for the portfolio-nudge banner (matches the main site). */
+  --pf-black: #0b0f18;
+  --pf-slate: #10151f;
+  --pf-pearl: #f2e8d8;
+  --pf-pearl-dim: #cbb999;
+  --pf-gold: #c8a157;
+  --pf-mono: "DM Mono", ui-monospace, monospace;
+
   --pane-w: 40%;
   --pane-bg: #1b1e24;
   --pane-bg2: #242832;
@@ -290,6 +298,130 @@ html, body { margin: 0; padding: 0; }
 .cloud-status--saved { color: #6ee787; }
 .cloud-status--error { color: #ff7b7b; }
 
+/* ============================================================================
+   PUBLIC "/" preview — read-only sheet + download bar, no editor chrome.
+   ============================================================================ */
+.public-page {
+  min-height: 100vh;
+  background: #525659;
+  font-family: var(--sans);
+}
+/* The header IS a film strip: black film base, sprocket perforations along the
+   top and bottom edges, gold accents, DM Mono type — the portfolio's world.
+   It carries the nudge message + Explore/Download actions. */
+.public-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;               /* room for the sprocket rows */
+  background: var(--pf-black);
+  border-bottom: 1px solid rgba(200, 161, 87, 0.35);
+  font-family: var(--pf-mono);
+  overflow: hidden;                 /* clip sprockets at the edges */
+}
+/* Sprocket perforations — repeating warm film-base holes, top & bottom, full width. */
+.public-bar::before,
+.public-bar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(242, 232, 216, 0.5) 0 7px,
+    transparent 7px 17px
+  );
+  pointer-events: none;
+}
+.public-bar::before { top: 4px; }
+.public-bar::after { bottom: 4px; }
+
+.public-bar__dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pf-gold);
+  box-shadow: 0 0 8px 1px rgba(200, 161, 87, 0.6);
+}
+.public-bar__msg {
+  flex: 1 1 auto;
+  color: var(--pf-pearl-dim);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.public-bar__actions { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
+
+/* Open portfolio — bordered gold "ticket" (outline), links to the site. */
+.pf-open {
+  font-family: var(--pf-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--pf-gold);
+  background: transparent;
+  border: 1px solid rgba(200, 161, 87, 0.6);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 3px;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s;
+}
+.pf-open:hover { background: rgba(200, 161, 87, 0.12); border-color: var(--pf-gold); }
+
+/* Download — the primary action: solid gold ticket on the black film. */
+.pf-download {
+  font-family: var(--pf-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #1a1200;
+  background: var(--pf-gold);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.pf-download:hover { background: #d8b268; }
+
+/* The public document column — width set inline by PublicDoc (= the sheet's
+   displayed width), so anything stacked here lines up with the resume. */
+.public-doc { display: flex; flex-direction: column; }
+
+.public-stage {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 16px 60px;
+  overflow-x: hidden;   /* sheet scales to fit (PublicDoc); never scroll sideways */
+}
+
+/* Scale-to-fit wrapper for the fixed-size A4 sheet on narrow screens. */
+.sheet-scaler { position: relative; flex: 0 0 auto; }
+.sheet-scaler__inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 794px;   /* A4 @96dpi — scaled via inline transform */
+  transform-origin: top left;
+}
+
+/* --- responsive: row 1 = dot + message, row 2 = actions. Extra vertical
+       padding keeps both rows clear of the top/bottom sprocket perforations. */
+@media (max-width: 680px) {
+  .public-bar { flex-wrap: wrap; gap: 12px; padding: 18px 16px; }
+  .public-bar__dot { align-self: flex-start; margin-top: 4px; }
+  .public-bar__msg { flex: 1 1 0; min-width: 0; }   /* fills row 1 beside the dot */
+  .public-bar__actions { flex: 1 1 100%; width: 100%; } /* forced onto row 2 */
+  .pf-open, .pf-download { padding: 8px 11px; letter-spacing: 0.5px; }
+}
+
 .stage-scroll {
   flex: 1 1 auto;
   overflow: auto;
@@ -445,9 +577,9 @@ html, body { margin: 0; padding: 0; }
 @media print {
   html, body { margin: 0 !important; padding: 0 !important; background: #fff; }
   .resume-app { display: block; height: auto; overflow: visible; }
-  .control-pane, .stage-toolbar { display: none !important; }
-  .stage { display: block; background: #fff; }
-  .stage-scroll { display: block; overflow: visible; padding: 0; }
+  .control-pane, .stage-toolbar, .public-bar { display: none !important; }
+  .stage, .public-page { display: block; background: #fff; }
+  .stage-scroll, .public-stage { display: block; overflow: visible; padding: 0; }
   .sheet {
     box-shadow: none;
     outline: none !important;

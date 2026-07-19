@@ -18,11 +18,11 @@ export async function GET() {
   }
 
   // Best-effort nicer filename from the saved data; falls back if unavailable.
-  let filename = "Resume.pdf";
+  let filename = "Aadarsh Resume.pdf";
   try {
     const raw = await env.RESUME_KV.get("resume");
     const name = raw && JSON.parse(raw)?.name;
-    if (name) filename = `${name.replace(/[^a-z0-9]+/gi, "-")}-Resume.pdf`;
+    if (name) filename = `Aadarsh Resume.pdf`;
   } catch {
     /* ignore — filename fallback above is fine */
   }

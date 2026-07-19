@@ -496,34 +496,35 @@ function _arcText(g, text, cx, cy, r, span, centerA = -Math.PI / 2) {
 const _stampCache = {}
 function stampTexture(name) {
   if (_stampCache[name]) return _stampCache[name]
-  const S = 320
+  // Hi-res canvas keeps the text crisp when the stamp scales up on screen.
+  const S = 680
   const cv = document.createElement('canvas')
   cv.width = S; cv.height = S
   const g = cv.getContext('2d')
   const cx = S / 2, cy = S / 2
   g.fillStyle = STAMP_INK; g.strokeStyle = STAMP_INK
   g.textAlign = 'center'; g.textBaseline = 'middle'
-  // concentric rings
-  g.lineWidth = 7
-  g.beginPath(); g.arc(cx, cy, 146, 0, Math.PI * 2); g.stroke()
-  g.lineWidth = 2.5
-  g.beginPath(); g.arc(cx, cy, 108, 0, Math.PI * 2); g.stroke()
-  // curved border text — "CLICK TO PREVIEW" around the top
-  g.font = '700 24px "Courier New", monospace'
-  _arcText(g, 'CLICK TO PREVIEW', cx, cy, 126, 2.5)
-  // dots at 3 & 9 o'clock
-  g.beginPath(); g.arc(cx - 125, cy, 5, 0, Math.PI * 2); g.fill()
-  g.beginPath(); g.arc(cx + 125, cy, 5, 0, Math.PI * 2); g.fill()
+  // concentric rings — wide band so the curved text clears both boundaries
+  g.lineWidth = 13
+  g.beginPath(); g.arc(cx, cy, 316, 0, Math.PI * 2); g.stroke()
+  g.lineWidth = 5
+  g.beginPath(); g.arc(cx, cy, 208, 0, Math.PI * 2); g.stroke()
+  // curved border text — bold sans, centred in the band with clearance
+  g.font = 'bold 48px Arial, "Helvetica Neue", sans-serif'
+  _arcText(g, 'CLICK TO PREVIEW', cx, cy, 264, 2.6)
+  // dots at 3 & 9 o'clock (on the outer ring)
+  g.beginPath(); g.arc(cx - 316, cy, 10, 0, Math.PI * 2); g.fill()
+  g.beginPath(); g.arc(cx + 316, cy, 10, 0, Math.PI * 2); g.fill()
   // centre — project name, shrunk to fit the inner circle
-  let fs = 48
-  g.font = `800 ${fs}px "Arial Black", Arial, sans-serif`
-  while (g.measureText(name).width > 170 && fs > 12) {
-    fs -= 2
-    g.font = `800 ${fs}px "Arial Black", Arial, sans-serif`
+  let fs = 104
+  g.font = `900 ${fs}px "Arial Black", Arial, sans-serif`
+  while (g.measureText(name).width > 356 && fs > 24) {
+    fs -= 4
+    g.font = `900 ${fs}px "Arial Black", Arial, sans-serif`
   }
   g.fillText(name, cx, cy)
   const tex = new THREE.CanvasTexture(cv)
-  tex.anisotropy = 4
+  tex.anisotropy = 8
   _stampCache[name] = tex
   return tex
 }
@@ -531,7 +532,7 @@ function stampTexture(name) {
 function ProjectButton({ x, y, scale, m, url, name, order }) {
   const grp = useRef()
   const hov = useRef(0)
-  const sd = m * 11 // stamp diameter
+  const sd = m * 12 // stamp diameter
   const tex = useMemo(() => stampTexture(name), [name])
 
   useFrame((_, dt) => {
@@ -695,7 +696,7 @@ function StorySection({ pos, size, story, gRefs, order, stacked, storyKey }) {
       {story.url && (
         <ProjectButton
           x={adj.staff.x + adj.link.dx}
-          y={pos.staffY + adj.staff.dy - 1.5 - (size.meta * 11) / 2 + adj.link.dy}
+          y={pos.staffY + adj.staff.dy - 1.5 - (size.meta * 12) / 2 + adj.link.dy}
           scale={adj.link.scale}
           m={size.meta}
           url={story.url}

@@ -1,20 +1,17 @@
 import { useEffect, useState } from 'react'
 import { audio } from './engine.js'
-import { CELEB_START, UPGRADE_ZOOM, UPGRADE_PAN_KZH, UPGRADE_PAN_AWS } from '../components/Hero/config.js'
+import { CELEB_START } from '../components/Hero/config.js'
 
 const clamp01 = (x) => Math.min(1, Math.max(0, x))
 const cross = (p, s, T) => (p < T && s >= T) || (p > T && s <= T)
 
-const TICK_STEP = 0.012
-const TICK_END = 0.29 // reel / First Light scroll
-const PANS = [UPGRADE_ZOOM, UPGRADE_PAN_KZH, UPGRADE_PAN_AWS]
 const GESTURES = ['pointerdown', 'keydown', 'touchstart', 'wheel']
 
 /**
  * Sound is ON by default: the AudioContext auto-unlocks on the visitor's first
  * interaction (browsers block audio before any gesture, so this is as close to
- * "always on" as is possible). Two sounds only — a reel tick + a polaroid woff.
- * A small corner button lets them mute (remembered).
+ * "always on" as is possible). ONE sound only — the confetti-cone pop at the
+ * celebration. A small corner button lets them mute (remembered).
  */
 export default function SoundControl({ introPx }) {
   const [muted, setMuted] = useState(audio.muted)
@@ -39,11 +36,7 @@ export default function SoundControl({ introPx }) {
     let prevSm = smOf(window.scrollY)
     const onScroll = () => {
       const sm = smOf(window.scrollY)
-      if (sm > 0 && sm < TICK_END && Math.floor(sm / TICK_STEP) !== Math.floor(prevSm / TICK_STEP)) {
-        audio.tick()                                        // reel tick
-      }
-      if (cross(prevSm, sm, CELEB_START)) audio.burst()     // confetti-cone pop
-      for (const T of PANS) if (cross(prevSm, sm, T)) audio.woff() // polaroid pans
+      if (cross(prevSm, sm, CELEB_START)) audio.burst()     // confetti-cone pop (only sound)
       prevSm = sm
     }
     window.addEventListener('scroll', onScroll, { passive: true })

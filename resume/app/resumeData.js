@@ -12,10 +12,10 @@ const resumeData = {
   // the portfolio is, why it's unusual, and where the full body of work lives.
   meta: {
     jobTitle: "Lead Technical Architect",
-    portfolioUrl: "https://aadarshvelu.netlify.app/",
+    portfolioUrl: "https://whoisaadar.sh/",
     context:
       "This resume is a one-page summary. The full body of work lives at " +
-      "aadarshvelu.netlify.app — a one-of-a-kind interactive portfolio built as a " +
+      "whoisaadar.sh — a one-of-a-kind interactive portfolio built as a " +
       "cinematic, scroll-driven WebGL experience (React Three Fiber / Three.js), " +
       "not a conventional webpage. Scrolling moves the visitor through a continuous " +
       "3D film: a room and CRT television reveal the work chapter by chapter. It " +
@@ -37,7 +37,7 @@ const resumeData = {
   contact: [
     { label: "+971 52070820", href: "tel:+97152070820" },
     { label: "aadarshvelu@gmail.com", href: "mailto:aadarshvelu@gmail.com" },
-    { label: "aadarshvelu.netlify.app", href: "https://aadarshvelu.netlify.app/" },
+    { label: "whoisaadar.sh", href: "https://whoisaadar.sh/" },
     { label: "github.com/your-handle", href: null },
     { label: "linkedin.com/in/your-handle", href: null },
     { label: "Dubai, United Arab Emirates", href: null, pin: true },

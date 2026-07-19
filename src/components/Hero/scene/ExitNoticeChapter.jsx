@@ -199,7 +199,9 @@ const CONTACT_ROWS = [
   { label: 'LINKEDIN', value: 'linkedin.com/in/aadarshvelu', href: 'https://linkedin.com/in/aadarshvelu' },
   { label: 'INDIA',    value: '+91 86100 47522',             href: 'tel:+918610047522' },
   { label: 'UAE',      value: '+971 52 807 0820',            href: 'tel:+971528070820' },
-  { label: 'RÉSUMÉ',   value: 'Download the PDF',            href: '/resume', gold: true },
+  { label: 'RÉSUMÉ',   split: true,
+    preview:  'https://resume.whoisaadar.sh',
+    download: 'https://resume.whoisaadar.sh/download' },
 ]
 const CONTACT_KICKER_LEFT   = 'REEL Nº 02'
 const CONTACT_KICKER_RIGHT  = ' · CONTACT · WHERE TO REACH HIM'
@@ -504,6 +506,7 @@ export default function ExitNoticeChapter({ pRef }) {
   const rBValues  = [useRef(), useRef(), useRef(), useRef(), useRef()]
   const rBPips    = [useRef(), useRef(), useRef(), useRef(), useRef()]
   const rBCue     = useRef()
+  const rBPrev    = useRef(), rBSep = useRef(), rBDl = useRef() // RÉSUMÉ split links
 
   useFrame((state) => {
     const cam = state.camera
@@ -604,6 +607,9 @@ export default function ExitNoticeChapter({ pRef }) {
       setText(rBValues[i], tBack)
       if (rBPips[i].current) rBPips[i].current.material.opacity = tBack
     }
+    setText(rBPrev, tBack)
+    setText(rBSep, tBack)
+    setText(rBDl, tBack)
   })
 
   return (
@@ -909,6 +915,18 @@ export default function ExitNoticeChapter({ pRef }) {
       {CONTACT_ROWS.map((row, i) => {
         const rowY = bRowYs[i]
         const pipSize = fsValue * 0.30
+        // Split "Preview / Download" layout — right-aligned to rightX. Courier
+        // Prime is monospace, so char advance ≈ 0.6·em lets us place the parts.
+        const charW = fsValue * 0.6
+        const sw1 = 'Preview'.length * charW
+        const swS = ' / '.length * charW
+        const sw2 = 'Download'.length * charW
+        const splitStartX = rightX - (sw1 + swS + sw2)
+        const linkProps = (href) => ({
+          onClick: (e) => { e.stopPropagation(); window.open(href, '_blank', 'noopener,noreferrer') },
+          onPointerOver: (e) => { e.stopPropagation(); document.body.style.cursor = 'pointer' },
+          onPointerOut: (e) => { e.stopPropagation(); document.body.style.cursor = '' },
+        })
         return (
           <Fragment key={row.label}>
             <Text ref={rBLabels[i]}
@@ -924,19 +942,42 @@ export default function ExitNoticeChapter({ pRef }) {
               <circleGeometry args={[pipSize, 16]} />
               <meshBasicMaterial color={WARM} transparent depthTest={false} depthWrite={false} opacity={0} />
             </mesh>
-            <Text ref={rBValues[i]}
-              font={FONTS.courierPrimeBold} fontSize={fsValue} color={row.gold ? GOLD : CLAP_INK}
-              anchorX="right" anchorY="middle"
-              fillOpacity={0} renderOrder={RO_TEXT}
-              position={[rightX, rowY, 0.008]}
-              onClick={(e) => {
-                e.stopPropagation()
-                if (row.href) window.open(row.href, (row.href.startsWith('http') || row.href.startsWith('/')) ? '_blank' : '_self')
-              }}
-              onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer' }}
-              onPointerOut ={(e) => { e.stopPropagation(); document.body.style.cursor = '' }}>
-              {row.value}
-            </Text>
+            {row.split ? (
+              <>
+                <Text ref={rBPrev}
+                  font={FONTS.courierPrimeBold} fontSize={fsValue} color={GOLD}
+                  anchorX="left" anchorY="middle" fillOpacity={0} renderOrder={RO_TEXT}
+                  position={[splitStartX, rowY, 0.008]} {...linkProps(row.preview)}>
+                  Preview
+                </Text>
+                <Text ref={rBSep}
+                  font={FONTS.courierPrimeBold} fontSize={fsValue} color={CLAP_INK_FADE}
+                  anchorX="left" anchorY="middle" fillOpacity={0} renderOrder={RO_TEXT}
+                  position={[splitStartX + sw1, rowY, 0.008]}>
+                  {' / '}
+                </Text>
+                <Text ref={rBDl}
+                  font={FONTS.courierPrimeBold} fontSize={fsValue} color={GOLD}
+                  anchorX="left" anchorY="middle" fillOpacity={0} renderOrder={RO_TEXT}
+                  position={[splitStartX + sw1 + swS, rowY, 0.008]} {...linkProps(row.download)}>
+                  Download
+                </Text>
+              </>
+            ) : (
+              <Text ref={rBValues[i]}
+                font={FONTS.courierPrimeBold} fontSize={fsValue} color={row.gold ? GOLD : CLAP_INK}
+                anchorX="right" anchorY="middle"
+                fillOpacity={0} renderOrder={RO_TEXT}
+                position={[rightX, rowY, 0.008]}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (row.href) window.open(row.href, (row.href.startsWith('http') || row.href.startsWith('/')) ? '_blank' : '_self')
+                }}
+                onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer' }}
+                onPointerOut ={(e) => { e.stopPropagation(); document.body.style.cursor = '' }}>
+                {row.value}
+              </Text>
+            )}
           </Fragment>
         )
       })}
