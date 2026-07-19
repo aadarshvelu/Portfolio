@@ -3,7 +3,8 @@ import { audio } from './engine.js'
 import { CELEB_START } from '../components/Hero/config.js'
 
 const clamp01 = (x) => Math.min(1, Math.max(0, x))
-const cross = (p, s, T) => (p < T && s >= T) || (p > T && s <= T)
+// forward-only crossing — true only when scroll passes T going DOWN the page
+const crossedFwd = (p, s, T) => p < T && s >= T
 
 const GESTURES = ['pointerdown', 'keydown', 'touchstart', 'wheel']
 
@@ -36,7 +37,7 @@ export default function SoundControl({ introPx }) {
     let prevSm = smOf(window.scrollY)
     const onScroll = () => {
       const sm = smOf(window.scrollY)
-      if (cross(prevSm, sm, CELEB_START)) audio.burst()     // confetti-cone pop (only sound)
+      if (crossedFwd(prevSm, sm, CELEB_START)) audio.burst() // pop on the forward pass only
       prevSm = sm
     }
     window.addEventListener('scroll', onScroll, { passive: true })

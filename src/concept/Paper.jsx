@@ -5,21 +5,22 @@ import * as THREE from "three";
 import { useLayout } from "./layoutContext";
 import { sanitizeText } from "./sanitizeText";
 
-const BODY = `I build things.
+const BODY = `I build things that work in the real world.
 
-Mostly AI systems.
-Sometimes products.
-Sometimes tools.
+I solve the business problem,
+not just the code.
+I dig into what people actually need,
+and help it reach the market on time.
 
-What pulls me in is the moment
-a tangled problem becomes simple.
+Most problems have shown up before,
+just in a new shape. I look for that shape.
 
-This is a small archive of that.
+This is a small archive of that work.
 
-Scroll to continue.`;
+Scroll down to know more.`;
 
 const SIGN = `Aadarsh Velu
-Lead Technical Architect
+Solutions Architect
 Dubai, U.A.E.`;
 
 const PLANE_W = 1.5;

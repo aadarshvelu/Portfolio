@@ -13,7 +13,7 @@ const META = '#9b9789'
 // full vs truncated strings — `shortMeta` (mobile) picks the short set
 const TEXT = {
   full: {
-    sub: 'LEAD TECHNICAL ARCHITECT · DXB',
+    sub: 'SOLUTIONS ARCHITECT · DXB',
     cornerR: '25.2048° N · 55.2708° E\nDUBAI / U.A.E.',
     botL1: 'REEL  N° 01   ●   FRAME  001 / 248',
     botL2: 'ASA  400T    LENS  35MM ANAMORPHIC',
@@ -68,34 +68,15 @@ export default function Chrome({ on }) {
   return (
     <group>
       {/* top-left — wordmark */}
-      <Text font={FONTS.cormorantItalic500} fontSize={30 * fs} color={PEARL}
+      <Text font={FONTS.cormorantItalic500} fontSize={36 * fs} color={PEARL}
         anchorX="left" anchorY="top" position={[-cornerX, topY, 0]}
         renderOrder={RO} fillOpacity={op}>
         Aadarsh Velu
       </Text>
-      <Text font={FONTS.dmMono400} fontSize={9 * fs} color={GOLD} letterSpacing={0.32}
-        anchorX="left" anchorY="top" position={[-cornerX, topY - 38 * fs, 0]}
+      <Text font={FONTS.dmMono400} fontSize={16 * fs} color={GOLD} letterSpacing={0.32}
+        anchorX="left" anchorY="top" position={[-cornerX, topY - 45 * fs, 0]}
         renderOrder={RO} fillOpacity={op}>
         {t.sub}
-      </Text>
-
-      {/* top-right — reel meta */}
-      <Text font={FONTS.dmMono400} fontSize={9 * fs} color={MUTED} letterSpacing={0.22}
-        anchorX="right" anchorY="top" position={[cornerX, topY - 2 * fs, 0]}
-        renderOrder={RO} fillOpacity={op}>
-        REEL N°01 / 2026
-      </Text>
-
-      {/* corner meta */}
-      <Text font={FONTS.dmMono400} fontSize={9 * fs} color={MUTED} letterSpacing={0.28}
-        anchorX="left" anchorY="top" lineHeight={1.6}
-        position={[-cornerX, topY - 90 * fs, 0]} renderOrder={RO} fillOpacity={op}>
-        {'A. VELU\nPRESENTS'}
-      </Text>
-      <Text font={FONTS.dmMono400} fontSize={9 * fs} color={MUTED} letterSpacing={0.28}
-        anchorX="right" anchorY="top" textAlign="right" lineHeight={1.6}
-        position={[cornerX, topY - 90 * fs, 0]} renderOrder={RO} fillOpacity={op}>
-        {t.cornerR}
       </Text>
 
       {/* bottom-left — camera metadata */}

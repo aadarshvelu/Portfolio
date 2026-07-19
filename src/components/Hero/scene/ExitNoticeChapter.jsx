@@ -203,8 +203,8 @@ const CONTACT_ROWS = [
     preview:  'https://resume.whoisaadar.sh',
     download: 'https://resume.whoisaadar.sh/download' },
 ]
-const CONTACT_KICKER_LEFT   = 'REEL Nº 02'
-const CONTACT_KICKER_RIGHT  = ' · CONTACT · WHERE TO REACH HIM'
+const CONTACT_KICKER_LEFT   = 'REEL Nº 07'
+const CONTACT_KICKER_RIGHT  = '  CONTACT · WHERE TO REACH HIM'
 const CONTACT_HEADLINE_LEFT = 'The director takes'
 const CONTACT_HEADLINE_GOLD = ' calls.'
 const CONTACT_CUE = '— Two phones · one inbox · always answering.'

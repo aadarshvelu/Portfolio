@@ -35,7 +35,7 @@ const DISSOLVE_OUT = 0.095
 // cellA/cellB are sRGB 0..1.
 export const FRAMES = [
   { roman: 'I.', tag: 'THE ORIGIN', meta: '2018 — 2020', title: 'First\nLight',
-    em: 'I taught myself to code', cellA: [0.110, 0.165, 0.322], cellB: [0.020, 0.039, 0.110] },
+    em: 'I taught myself to code at 16', cellA: [0.110, 0.165, 0.322], cellB: [0.020, 0.039, 0.110] },
   { roman: 'II.', tag: 'THE UPGRADE', meta: '2020 — 2023', title: 'The\nUpgrade',
     em: 'the years I got sharp', cellA: [0.102, 0.133, 0.220], cellB: [0.039, 0.063, 0.141] },
   { roman: 'III.', tag: 'THE WORK', meta: '2022 — now', title: 'The\nWork',
@@ -88,8 +88,8 @@ export default function FilmFrame({ frame, focus, center = false, slot = 0, base
   // FIRST LIGHT enters by scrolling into Act I; the others by the play button.
   const isFirstLight = tag === 'THE ORIGIN'
   // SELF-TAUGHT types out on the focus title card (Origin only).
-  const caption = useTypewriter('SELF-TAUGHT', {
-    speed: 40,
+  const caption = useTypewriter('My Journey as a self-taught developer', {
+    speed: 20,
     start: !!(center && focus && isFirstLight),
   })
   // `dist` = resting |slot| from centre; `edge0` is the resting fade (the LIVE
@@ -358,7 +358,7 @@ export default function FilmFrame({ frame, focus, center = false, slot = 0, base
             <Text
               ref={selfRef}
               font={FONTS.dmMono400}
-              fontSize={11}
+              fontSize={6}
               color="#dcd9c8"
               anchorX="left"
               anchorY="top"

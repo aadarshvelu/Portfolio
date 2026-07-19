@@ -1,3 +1,5 @@
+export const enable_ix = false
+
 // Perspective camera distance (matches the prototype's CSS perspective).
 export const CAMERA_Z = 1700
 

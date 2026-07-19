@@ -30,7 +30,6 @@ export default function TitleSlate({ opacityRef }) {
   })
 
   const clapRows = [
-    ['Prod.', 'A. VELU', true],
     ['Scene', 'I.B', false],
     ['Shot', '01', false],
     ['Take', '02', false],

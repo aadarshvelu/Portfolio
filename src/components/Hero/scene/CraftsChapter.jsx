@@ -421,7 +421,7 @@ function DimOverlay({ h, y, uniforms, order }) {
 // that overflows the article. Narrative arc (hook → outcome) preserved.
 const STORIES = [
   {
-    kicker: 'STORY Nº 01  ·  Filed · Late Night  ·  The Workbench · 2024',
+    kicker: 'STORY Nº 01  ·  Filed · Late Night  ·  The Workbench · 2026',
     headline: 'ONE FEED. MINE.',
     headlineGold: 'ONE FEED.',
     deck: 'Five newsletters kept sending me the same AI news every day. So I built one feed that reads them all, drops the repeats, and emails me a single summary each morning.',
@@ -583,11 +583,11 @@ function StorySection({ pos, size, story, gRefs, order, stacked, storyKey }) {
 
   return (
     <>
-      <Text font={FONTS.dmMono400} fontSize={size.kicker} color="#8e6c28" anchorX="center" anchorY="middle"
+      {/* <Text font={FONTS.dmMono400} fontSize={size.kicker} color="#8e6c28" anchorX="center" anchorY="middle"
         letterSpacing={0.3} renderOrder={order + 2}
         position={[adj.kicker.dx, pos.kickerY + adj.kicker.dy, 0]} fillOpacity={0.95}>
         {story.kicker}
-      </Text>
+      </Text> */}
 
       {/* Headline base — black ink */}
       <Text font={FONTS.anton} fontSize={size.headline + adj?.headline?.fontSizeAdj} color="#1a1612" anchorX="center" anchorY="middle"
@@ -855,33 +855,27 @@ export default function CraftsChapter({ smoothed }) {
             depthTest={false} depthWrite={false} transparent />
         </mesh>
 
-        {/* ── Skyline strap ──────────────────────────────────── */}
-        <Text font={FONTS.dmMono400} fontSize={sz.mastheadStrap} color="#3d3525" anchorX="center" anchorY="middle"
-          letterSpacing={0.28} renderOrder={ROT} position={[0, skylineY, 0]} fillOpacity={0.9}>
-          {'VOL II · NO. 03     ★ ★ ★     LATE EDITION · NIGHT FILE     ★ ★ ★     SIX PAGES · ₹0'}
-        </Text>
-
         {/* ── Masthead ───────────────────────────────────────── */}
         <Rule y={top - 5.5} order={ROT} opacity={0.45} />
         <Text font={FONTS.dmMono400} fontSize={sz.mastheadStrap} color="#3d3525" anchorX="center" anchorY="middle"
           letterSpacing={0.22} renderOrder={ROT} position={[0, strapY, 0]} fillOpacity={0.9}>
-          {'FILED · 03:42 AM               EDITOR · A. VELU               TUE · MAY 2026'}
+          {'VOL I · NO. 01     ★ ★ ★     PROJECT SCRIPT     ★ ★ ★     THREE PAGES'}
         </Text>
         <Rule y={ruleStrapY} order={ROT} opacity={0.28} />
 
         <Text font={FONTS.anton} fontSize={sz.title} color="#0d0a07" anchorX="center" anchorY="middle"
           letterSpacing={-0.012} renderOrder={ROT} position={[0, titleY, 0]}>
-          {'THE CUTTING·ROOM'}
+          {'THE PROJECT·DESK'}
         </Text>
 
         <Text font={FONTS.cormorantItalic500} fontSize={sz.tagline} color="#241d17" anchorX="center" anchorY="middle"
           renderOrder={ROT} position={[0, taglineY, 0]} fillOpacity={0.96}>
-          {'all the news the workbench saw fit to file'}
+          {'Real projects, I built for my problems'}
         </Text>
 
         <Text font={FONTS.dmMono400} fontSize={sz.mastheadStrap} color="#3d3525" anchorX="center" anchorY="middle"
           letterSpacing={0.28} renderOrder={ROT} position={[0, editorialY, 0]} fillOpacity={0.92}>
-          {'REEL Nº 02  ·  CHAPTER II  ·  THE CRAFTS  ·  2022 — PRESENT'}
+          {'REEL Nº 06  ·  CHAPTER IV  ·  2022 — PRESENT'}
         </Text>
 
         <DoubleRule y={doubleRuleY} order={ROT} />
@@ -909,7 +903,7 @@ export default function CraftsChapter({ smoothed }) {
         <DoubleRule y={c.colophonY + 3} order={ROT} />
         <Text font={FONTS.dmMono400} fontSize={sz.colophon} color="#3d3525" anchorX="center" anchorY="middle"
           letterSpacing={0.24} renderOrder={ROT} position={[0, c.colophonY, 0]} fillOpacity={0.92}>
-          {'PAGE 22 · OF 22     — end of reel · continued in CHAPTER III · THE RECORD —     REEL Nº 02 · 2026'}
+          {'PAGE 3 · OF 3     — end of reel · continued in CHAPTER V · THE RECORD —     REEL Nº 06 · 2026'}
         </Text>
 
       </group>

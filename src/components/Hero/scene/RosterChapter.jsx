@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Text } from '@react-three/drei'
+import { Text, Line } from '@react-three/drei'
 import { FONTS } from '../../../fonts.js'
 import { PEEL_START, ROSTER_START, ROSTER_END, CRAFTS_START, ORDER } from '../config.js'
 import { useLayout } from '../breakpoint.js'
 import { LAYOUTS } from '../layouts.js'
+import { enable_ix } from "../config.js"
 
 /**
  * Chapter III — The Roster ("Night Flight"), in WebGL so it lives inside the
@@ -30,28 +31,60 @@ const ease = (x) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2)
 // Loglines are kept short so each renders on ONE line at the chyron's font
 // size / maxWidth — longer copy wraps to a second line and overprints the row
 // below (baked local-y spacing). Keep each b1/b2 ≲ 60 chars.
-const ROLES = [
-  { num: '01', year: '2020', dates: 'JUN 2020 — FEB 2022', title: 'Junior Software Engineer', company: 'Pay Perform',
+
+const all_roles = [
+  { num: '01', year: '2020', dates: 'JUN 2020 — FEB 2022', title: 'Junior Software Engineer', company: 'Orbital',
     b1: 'Stakeholder reporting UI — live activity + summaries.',
-    b2: 'First production credit on the reel.' },
+    b2: 'Built a shared design system adopted across new products.',
+    b3: 'Learned to break systems before shipping them.',
+    tools: 'React.js · Redux Toolkit · AWS Serverless · Node.js · Antd · TypeScript' },
   { num: '02', year: '2022', dates: 'FEB 2022 — MAY 2023', title: 'Senior Full-Stack Engineer', company: 'SM Technology',
     b1: 'Reusable business-module packages for plug-in delivery.',
-    b2: 'Cut project timelines; helped win new partners.' },
+    b2: 'Cut project timelines; helped win new partners.',
+    b3: 'Doubled as data engineer — built optimized ETL pipelines.',
+    tools: 'React.js · Redux Toolkit · Python · Django · FastAPI · AWS · Airflow' },
   { num: '03', year: '2024', dates: 'MAY 2024 — FEB 2025', title: 'IT Analyst · Full-Stack', company: 'Intellectyx',
     b1: 'Robust LMS — SCORM + Azure Entra ID single sign-on.',
-    b2: 'Multi-region LMS across UK · USA · Europe.' },
-  { num: '04', year: '2025', dates: 'MAR 2025 — OCT 2025', title: 'Full-Stack Engineer · AI', company: 'PieLabs Inc',
-    b1: 'Optimised AI modules; built + ran the MLOps pipeline.',
-    b2: 'Internal LLM log-observability — I/O + token capture.' },
-  { num: '05', year: 'NOW', dates: 'NOV 2025 — PRESENT', title: 'Lead Technical Architect', company: 'Elyts',
+    b2: 'Multi-region LMS across UK · USA · Europe.',
+    tools: 'React.js · Redux Toolkit · Python · Django · GoLang · FastAPI · Azure' },
+  { num: '04', year: '2025', dates: 'MAR 2025 — OCT 2025', title: 'Founding Engineer - AI', company: 'PieLabs Inc',
+    b1: 'AI researcher — computer-use QA agent, 13.5s to 5s per step.',
+    b2: 'Internal LLM log-observability — I/O + token capture.',
+    b3: 'Built a human-in-the-loop portal to label data for fine-tuning.',
+    tools: 'GoLang · React.js · Python · Gemini · Playwright · AWS · GCP' },
+  { num: '05', year: 'NOW', dates: 'NOV 2025 — PRESENT', title: 'Solutions Architect', company: 'Elyts',
     b1: 'End-to-end system design, infra & payments.',
-    b2: 'Internal AI (Hourglass · HireHouse) — hiring noise ~80%.' },
+    b2: 'Developed AI Tools (Hourglass · HireHouse) — to manage my day-to-day problems.',
+    b3: 'Shipped Web3 rails — swap · bridge · on/off-ramp — via an MCP app.',
+    links: [
+      { t: 'Hourglass', url: 'https://hourglass.elyts.tech' },
+      { t: 'HireHouse', url: 'https://hirehouse.elyts.tech' },
+      { t: 'tanat.app', url: 'https://tanat.app' },
+      { t: 'deploy.finance', url: 'https://deploy.finance' },
+    ],
+    tools: 'GoLang · Python · React.js · Web3 · AWS · GCP' },
 ]
+
+const alter_roles = [
+  all_roles[0],
+  all_roles[1],
+  {
+    ...all_roles[3],
+    num: '03',
+    dates: 'MAY 2024 — OCT 2025'
+  },
+  {
+    ...all_roles[4],
+    num: '04'
+  }
+]
+
+const ROLES = enable_ix ? all_roles : alter_roles
 // The inter-copy gap is placed as LEADING whitespace (and the string ENDS in a
 // visible glyph, ✦). troika's blockBounds trims TRAILING whitespace only, so a
 // trailing-gap string would measure short and the two-copy marquee would hiccup
 // at every wrap. Leading gap → measured width = exactly 2× one copy → seamless.
-const HIGHLIGHT = '      ★ ~80% HIRING NOISE REMOVED   ✦   INTERNAL AI SYSTEMS ADOPTED COMPANY-WIDE   ✦   MULTI-REGION LMS · UK · USA · EUROPE   ✦   REUSABLE MODULES THAT WON PARTNERS   ✦   END-TO-END SYSTEM DESIGN & PAYMENTS   ✦'
+const HIGHLIGHT = `      ★ ~80% HIRING NOISE REMOVED   ✦   INTERNAL AI SYSTEMS ADOPTED COMPANY-WIDE   ${enable_ix ? "✦   MULTI-REGION LMS · UK · USA · EUROPE" : ""}   ✦   REUSABLE MODULES THAT WON PARTNERS   ✦   END-TO-END SYSTEM DESIGN & PAYMENTS   ✦`
 
 const N = ROLES.length
 const TL_X0 = -40 // timeline rail extent (fixed — halfW is constant across bp)
@@ -60,6 +93,24 @@ const NOTCH_X = ROLES.map((_, i) => TL_X0 + (i / (N - 1)) * TL_W)
 
 const CREAM = '#f6ecd2', GOLD = '#c8a157', DIM = '#9b9789', SKY = '#0a1024'
 const RO = ORDER.nextChapter
+
+// External-link arrow (↗) drawn as thin STROKED quads in the unit box [0..1], so
+// it keeps the line-arrow look but renders through meshBasicMaterial → bright gold
+// (drei <Line>/LineMaterial ignores toneMapped and comes out dim).
+const ARROW_GEO = (() => {
+  const segs = [[[0, 0], [1, 1]], [[1, 1], [0.4, 1]], [[1, 1], [1, 0.4]]]
+  const th = 0.08, pos = []
+  for (const [[x0, y0], [x1, y1]] of segs) {
+    let dx = x1 - x0, dy = y1 - y0
+    const len = Math.hypot(dx, dy) || 1; dx /= len; dy /= len
+    const nx = -dy * th / 2, ny = dx * th / 2
+    pos.push(x0 + nx, y0 + ny, 0, x0 - nx, y0 - ny, 0, x1 - nx, y1 - ny, 0)
+    pos.push(x0 + nx, y0 + ny, 0, x1 - nx, y1 - ny, 0, x1 + nx, y1 + ny, 0)
+  }
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+  return g
+})()
 
 function makeReelTex() {
   const cv = document.createElement('canvas'); cv.width = 128; cv.height = 128
@@ -115,7 +166,7 @@ function makeFilmTex() {
   const x = cv.getContext('2d')
   x.fillStyle = '#0e0b06'; x.fillRect(0, 0, 64, 96)                 // celluloid base
   x.fillStyle = '#241a0e'; x.fillRect(5, 22, 54, 52)               // frame window
-  x.strokeStyle = 'rgba(200,161,87,0.30)'; x.lineWidth = 1.4; x.strokeRect(5, 22, 54, 52)
+  x.strokeStyle = 'rgba(200,161,87,0.30)'; x.lineWidth = 1.6; x.strokeRect(5, 22, 54, 52)
   x.fillStyle = '#050403'; x.fillRect(0, 0, 3, 96); x.fillRect(61, 0, 3, 96) // frame dividers
   x.fillStyle = '#eaddbb'                                           // sprocket perforations
   const perf = (cx, cy) => {
@@ -361,11 +412,34 @@ export default function RosterChapter({ smoothed }) {
   })
 
   const a = ROLES[active]
-  // chyron scrim sized to the k-scaled block, pinned to the left edge
+
+  // ── Chyron layout — FIXED panel size (never resizes between cards). Content
+  // flows from a fixed top; Elyts (3 bullets + links + skills) is the tallest,
+  // shorter cards just leave empty space at the panel BOTTOM. Rows top → bottom:
+  //   dates · title · company · bullets(1-3) · [links] · skills
+  const bullets = [a.b1, a.b2, a.b3].filter(Boolean)
+  const hasLinks = !!(a.links && a.links.length)
+  const gap = 1.6 * k
+  const datesY = 21.7 * k // whole card nudged up so its bottom clears the timeline
+  const titleY = 20.3 * k
+  const companyY = 16.9 * k
+  const bulletY0 = companyY - 1.7 * k
+  const bulletYs = bullets.map((_, i) => bulletY0 - i * gap)
+  const lastBulletY = bulletYs[bulletYs.length - 1]
+  const linksY = hasLinks ? lastBulletY - gap : null
+
+  // panel sized for the MAX card (3 bullets + links + skills = 4 gaps below b1)
+  // so it never resizes. Top HUGS the dates (so it stops covering the reel-road
+  // that dips in from above); bottom clears the timeline (~5.4k).
+  const maxSkillsY = bulletY0 - 4 * gap
+  const skillsY = maxSkillsY // SKILLS sticks to this fixed bottom row on EVERY card
   const panelW = Math.min(94, 42 * k)
   const panelCX = -47.5 + panelW / 2
-  const panelH = 13.6 * k
-  const panelCY = 14.8 * k
+  const panelTop = datesY + 0.9 * k
+  const panelBot = maxSkillsY - 1.3 * k
+  const panelH = panelTop - panelBot
+  const panelCY = (panelTop + panelBot) / 2
+  const resumeX = -47.5 + panelW - 2 // résumé block right-aligned inside the panel
 
   return (
     <group ref={rootRef} visible={false}>
@@ -415,14 +489,11 @@ export default function RosterChapter({ smoothed }) {
       {/* ── TOP cluster (anchored to +halfH; local y NEGATIVE, ×k spacing) ── */}
       <group ref={topRef}>
         <Text font={FONTS.dmMono400} fontSize={0.9 * k} color={GOLD} fillOpacity={0.75} anchorX="left" anchorY="top" letterSpacing={0.28}
-          position={[-46, -1.4 * k, 0]} renderOrder={RO + 4} material-depthTest={false}>◆ REEL Nº 03</Text>
+          position={[-46, -1.6 * k, 0]} renderOrder={RO + 4} material-depthTest={false}>◆ REEL Nº 03</Text>
         <Text font={FONTS.dmMono400} fontSize={0.92 * k} color={DIM} anchorX="left" anchorY="top" letterSpacing={0.42}
           position={[-46, -3.2 * k, 0]} renderOrder={RO + 4} material-depthTest={false}>PROFESSIONAL EXPERIENCE</Text>
-        {/* Tagline above the title (below it the italic overprinted the baseline). */}
-        <Text font={FONTS.cormorantItalic} fontSize={1.5 * k} color={GOLD} anchorX="left" anchorY="top" maxWidth={90}
-          position={[-46, -5.0 * k, 0]} renderOrder={RO + 4} material-depthTest={false}>Ride the reel-road — every studio a beacon.</Text>
-        <Text font={FONTS.anton} fontSize={5.4 * k} color={CREAM} anchorX="left" anchorY="top" scale={[1, 1.12, 1]} maxWidth={92}
-          position={[-46, -7.6 * k, 0]} renderOrder={RO + 4} material-depthTest={false}
+       <Text font={FONTS.anton} fontSize={5.4 * k} color={CREAM} anchorX="left" anchorY="top" scale={[1, 1.12, 1]} maxWidth={92}
+          position={[-46, -4.6 * k, 0]} renderOrder={RO + 4} material-depthTest={false}
           outlineWidth="2.5%" outlineBlur="10%" outlineColor={GOLD} outlineOpacity={0.35}>THE ROSTER</Text>
       </group>
 
@@ -431,26 +502,123 @@ export default function RosterChapter({ smoothed }) {
         {/* chyron scrim sized to the block, pinned to the left edge */}
         <mesh position={[panelCX, panelCY, 0]} renderOrder={RO + 2}>
           <planeGeometry args={[panelW, panelH]} />
-          <meshBasicMaterial color="#0b1018" transparent opacity={0.82} depthTest={false} />
+          <meshBasicMaterial color="#0b1018" transparent opacity={0.94} depthTest={false} />
         </mesh>
         <mesh position={[-46.8, panelCY, 0]} renderOrder={RO + 3}>
           <planeGeometry args={[0.4 * k, panelH]} />
           <meshBasicMaterial color={GOLD} toneMapped={false} depthTest={false} />
         </mesh>
         <Text font={FONTS.dmMono400} fontSize={0.9 * k} color={GOLD} anchorX="left" anchorY="top" letterSpacing={0.26}
-          position={[-46, 20.2 * k, 0]} renderOrder={RO + 4} material-depthTest={false}>{a.dates}{'   ◆   BEACON '}{a.num}{' / 05'}{active === N - 1 ? '   ● NOW' : ''}</Text>
-        <Text font={FONTS.anton} fontSize={3.5 * k} color={CREAM} anchorX="left" anchorY="top" maxWidth={44 * k}
-          position={[-46, 18.4 * k, 0]} renderOrder={RO + 4} material-depthTest={false}>{a.title.toUpperCase()}</Text>
-        <Text font={FONTS.dmMono400} fontSize={1.0 * k} color={GOLD} anchorX="left" anchorY="top" letterSpacing={0.24}
-          position={[-46, 13.9 * k, 0]} renderOrder={RO + 4} material-depthTest={false}>{a.company.toUpperCase()}</Text>
-        <Text font={FONTS.cormorantItalic} fontSize={1.1 * k} color="#e7dcc0" anchorX="left" anchorY="top" maxWidth={40 * k}
-          position={[-46, 12.1 * k, 0]} renderOrder={RO + 4} material-depthTest={false}>{'› ' + a.b1}</Text>
-        <Text font={FONTS.cormorantItalic} fontSize={1.1 * k} color="#b7ad93" anchorX="left" anchorY="top" maxWidth={40 * k}
-          position={[-46, 10.1 * k, 0]} renderOrder={RO + 4} material-depthTest={false}>{'› ' + a.b2}</Text>
+          position={[-46, datesY, 0]} renderOrder={RO + 4} material-depthTest={false}>{a.dates}{active === N - 1 ? '   ● NOW' : ''}</Text>
 
-        {/* bottom-right chrome */}
-        <Text font={FONTS.dmMono400} fontSize={0.85 * k} color={DIM} anchorX="right" anchorY="top" letterSpacing={0.26}
-          position={[46, 7.6 * k, 0]} renderOrder={RO + 4} material-depthTest={false}>CHAPTER III · NIGHT FLIGHT · ASA 400</Text>
+        {/* résumé — doc icon + Preview / Download, where the beacon marker was.
+            Group is right-anchored at the chyron's right edge (x=46, matching
+            the "CHAPTER III..." line below); pieces flow right-to-left:
+            Download (rightmost, ends at local x=0) ← / ← Preview ← [doc icon].
+            Widths are estimated (monospace advance ≈ 0.56×fontSize) since троика
+            hasn't measured them yet — good enough for a HUD label, not exact. */}
+        <group position={[resumeX, datesY, 0]}>
+          {(() => {
+            // Right-to-left layout, right-aligned to the panel edge (so it clears
+            // the left "dates ● NOW"). anchorX="right" ⇒ position.x IS the text's
+            // right edge = the previous element's left edge minus a gap. Order,
+            // left→right: [solid doc] Preview / Download Resume [↗].
+            const fs = 0.85 * k
+            const cw = fs * 0.7 // DM Mono advance (0.6) + letterSpacing (0.1)
+            const gapR = fs * 0.7
+            const isz = fs * 0.78 // ↗ arrow size
+            const arrow = [[0, 0, 0], [isz, isz, 0], [isz, isz * 0.42, 0], [isz, isz, 0], [isz * 0.42, isz, 0]]
+            const dw = fs * 0.78, dh = fs * 1.02, fold = fs * 0.3 // solid doc icon
+            const exRight = 0 // the trailing ↗ is the rightmost element
+            const dlRight = exRight - isz - gapR
+            const dlLeft = dlRight - 'Download Resume'.length * cw
+            const sepRight = dlLeft - gapR
+            const sepLeft = sepRight - cw
+            const pvRight = sepLeft - gapR
+            const pvLeft = pvRight - 'Preview'.length * cw
+            const docRight = pvLeft - gapR
+            const docShape = new THREE.Shape() // rectangle with a folded top-right corner
+            docShape.moveTo(0, 0); docShape.lineTo(dw - fold, 0); docShape.lineTo(dw, -fold)
+            docShape.lineTo(dw, -dh); docShape.lineTo(0, -dh); docShape.closePath()
+            const open = (url) => (e) => { e.stopPropagation(); window.open(url, '_blank', 'noopener,noreferrer') }
+            const over = () => { document.body.style.cursor = 'pointer' }
+            const out = () => { document.body.style.cursor = '' }
+            return (
+              <>
+                {/* SOLID document icon (filled, so it actually reads at HUD size) */}
+                <mesh position={[docRight - dw, fs * -.3, 0]} renderOrder={RO + 4}>
+                  <shapeGeometry args={[docShape]} />
+                  <meshBasicMaterial color={GOLD} transparent depthTest={false} depthWrite={false} toneMapped={false} />
+                </mesh>
+                <Text font={FONTS.dmMono400} fontSize={fs} color={GOLD} anchorX="right" anchorY="top" letterSpacing={0.1}
+                  position={[pvRight, -.15, 0]} renderOrder={RO + 4} material-depthTest={false}
+                  onClick={open('https://resume.whoisaadar.sh')} onPointerOver={over} onPointerOut={out}
+                >Preview</Text>
+                <Text font={FONTS.dmMono400} fontSize={fs} color={DIM} anchorX="right" anchorY="top" letterSpacing={0.1}
+                  position={[sepRight, -.2, 0]} renderOrder={RO + 4} material-depthTest={false}>/</Text>
+                <Text font={FONTS.dmMono400} fontSize={fs} color={GOLD} anchorX="right" anchorY="top" letterSpacing={0.1}
+                  position={[dlRight, -.2, 0]} renderOrder={RO + 4} material-depthTest={false}
+                  onClick={open('https://resume.whoisaadar.sh/download')} onPointerOver={over} onPointerOut={out}
+                >Download Resume</Text>
+                {/* trailing external-link arrow (↗) */}
+                <mesh geometry={ARROW_GEO} scale={[isz, isz, 1]}
+                  position={[exRight - isz, -fs * 1.25, 0]} renderOrder={RO + 4}>
+                  <meshBasicMaterial color={GOLD} transparent depthTest={false} depthWrite={false} toneMapped={false} />
+                </mesh>
+              </>
+            )
+          })()}
+        </group>
+        <Text font={FONTS.anton} fontSize={2.5 * k} color={CREAM} anchorX="left" anchorY="top" maxWidth={52 * k}
+          position={[-46, titleY, 0]} renderOrder={RO + 4} material-depthTest={false}>{a.title.toUpperCase()}</Text>
+        <Text font={FONTS.dmMono400} fontSize={1.0 * k} color={GOLD} anchorX="left" anchorY="top" letterSpacing={0.24}
+          position={[-46, companyY, 0]} renderOrder={RO + 4} material-depthTest={false}>{a.company.toUpperCase()}</Text>
+
+        {/* loglines — dynamic count (2 or 3), kept ≤1 line each */}
+        {bullets.map((b, i) => (
+          <Text key={i} font={FONTS.cormorantItalic} fontSize={1.1 * k} color={i === 0 ? '#e7dcc0' : '#b7ad93'}
+            anchorX="left" anchorY="top" maxWidth={40 * k}
+            position={[-46, bulletYs[i], 0]} renderOrder={RO + 4} material-depthTest={false}>{'› ' + b}</Text>
+        ))}
+
+        {/* project links line (Elyts) — each link clickable, with an external ↗.
+            Flat list of text runs + arrow icons, left-to-right, estimated widths. */}
+        {hasLinks && (() => {
+          const fs = 0.85 * k
+          const cw = fs * 0.6 // ≈ mono advance
+          const isz = fs * 0.95 // ↗ arrow size
+          
+          const els = []
+          let x = -46
+          const addText = (t, color, url) => { els.push({ kind: 't', t, color, url, x }); x += t.length * cw }
+          const addIcon = () => { els.push({ kind: 'i', x: x + fs * 0.22 }); x += isz + fs * 0.6 }
+          addText('› ', DIM)
+          a.links.forEach((lk, i) => {
+            if (i > 0) addText('  ·  ', DIM)
+            addText(lk.t, GOLD, lk.url)
+            addIcon()
+          })
+          const open = (url) => (e) => { e.stopPropagation(); window.open(url, '_blank', 'noopener,noreferrer') }
+          const over = () => { document.body.style.cursor = 'pointer' }
+          const out = () => { document.body.style.cursor = '' }
+          return els.map((el, i) => el.kind === 't' ? (
+            <Text key={i} font={FONTS.dmMono400} fontSize={fs} color={el.color} anchorX="left" anchorY="top" letterSpacing={0.02}
+              position={[el.x, linksY, 0]} renderOrder={RO + 4} material-depthTest={false}
+              onClick={el.url ? open(el.url) : undefined}
+              onPointerOver={el.url ? over : undefined} onPointerOut={el.url ? out : undefined}>{el.t}</Text>
+          ) : (
+            <mesh key={i} geometry={ARROW_GEO} scale={[isz, isz, 0]}
+              position={[el.x + .4, linksY - fs * 1.3, 0]} renderOrder={RO + 4}>
+              <meshBasicMaterial color={GOLD} transparent depthTest={false} depthWrite={false} toneMapped={false} />
+            </mesh>
+          ))
+        })()}
+
+        {/* skills / tools — small so the longest stack fits one line */}
+        {a.tools && (
+          <Text font={FONTS.dmMono400} fontSize={0.72 * k} color={DIM} anchorX="left" anchorY="top" letterSpacing={0.08}
+            position={[-46, skillsY, 0]} renderOrder={RO + 4} material-depthTest={false}>{'SKILLS · ' + a.tools}</Text>
+        )}
 
         {/* timeline scrubber */}
         <mesh position={[0, 5.4 * k, 0]} renderOrder={RO + 3}>

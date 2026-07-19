@@ -1,0 +1,18 @@
+# Netlify / Cloudflare Pages header rules.
+# GitHub Pages and most other static hosts IGNORE this file — if you deploy
+# there, these headers must be added at the CDN/host config layer instead.
+
+/
+  Link: </.well-known/api-catalog>; rel="api-catalog", </sitemap.xml>; rel="sitemap"
+
+/.well-known/api-catalog
+  Content-Type: application/linkset+json
+
+/.well-known/agent-skills/index.json
+  Content-Type: application/json
+
+/robots.txt
+  Content-Type: text/plain
+
+/sitemap.xml
+  Content-Type: application/xml
