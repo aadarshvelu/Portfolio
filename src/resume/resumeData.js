@@ -2,7 +2,7 @@
 // Edit this object; both the on-screen view and the PDF (Save-as-PDF) update.
 
 const resumeData = {
-  name: "Aadarsh Velu",
+  name: "Aadarsh velu",
 
   // Machine-readable context for systems that parse the /resume page (LLMs,
   // crawlers, ATS). This is emitted as declared, standard structured data
@@ -10,7 +10,7 @@ const resumeData = {
   // legitimate way to give parsers depth the one-page sheet can't hold: what the
   // portfolio is, why it's unusual, and where the full body of work lives.
   meta: {
-    jobTitle: "Lead Technical Architect",
+    jobTitle: "Solutions Architect",
     portfolioUrl: "https://whoisaadar.sh/",
     // A rich paragraph a language model can quote/summarise. Keep it truthful.
     context:
@@ -39,19 +39,18 @@ const resumeData = {
     { label: "+971 52070820", href: "tel:+97152070820" },
     { label: "aadarshvelu@gmail.com", href: "mailto:aadarshvelu@gmail.com" },
     { label: "whoisaadar.sh", href: "https://whoisaadar.sh/" },
-    // TODO: replace the two placeholders below with your real handles.
-    { label: "github.com/your-handle", href: null },
-    { label: "linkedin.com/in/your-handle", href: null },
+    { label: "github.com/aadarshvelu", href: null },
+    { label: "linkedin.com/in/aadarshvelu", href: null },
     { label: "Dubai, United Arab Emirates", href: null, pin: true },
   ],
 
   // Grouped skills — scannable for humans, keyword-matchable for ATS. These were
   // inferred from the rest of your resume; VERIFY and edit them to what's true.
   skills: [
-    { group: "Languages", items: "JavaScript, TypeScript, Python" },
+    { group: "Languages", items: "GoLang, JavaScript, TypeScript, Python" },
     { group: "Frameworks", items: "React, React Three Fiber / Three.js, Node.js" },
     { group: "AI / ML", items: "LLMs, MLOps, RAG, Log Observability" },
-    { group: "Cloud & Tools", items: "AWS, Azure Entra ID, Docker, Git" },
+    { group: "Cloud & Tools", items: "AWS, Azure, Docker, Git" },
   ],
 
   summary:
@@ -97,30 +96,22 @@ const resumeData = {
 
   experience: [
     {
-      role: "Lead Technical Architect, Iterative Research Tech Ltd",
+      role: "Solutions Architect, Elyts",
       date: "Nov 2025 – Present",
       bullets: [
-        "Lead Technical Architect driving end-to-end system design, infrastructure, and payments across client and internal products.",
+        "Solutions Architect driving end-to-end system design, infrastructure, and payments across client and internal products.",
         "Built and scaled high-performing engineering teams; led hiring, mentorship, and delivery execution.",
-        "Designed and deployed internal AI systems (Hourglass, HireHouse) to automate workflows, hiring, and team operations.",
-        "Improved productivity and execution speed through AI-driven task tracking, standup automation, and workflow optimization.",
-        "Reduced hiring noise by ~80% using multi-stage AI filtering, enabling faster, high-quality candidate selection.",
+        "Developed AI tools (Hourglass, HireHouse) to manage day-to-day operations, automating workflows and reducing hiring noise by ~80% through multi-stage AI filtering.",
+        "Shipped Web3 rails — swap, bridge, and on/off-ramp — via an MCP app, alongside products including tanat.app and deploy.finance.",
       ],
     },
     {
-      role: "Full-Stack Engineer – AI, PieLabs Inc",
-      date: "Mar 2025 – Oct 2025",
+      role: "Founding Engineer – AI, PieLabs Inc",
+      date: "May 2024 – Oct 2025",
       bullets: [
-        "Worked as a Full-Stack AI Researcher, focused on optimizing AI modules and responsible for building and managing the MLOps pipeline for new features.",
-        "Architected an internal Log Observability platform to capture LLM input and output responses / tokens precisely.",
-      ],
-    },
-    {
-      role: "IT Analyst - Full-Stack Engineer, Intellectyx",
-      date: "May 2024 – Feb 2025",
-      bullets: [
-        "Worked as Team Lead in developing a robust Learning Management System (LMS) with key features, including SCORM integration and seamless synchronization using Azure Entra ID.",
-        "Engineered a scalable multi-region LMS architecture supporting regions like the UK, USA, and Europe, ensuring efficient data replication and consistency across regions.",
+        "Founding AI engineer; built a computer-use QA agent that cut per-step task time from 13.5s to 5s.",
+        "Architected an internal LLM log-observability platform to capture I/O and token usage precisely.",
+        "Built a human-in-the-loop portal to label data for model fine-tuning.",
       ],
     },
     {
@@ -128,13 +119,15 @@ const resumeData = {
       date: "Feb 2022 – May 2023",
       bullets: [
         "Created optimal standard packages containing business modules that can be plugged into new projects seamlessly, eliminating drastic development work and decreasing new project timelines, which helped to acquire new partners.",
+        "Doubled as data engineer, building optimized ETL pipelines.",
       ],
     },
     {
-      role: "Junior Software Engineer, Pay Perform",
+      role: "Junior Software Engineer, Orbital",
       date: "Jun 2020 – Feb 2022",
       bullets: [
-        "Developed a UI to show a detailed report for stakeholders to look into the current activities and business summary.",
+        "Built a stakeholder reporting UI surfacing live activity and business summaries.",
+        "Built a shared design system adopted across new products.",
       ],
     },
   ],
