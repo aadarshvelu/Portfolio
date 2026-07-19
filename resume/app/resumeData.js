@@ -57,6 +57,8 @@ const resumeData = {
     "architecture, and leveraging AI to improve team productivity.",
 
   certification: [
+    { title: "ISO 42001 – AI Management Systems, Certified Auditor", date: "Apr 2026" },
+    { title: "ISO 27701 – Privacy Information Management, Certified Auditor", date: "Jul 2026" },
     { title: "AWS Solutions Architect – Associate", date: "Feb 2023" },
     {
       title: "Vels Institute of science and technology – Chennai, TN",

@@ -62,6 +62,14 @@ const resumeData = {
   // Certification and Education — leader rows (title .... date) with optional sub-line.
   certification: [
     {
+      title: "ISO 42001 – AI Management Systems, Certified Auditor",
+      date: "Apr 2026",
+    },
+    {
+      title: "ISO 27701 – Privacy Information Management, Certified Auditor",
+      date: "Jul 2026",
+    },
+    {
       title: "AWS Solutions Architect – Associate",
       date: "Feb 2023",
     },
