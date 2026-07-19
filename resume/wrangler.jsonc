@@ -15,7 +15,7 @@
   // dashboard: Pages project → Settings → Functions → KV namespace bindings,
   // if this project deploys via git integration rather than `wrangler deploy`).
   "kv_namespaces": [
-    { "binding": "RESUME_KV", "id": "REPLACE_WITH_YOUR_KV_NAMESPACE_ID" }
+    { "binding": "RESUME_KV", "id": "37638403546c4fd3a01c1ae35281ba20" }
   ],
 
   // Stores the uploaded resume PDF (binary — R2 is the right tool, not KV).
@@ -29,6 +29,6 @@
   // email you sign into Cloudflare Access with. Mirror this in the dashboard:
   // Pages project → Settings → Environment variables → OWNER_EMAIL.
   "vars": {
-    "OWNER_EMAIL": "REPLACE_WITH_YOUR_EMAIL"
+    "OWNER_EMAIL": "aadarshvelu@gmail.com"
   }
 }
