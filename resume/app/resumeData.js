@@ -61,6 +61,11 @@ const resumeData = {
     { title: "ISO 27701 – Privacy Information Management, Certified Auditor", date: "Jul 2026" },
     { title: "AWS Solutions Architect – Associate", date: "Feb 2023" },
     {
+      title: "Executive MDP in Strategic Management, IIM Kozhikode",
+      date: "Jun 2025 – Apr 2026",
+      sub: "Batch 06",
+    },
+    {
       title: "Vels Institute of science and technology – Chennai, TN",
       date: "Aug 2020 – May 2023",
       sub: "B.Sc Computer science with specialization in Cyber Security",
