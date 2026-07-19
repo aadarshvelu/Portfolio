@@ -6,12 +6,15 @@ import { FONTS } from '../../../../fonts.js'
 
 const CREAM = '#f2e8d8'
 const DARK_CAPTION = '#2a2620'
-const GOLD = '#96722e'
-const INK = '#2a2218'
-const INK_MED = '#443828'
-const SEPIA = '#5c4e3a'
-const RULE = '#6a5a42'
-const STAMP_BG = '#d4c5a8'
+// ── The V.O. reveal card is now a DARK FILM-SLATE, so its text + rules are
+//    light-on-dark (like First Light) for legibility through the CRT. The small
+//    polaroid thumbnail stays cream — it only uses CREAM / DARK_CAPTION / GOLD. ──
+const GOLD = '#c8a157' // bright gold — accents / slug / link / year (and the parchment dot)
+const INK = '#efe6d4' // card BODY text — light cream on the slate
+const INK_MED = '#a99a7e' // muted cream — the V.O. cue line
+const SEPIA = '#b3a284' // muted tan — labels / year range on the slate
+const RULE = '#7f6c48' // dim gold rule, visible on the slate
+const STAMP_BG = '#252c37' // raised dark panel (evidence stamp) on the slate
 
 const DEG = Math.PI / 180
 const clamp01 = (x) => Math.min(1, Math.max(0, x))
@@ -77,12 +80,12 @@ float noise(vec2 p) {
 }
 void main() {
   float n = noise(vUv * 20.0) * 0.6 + noise(vUv * 44.0) * 0.4;
-  vec3 base = vec3(0.937, 0.898, 0.816);
-  vec3 warm = vec3(0.910, 0.867, 0.780);
-  vec3 col = mix(base, warm, n * 0.10);
+  vec3 base = vec3(0.070, 0.074, 0.084); // deep neutral slate — sits DARKER than the navy wall so the card reads as an object, not a cut-out
+  vec3 warm = vec3(0.100, 0.105, 0.117); // subtle grain highlight
+  vec3 col = mix(base, warm, n * 0.4);
   vec2 e = smoothstep(vec2(0.0), vec2(0.04), vUv) * smoothstep(vec2(0.0), vec2(0.04), 1.0 - vUv);
   float vig = e.x * e.y;
-  col = mix(col * 0.93, col, vig);
+  col = mix(col * 0.82, col, vig); // darker edges → soft vignette frame
   gl_FragColor = vec4(pow(col, vec3(2.2)), uOpacity);
 }
 `
@@ -132,11 +135,11 @@ const Polaroid = forwardRef(function Polaroid(
   const cardH = PHOTO * 0.96
 
   const voLines = vo.lines.filter((l) => l.t !== undefined)
-  const lineHeight = cardH * 0.055
+  const lineHeight = cardH * 0.057
   const headerY = cardH * 0.46
   const cueY = headerY - lineHeight * 1.5
   const textStartY = cueY - lineHeight * 1.3
-  const fontSize = cardW * 0.054
+  const fontSize = cardW * 0.058
   const smallFont = fontSize * 0.72
 
   // Compute per-line Y positions — blank lines get half-height gaps
@@ -281,9 +284,10 @@ const Polaroid = forwardRef(function Polaroid(
           V.O. REVEAL CARD — archive document on parchment
           ================================================================ */}
       <group position={[0, (TOTAL_H - PHOTO) / 2 - PADDING, 4]}>
-        {/* card background — archival paper with grain + vignette */}
+        {/* card background — dark film-slate filling the whole photo cell (inside
+            the polaroid frame) so no cream/parchment shows inside; the frame stays */}
         <mesh renderOrder={58}>
-          <planeGeometry args={[cardW, cardH]} />
+          <planeGeometry args={[PHOTO, PHOTO]} />
           <shaderMaterial
             vertexShader={paperVert}
             fragmentShader={cardFrag}
@@ -462,20 +466,6 @@ const Polaroid = forwardRef(function Polaroid(
         >
           {vo.credential.name}
         </Text>
-        <Text
-          ref={(el) => (revealTexts.current[22] = el)}
-          font={FONTS.dmMono400}
-          fontSize={smallFont * 1.1}
-          color={GOLD}
-          anchorX="right"
-          anchorY="top"
-          letterSpacing={0.32}
-          position={[cardW * 0.42, credYearY, 0.2]}
-          renderOrder={59}
-          fillOpacity={0}
-        >
-          {vo.credential.year}
-        </Text>
 
         {/* link (Kaggle only) */}
         {vo.link && (
@@ -487,7 +477,7 @@ const Polaroid = forwardRef(function Polaroid(
             anchorX="right"
             anchorY="top"
             letterSpacing={0.14}
-            position={[cardW * 0.12, linkY - 5, 0.2]}
+            position={[cardW * 0.24, linkY - 5.5, 0.2]}
             renderOrder={59}
             fillOpacity={0}
             onClick={(e) => {
@@ -537,20 +527,6 @@ const Polaroid = forwardRef(function Polaroid(
           </>
         )}
 
-        {/* footer */}
-        <Text
-          ref={(el) => (revealTexts.current[25] = el)}
-          font={FONTS.cormorantItalic500}
-          fontSize={fontSize * 0.85}
-          color={GOLD}
-          anchorX="right"
-          anchorY="top"
-          position={[cardW * 0.42, footerY, 0.2]}
-          renderOrder={59}
-          fillOpacity={0}
-        >
-          {vo.footer}
-        </Text>
       </group>
     </group>
   )

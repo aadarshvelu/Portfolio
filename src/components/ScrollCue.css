@@ -61,6 +61,32 @@
   animation: scrollcueBob 1.7s ease-in-out infinite;
 }
 
+/* Dismiss (X) — top-right corner. The cue is pointer-events:none, so this is the
+   ONLY interactive part; ScrollCue.jsx keeps its pointer-events in step with the
+   cue's opacity so a faded/hidden cue leaves no phantom click target. */
+.scrollcue__close {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid #6e4f16;
+  background: #e2d2ab;
+  color: #33260f;
+  font: 700 13px/1 "DM Mono", ui-monospace, monospace;
+  cursor: pointer;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+.scrollcue__close:hover {
+  background: #d7c496;
+}
+
 /* Positions live in scrollCueConfig.js (applied as inline styles per breakpoint
    × section). The only placement styling that stays here is the vertical-label
    treatment, toggled by the .scrollcue--vertical class from the config. */
@@ -90,6 +116,13 @@
   }
   .scrollcue__hand {
     font-size: 20px;
+  }
+  .scrollcue__close {
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+    top: -7px;
+    right: -7px;
   }
   /* on a narrow screen the whole cue vertical-writing would be too tall — keep
      it horizontal even if a stale class lingers */

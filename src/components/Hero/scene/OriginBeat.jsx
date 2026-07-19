@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Text, Line } from '@react-three/drei'
@@ -59,16 +59,42 @@ const smoothstep = (x) => {
 
 // the lines ride a horizontal cylinder — an Apple-picker style convex drum
 const DRUM_RADIUS = 0.55
-const MAX_ANGLE = 1.2
+const MAX_ANGLE = 1.5
 // lines stay full opacity across the readable arc; EDGE_FADE is the fraction
 // of the arc (at each edge) over which a line fades out as it exits
-const EDGE_FADE = 0.25
-const DOT_COUNT = 14 // dotted underline beneath the DSA Visually link
+const EDGE_FADE = 1
+const DOT_COUNT = 32 // dotted underline beneath the DSA Visually link
 const CLICK_MIN_OPACITY = 0.5 // a line only acts as a link while readable
+// How far toward the right edge the story column fills, as a fraction of the
+// viewport half-width. The fit shrink (see useFrame) lands the column's right
+// edge exactly here, so this reads directly as "fill %": higher = closer to the
+// edge (less right-hand whitespace), lower = more margin. Wide screens where the
+// column already fits inside this keep their natural size (fit = 1).
+const COLUMN_FILL = 1.35
 
 export default function OriginBeat({ smoothed, frameMarker, coneAnchor }) {
   const { originBeat } = useLayout()
-  const { x, gap, laneTop, laneBot, fontSize } = originBeat
+  const {
+    x: baseX,
+    gap: baseGap,
+    laneTop,
+    laneBot,
+    fontSize: baseFont,
+    maxWidth: baseMaxWidth,
+    anchorX,
+  } = originBeat
+
+  // The column is laid out in fixed world units, but the visible width changes
+  // with the viewport aspect (parked visH is constant, so visW = visH·aspect) and
+  // the CRT vignette eats the edges. `fit` shrinks the whole column uniformly so
+  // it never runs off the right edge — wrapping is preserved because fontSize and
+  // maxWidth scale together. Recomputed live in useFrame from the parked view.
+  const [fit, setFit] = useState(1)
+  const fitRef = useRef(1)
+  const fontSize = baseFont * fit
+  const gap = baseGap * fit
+  const x = baseX * fit
+  const maxWidth = baseMaxWidth * fit
 
   const outer = useRef()
   const groups = useRef([])
@@ -122,6 +148,22 @@ export default function OriginBeat({ smoothed, frameMarker, coneAnchor }) {
     const laneH = laneTopY - laneBotY
     const laneMidY = (laneTopY + laneBotY) / 2
     const R = laneH * DRUM_RADIUS
+
+    // Fit the column to the visible width. Only while parked (smoothed ≥ DOLLY_END)
+    // — there visH is constant, so this settles in one frame and re-fits only on
+    // resize; during the dolly the lines are invisible so we skip it (no relayout
+    // churn). `extent` is the column's farthest edge from centre (anchor-aware).
+    if (smoothed.current >= DOLLY_END) {
+      const aspect = state.size.width / state.size.height
+      const halfVisW = (visH * aspect) / 2
+      const half = anchorX === 'center' ? baseMaxWidth / 2 : baseMaxWidth
+      const extent = Math.max(Math.abs(baseX + half), Math.abs(baseX - half)) || 1
+      const target = Math.max(0.5, Math.min(1, (halfVisW * COLUMN_FILL) / extent))
+      if (Math.abs(target - fitRef.current) > 0.01) {
+        fitRef.current = target
+        setFit(target)
+      }
+    }
 
     // measure each line box -> centre offsets down the column
     const heights = []
@@ -223,11 +265,11 @@ export default function OriginBeat({ smoothed, frameMarker, coneAnchor }) {
             fontSize={fontSize}
             color={line.base || CREAM}
             colorRanges={line.colorRanges}
-            anchorX={originBeat.anchorX}
+            anchorX={anchorX}
             anchorY="middle"
-            maxWidth={originBeat.maxWidth}
+            maxWidth={maxWidth}
             lineHeight={1.15}
-            textAlign={originBeat.anchorX === 'center' ? 'center' : 'left'}
+            textAlign={anchorX === 'center' ? 'center' : 'left'}
             renderOrder={32}
             fillOpacity={0}
             depthOffset={-1}

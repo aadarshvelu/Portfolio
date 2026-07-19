@@ -62,10 +62,12 @@ export default function App() {
         <Hero />
       </Viewport>
       {/* scroll runway — Act I + The Upgrade + The Roster + The Work/finale.
-          1500 → 1650vh gives the whole timeline (and especially the closing
-          postcard) more physical scroll per normalised step. Marks are
-          normalised (sm 0..1), so lengthening the runway just adds room. */}
-      <div style={{ height: '1650vh' }} aria-hidden="true" />
+          1500 → 1650 → 2000vh gives the whole timeline (and especially the
+          newspaper → note → flip finale) more physical scroll per normalised
+          step, so the postcard flip isn't quick and the newspaper→note stretch
+          reads slower. Marks are normalised (sm 0..1), so lengthening the runway
+          just adds room everywhere proportionally. */}
+      <div style={{ height: '2000vh' }} aria-hidden="true" />
     </>
   )
 }

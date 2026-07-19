@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './ScrollCue.css'
 import { UPGRADE_ENTER, PEEL_START, PEEL_END, CRAFTS_START } from './Hero/config.js'
 import { detectBreakpoint } from '../hooks/useBreakpoint.js'
@@ -20,19 +20,25 @@ function sectionKey(inRoom, sm) {
 
 /**
  * A little lottery-ticket / stamp scroll cue — "SCROLL · <chapter>" + a downward
- * hand — fixed for the whole journey. Placement is fully config-driven: see
- * scrollCueConfig.js for a position per breakpoint × section (tweak there).
- * Decorative (pointer-events none); opacity, placement, and heading are set
- * imperatively on scroll (no re-render). Starts hidden (CSS opacity:0 → no boot
- * flash); fades in with the room and out at the very end.
+ * hand — fixed for the whole journey. Placement is config-driven (see
+ * scrollCueConfig.js: a position per breakpoint × section; `hidden:true` drops it
+ * for a section, e.g. The Work). A small X dismisses it for the current view via
+ * React state — it returns on the next reload (no persistence). Opacity/placement/
+ * heading are set imperatively on scroll (no re-render). Starts hidden (CSS
+ * opacity:0 → no boot flash); fades in with the room and out at the very end.
  */
 export default function ScrollCue({ introPx = 0 }) {
+  const [dismissed, setDismissed] = useState(false)
   const cueRef = useRef(null)
   const sufRef = useRef(null)
+  const closeRef = useRef(null)
 
   useEffect(() => {
+    if (dismissed) return undefined
     const cue = cueRef.current
     const suf = sufRef.current
+    const closeBtn = closeRef.current
+
     const off = introPx || 0
     let prevStamp = ''
     let prevLabel = ''
@@ -67,21 +73,23 @@ export default function ScrollCue({ introPx = 0 }) {
       const heroMax = document.documentElement.scrollHeight - window.innerHeight - off || 1
       const sm = clamp01((y - off) / heroMax)
       const inRoom = y < off
-
-      // Hide entirely while the page-peel is turning (Upgrade → Roster reveal) —
-      // the cue must not sit on top of the peeling page. Small lead/lag margins
-      // so it's already gone before the peel is visible and only returns once the
-      // reel-road has settled.
-      const inPeel = !inRoom && sm > PEEL_START - 0.015 && sm < PEEL_END + 0.01
-      if (cue) cue.style.opacity = inPeel ? '0' : String(fadeIn * fadeOut)
-
       const bp = detectBreakpoint()
       const key = sectionKey(inRoom, sm)
+      const conf = (SCROLL_CUE[bp] && SCROLL_CUE[bp][key]) || SCROLL_CUE_FALLBACK
+
+      // Hidden when: config marks the section hidden (e.g. The Work — the
+      // newspaper/notes/"director takes calls" pages), or the page-peel is turning
+      // (Upgrade → Roster reveal) and the cue must not sit on the peeling page.
+      const inPeel = !inRoom && sm > PEEL_START - 0.015 && sm < PEEL_END + 0.01
+      const op = inPeel || conf.hidden ? 0 : fadeIn * fadeOut
+      if (cue) cue.style.opacity = String(op)
+      // Only let the X catch clicks while the cue is actually visible (it's an
+      // absolutely-positioned button; a faded cue must not leave a phantom target).
+      if (closeBtn) closeBtn.style.pointerEvents = op > 0.05 ? 'auto' : 'none'
 
       // placement — look up config[breakpoint][section]; only re-apply on change
       const stamp = bp + '|' + key
       if (stamp !== prevStamp) {
-        const conf = (SCROLL_CUE[bp] && SCROLL_CUE[bp][key]) || SCROLL_CUE_FALLBACK
         place(conf)
         prevStamp = stamp
       }
@@ -101,10 +109,21 @@ export default function ScrollCue({ introPx = 0 }) {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
     }
-  }, [introPx])
+  }, [introPx, dismissed])
+
+  if (dismissed) return null
 
   return (
-    <div className="scrollcue" ref={cueRef} aria-hidden="true">
+    <div className="scrollcue" ref={cueRef}>
+      <button
+        type="button"
+        className="scrollcue__close"
+        ref={closeRef}
+        onClick={() => setDismissed(true)}
+        aria-label="Dismiss scroll hint"
+      >
+        {'×'}
+      </button>
       <span className="scrollcue__label">
         Scroll<span className="scrollcue__suffix" ref={sufRef}> · Enter</span>
       </span>

@@ -41,7 +41,10 @@ export const LAYOUTS = {
       maxWidth: 195,
       anchorX: 'left',
       laneTop: 0.05,
-      laneBot: 0.95,
+      // Bottom of the reading drum. Kept off the very bottom (was 0.95) so the
+      // lowest fading line clears the scroll cue + CRT vignette on short 16:10
+      // laptop viewports (MacBook 13"), where coverFov crops top/bottom.
+      laneBot: 0.86,
     },
     // Confetti celebration scale (relative to desktop) + reel-transition card.
     confetti: { scale: 1 },

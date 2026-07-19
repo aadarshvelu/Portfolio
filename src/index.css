@@ -27,6 +27,27 @@ body {
   font-family: 'DM Mono', ui-monospace, monospace;
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
+  /* Kill the mobile rubber-band/bounce: it let a flick overscroll past the
+     polaroid & newspaper beats, and momentum slam the page to the bottom (which
+     jumped the Exit Notice straight to its "director takes calls" back-face).
+     The whole experience is one scroll timeline, so there's nothing to chain to. */
+  overscroll-behavior: none;
+}
+
+/* The single scroll container: a fixed-height inner scroller. Sized to the SMALL
+   viewport (svh) so it's invariant to the mobile toolbar. Everything lives
+   inside it; the fixed visual layers (canvas, room, cue) stay pinned to the
+   viewport while the invisible spacers give it its scroll length. */
+.scroller {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh; /* fallback for browsers without svh (< iOS 15.4) */
+  height: 100svh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

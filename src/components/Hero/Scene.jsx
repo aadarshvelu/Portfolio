@@ -55,7 +55,11 @@ const MAX_TILT = 0.02
 const TILT_EASE = 0.02
 const ZOOM = 1.01
 
-const SCROLL_SMOOTH = 0.1
+// Scroll-smoothing time constant, in SECONDS. Frame-rate-independent: the catch-
+// up per unit of time is identical whether the device runs at 30/60/120 Hz, so
+// scrolling feels the same everywhere. 0.158s reproduces the old 0.1-per-frame
+// feel at 60fps (0.9 = e^(-(1/60)/0.158)), so desktop is unchanged.
+const SMOOTH_TAU = 0.158
 const clamp01 = (x) => Math.min(1, Math.max(0, x))
 const smoothstep = (x) => x * x * (3 - 2 * x)
 
@@ -98,7 +102,7 @@ export default function Scene({ progressRef, carouselOffset = 0, onPrev, onNext,
   const polaroidPos = useMemo(() => new THREE.Vector3(), [])
   const polaroidScale = useMemo(() => new THREE.Vector3(), [])
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const g = tilt.current
     if (g) {
       const targetX = -state.pointer.y * MAX_TILT
@@ -108,7 +112,10 @@ export default function Scene({ progressRef, carouselOffset = 0, onPrev, onNext,
     }
 
     const raw = progressRef?.current ?? 0
-    smoothed.current += (raw - smoothed.current) * SCROLL_SMOOTH
+    // Frame-rate-independent exponential smoothing (see SMOOTH_TAU). dt is
+    // clamped so a post-stall frame eases in instead of snapping.
+    const dt = Math.min(delta, 0.1)
+    smoothed.current += (raw - smoothed.current) * (1 - Math.exp(-dt / SMOOTH_TAU))
 
     // Act I declutter
     if (!decluttered.current && smoothed.current > 0.038) {

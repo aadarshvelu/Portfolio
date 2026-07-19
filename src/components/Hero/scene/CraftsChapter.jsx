@@ -1,4 +1,5 @@
 import { useRef, useMemo } from 'react'
+import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { Text, useTexture } from '@react-three/drei'
 import { FONTS } from '../../../fonts.js'
@@ -167,35 +168,43 @@ const GOLD_THRESHOLDS = {
 // Copy any key into a story slot below to override just that element.
 function _slot(o = {}) {
   return {
-    kicker:   { dx:  0,     dy:  0,    ...o.kicker   },
-    headline: { dx:  0,     dy:  0,    fontSizeAdj: 0,    ...o.headline  },
-    goldenHeadline: { dx:  0,     dy:  0,    fontSizeAdj: 0,    ...o.goldenHeadline  },
-    deck:     { dx:  0,     dy: -1,    maxWAdj: -25,  ...o.deck     },
-    figure:   { dx:  0,     dy: -3.5,  wAdj: 9.5, hAdj: 3,  ...o.figure   },
-    figLabel: { dx:  0,     dy:  0,    ...o.figLabel  },
-    body:     { dx: -2,     dy: -6,    maxWAdj: -10, fontSizeAdj: 0,  ...o.body     },
-    goldBody: { dx:  19.33, dy:  4.17, maxWAdj: -10, fontSizeAdj: 0, off: false,  ...o.goldBody },
-    pull:     { dx:  6,     dy:  3.5,  fontSizeAdj: 0, ...o.pull     },
-    goldPull: { dx:  6,     dy:  3.5,  fontSizeAdj: 0, ...o.goldPull },
-    outcome:  { x:   20,    dy:  6,    maxWAdj: 0,    fontSizeAdj: 0,    ...o.outcome  },
-    staff:    { x:   20,    dy:  6.5,    maxWAdj: 0,    fontSizeAdj: 0,    ...o.staff    },
+    kicker: { dx: 0, dy: 0, ...o.kicker },
+    headline: { dx: 0, dy: 0, fontSizeAdj: 0, ...o.headline },
+    goldenHeadline: { dx: 0, dy: 0, fontSizeAdj: 0, ...o.goldenHeadline },
+    deck: { dx: 0, dy: -1, maxWAdj: -25, ...o.deck },
+    figure: { dx: 0, dy: -3.5, wAdj: 9.5, hAdj: 3, ...o.figure },
+    figLabel: { dx: 0, dy: 0, ...o.figLabel },
+    body: { dx: -1, dy: -6, maxWAdj: -10, fontSizeAdj: 0, ...o.body },
+    goldBody: { dx: 19.33, dy: 4.17, maxWAdj: -10, fontSizeAdj: 0, off: false, ...o.goldBody },
+    pull: { dx: 6, dy: 3.5, fontSizeAdj: 0, ...o.pull },
+    goldPull: { dx: 6, dy: 3.5, fontSizeAdj: 0, ...o.pull, ...o.goldPull },
+    outcome: { x: 20, dy: 6, maxWAdj: 0, fontSizeAdj: 0, ...o.outcome },
+    staff: { x: 20, dy: 6.5, maxWAdj: 0, fontSizeAdj: 0, ...o.staff },
+    // "SEE IT LIVE" project button — sits below the BUILT WITH line. dx/dy nudge
+    // it per story/breakpoint; scale grows/shrinks the whole pill.
+    link: { dx: 0, dy: 0, scale: 1, ...o.link },
   }
 }
 
 const LAYOUT_CONFIG = {
   // ── Desktop (landscape 2-column layout) ────────────────────────────────
   desktop: {
-    s1: _slot(),  // Story 01 · Syndicate ("ONE FEED.")  — tuned
+    s1: _slot({
+      pull: { dx: 6, dy: 12, fontSizeAdj: 0 },
+      outcome: { x: 20.5, dy: 14, maxWAdj: 0, fontSizeAdj: 0 },
+      staff: { x: 20, dy: 14, maxWAdj: 0, fontSizeAdj: 0 },
+      link: { dx: 0, dy: 0, scale: 1 },
+    }),  // Story 01 · Syndicate ("ONE FEED.")  — tuned
     s2: _slot({
       kicker: { dx: 0, dy: -2 },
       deck: { dx: 6, dy: -1.2 },
       figure: { hAdj: 3, wAdj: 7, dy: -4 },
-      goldenHeadline: { dx: -15.2, dy: 0},
+      goldenHeadline: { dx: -15.2, dy: 0 },
       goldBody: { dx: 28, dy: -1.71 },
-      pull: { dx: 2.5, dy: -1 },
-      goldPull: { dx: 2.5, dy: -1 },
-      outcome: { dy: 1.5 },
-      staff: { dy: 2 }
+      pull: { dx: 2, dy: 9.5, fontSizeAdj: 0 },
+      outcome: { x: 18.3, dy: 11.9, maxWAdj: 0, fontSizeAdj: 0 },
+      staff: { x: 18, dy: 12, maxWAdj: 0, fontSizeAdj: 0 },
+      link: { dx: 0, dy: 0, scale: 1 },
     }),  // Story 02 · Hourglass ("RAN")        — tune next
     s3: _slot({
       kicker: { dx: 0, dy: -2 },
@@ -205,10 +214,10 @@ const LAYOUT_CONFIG = {
       figure: { hAdj: 3, wAdj: 6, dy: -5 },
       body: { dy: -5 },
       goldBody: { dx: 25.1, dy: .6 },
-      pull: { dx: .5, dy: 1 },
-      goldPull: { dx: .5, dy: 1 },
-      outcome: { x: 19, dy: 4 },
-      staff: { dx: 20, dy: 4.5 }
+      pull: { dx: 0, dy: 13.5, fontSizeAdj: 0 },
+      outcome: { x: 17, dy: 16, maxWAdj: 0, fontSizeAdj: 0 },
+      staff: { x: 17, dy: 16, maxWAdj: 0, fontSizeAdj: 0 },
+      link: { dx: 0, dy: 0, scale: 1 },
     }),  // Story 03 · Hirehouse ("50,000 RÉSUMÉS.") — tune next
   },
   // ── Tablet portrait (stacked layout) ──────────────────────────────────
@@ -218,36 +227,31 @@ const LAYOUT_CONFIG = {
       goldenHeadline: { dx: -8, dy: 1, fontSizeAdj: 0 },
       deck: { dx: 1, dy: 6.5 },
       figure: { wAdj: -2, hAdj: 4, dy: 4 },
-      body: { dx: 1, dy: 6, maxWAdj: -30 },
       goldBody: { dx: 11.35, dy: 2.9 },
-      pull: { dx: .5, dy: 6 },
-      goldPull: { dx: .5, dy: 6 },
-      outcome: { x: 1, dy: 7, maxWAdj: -10, fontSizeAdj: -0.25  },
-      staff: { x: .3, dy: 7.5, maxWAdj: 0, fontSizeAdj: -0.25  }
+      body: { dx: 1, dy: 6, maxWAdj: -25 },
+      pull: { dx: .5, dy: 17 },
+      outcome: { x: 1, dy: 18, maxWAdj: -10, fontSizeAdj: -0.25 },
+      staff: { x: .3, dy: 18, maxWAdj: 0, fontSizeAdj: -0.25 }
     }),
     s2: _slot({
       headline: { dy: -1, maxWAdj: -10, fontSizeAdj: -1.5 },
       goldenHeadline: { dx: -8, dy: -1, fontSizeAdj: -1.5 },
       deck: { dx: 1, dy: 4.5 },
       figure: { wAdj: -2, hAdj: 1, dy: 3 },
-      body: {  maxWAdj: -30, dx: 1, dy: 5 },
-      goldBody: { dx: 11.35, dy: 4.9, off: true },
-      pull: { dx: .5, dy: 2 },
-      goldPull: { dx: .5, dy: 2 },
-      outcome: { x: 1, dy: 3.5, maxWAdj: -10, fontSizeAdj: -0.25  },
-      staff: { x: .3, dy: 3.5, maxWAdj: 0, fontSizeAdj: -0.25  }
+      body: { dx: 1, dy: 5, maxWAdj: -25 },
+      pull: { dx: .5, dy: 14 },
+      outcome: { x: 1, dy: 14, maxWAdj: -10, fontSizeAdj: -0.25 },
+      staff: { x: .3, dy: 15, maxWAdj: 0, fontSizeAdj: -0.25 }
     }),
     s3: _slot({
       headline: { dy: 3, maxWAdj: -10, fontSizeAdj: -1.5 },
       goldenHeadline: { dx: -8, dy: 3, fontSizeAdj: -1.5 },
       deck: { dx: 1, dy: 9 },
       figure: { wAdj: -2, hAdj: 1, dy: 7.5 },
-      body: {  maxWAdj: -32, dx: 1, dy: 8.5, fontSizeAdj: -0.25 },
-      goldBody: { dx: 10.5, dy: 3.98, fontSizeAdj: -0.25 },
-      pull: { dx: .5, dy: 7.5 },
-      goldPull: { dx: .5, dy: 7.5 },
-      outcome: { x: 1, dy: 9, maxWAdj: -10, fontSizeAdj: -0.25  },
-      staff: { x: .3, dy: 9.5, maxWAdj: 0, fontSizeAdj: -0.25  }
+      body: { dx: 1, dy: 9, maxWAdj: -25 },
+      pull: { dx: .5, dy: 18 },
+      outcome: { x: 1, dy: 19, maxWAdj: -10, fontSizeAdj: -0.25 },
+      staff: { x: .3, dy: 19, maxWAdj: 0, fontSizeAdj: -0.25 }
     }),
   },
   // ── Mobile portrait (stacked layout) ──────────────────────────────────
@@ -258,24 +262,24 @@ const LAYOUT_CONFIG = {
       goldenHeadline: { dx: -8, dy: 6 },
       deck: { dx: 1.5, dy: 11, maxWAdj: 1.8 },
       figure: { dy: 10, hAdj: 4 },
-      body: { dy: 12 },
+      body: { dx: 0, dy: 10, fontSizeAdj: -0.1, maxWAdj: 0 },
       goldBody: { dx: -9.2, dy: 0.52 },
-      pull: { dx: 0, dy: 2 },
-      goldPull: { dx: 0, dy: 2 },
-      outcome: { x: 0, dy: 3, maxWAdj: -10, fontSizeAdj: -0.40  },
-      staff: { x: .3, dy: 3.5, maxWAdj: 0, fontSizeAdj: -0.40  }
+      pull: { dx: 0, dy: 18 },
+      outcome: { x: 0, dy: 18.5, maxWAdj: -8, fontSizeAdj: -0.45 },
+      staff: { x: .3, dy: 18.5, maxWAdj: 0, fontSizeAdj: -0.40 },
+      link: { dx: 0, dy: -2, scale: 1 },
     }),
     s2: _slot({
       headline: { dx: 1, dy: -.3, maxWAdj: -0, fontSizeAdj: -1.5 },
       goldenHeadline: { dx: -7, dy: -.3, fontSizeAdj: -1.5 },
       deck: { dx: 1.5, dy: 7, maxWAdj: 1.8 },
       figure: { dy: 6.5, hAdj: 1 },
-      body: { dx: 0, dy: 10, fontSizeAdj: -0.25, maxWAdj: -6 },
+      body: { dx: 0, dy: 9.5, fontSizeAdj: -0.1, maxWAdj: 0 },
       goldBody: { dx: -9.5, dy: 1.4 },
-      pull: { dx: 0, dy: 3 },
-      goldPull: { dx: 0, dy: 3 },
-      outcome: { x: 0, dy: 3, maxWAdj: -10, fontSizeAdj: -0.40  },
-      staff: { x: .3, dy: 3.5, maxWAdj: 0, fontSizeAdj: -0.40  }
+      pull: { dx: 0, dy: 18 },
+      outcome: { x: 0, dy: 18.5, maxWAdj: -8, fontSizeAdj: -0.45 },
+      staff: { x: .3, dy: 18.5, maxWAdj: 0, fontSizeAdj: -0.40 },
+      link: { dx: 0, dy: -2, scale: 1 },
     }),
     s3: _slot({
       kicker: { dy: 2.5 },
@@ -283,12 +287,12 @@ const LAYOUT_CONFIG = {
       goldenHeadline: { dx: -7, dy: 3, fontSizeAdj: -1.5 },
       deck: { dx: 1.5, dy: 9, maxWAdj: 1.8 },
       figure: { dy: 8.5, hAdj: 2 },
-      body: { dx: 0, dy: 12, fontSizeAdj: -0.25, maxWAdj: -6 },
       goldBody: { dx: -12.2, dy: 3.5, fontSizeAdj: -0.25 },
-      pull: { dx: 0, dy: 6, fontSizeAdj: -0.40 },
-      goldPull: { dx: 0, dy: 6, fontSizeAdj: -0.40 },
-      outcome: { x: 0, dy: 7, maxWAdj: -10, fontSizeAdj: -0.40  },
-      staff: { x: .3, dy: 7.5, maxWAdj: 0, fontSizeAdj: -0.40  }
+      body: { dx: 0, dy: 10, fontSizeAdj: -0.1, maxWAdj: -1 },
+      pull: { dx: 0, dy: 18, fontSizeAdj: -0.1 },
+      outcome: { x: 0, dy: 18.5, maxWAdj: -8, fontSizeAdj: -0.45 },
+      staff: { x: .3, dy: 18.5, maxWAdj: 0, fontSizeAdj: -0.40 },
+      link: { dx: 0, dy: -2, scale: 1 },
     }),
   },
 }
@@ -298,18 +302,18 @@ const LAYOUT_CONFIG = {
 // single article fills the viewport (taller paper-vs-screen ratio).
 function buildKeys(c) {
   return [
-    { p: 0.000, cy: 18,              s: c.s.wide     },
-    { p: 0.060, cy: 18,              s: c.s.open     },
-    { p: 0.140, cy: c.cy.story1,     s: c.s.park     },
-    { p: 0.300, cy: c.cy.story1,     s: c.s.park     },
-    { p: 0.380, cy: c.cy.turn12,     s: c.s.turn     },
-    { p: 0.460, cy: c.cy.story2,     s: c.s.park     },
-    { p: 0.600, cy: c.cy.story2,     s: c.s.park     },
-    { p: 0.680, cy: c.cy.turn23,     s: c.s.turn     },
-    { p: 0.760, cy: c.cy.story3,     s: c.s.park     },
-    { p: 0.835, cy: c.cy.story3,     s: c.s.park     },
-    { p: 0.900, cy: c.cy.postcard,   s: c.s.postcard },
-    { p: 1.000, cy: c.cy.postcard,   s: c.s.postcard },
+    { p: 0.000, cy: 18, s: c.s.wide },
+    { p: 0.060, cy: 18, s: c.s.open },
+    { p: 0.140, cy: c.cy.story1, s: c.s.park },
+    { p: 0.300, cy: c.cy.story1, s: c.s.park },
+    { p: 0.380, cy: c.cy.turn12, s: c.s.turn },
+    { p: 0.460, cy: c.cy.story2, s: c.s.park },
+    { p: 0.600, cy: c.cy.story2, s: c.s.park },
+    { p: 0.680, cy: c.cy.turn23, s: c.s.turn },
+    { p: 0.760, cy: c.cy.story3, s: c.s.park },
+    { p: 0.835, cy: c.cy.story3, s: c.s.park },
+    { p: 0.900, cy: c.cy.postcard, s: c.s.postcard },
+    { p: 1.000, cy: c.cy.postcard, s: c.s.postcard },
   ]
 }
 
@@ -417,48 +421,146 @@ function DimOverlay({ h, y, uniforms, order }) {
 // that overflows the article. Narrative arc (hook → outcome) preserved.
 const STORIES = [
   {
-    kicker:   'STORY Nº 01  ·  Filed · Late Night  ·  The Workbench · 2024',
+    kicker: 'STORY Nº 01  ·  Filed · Late Night  ·  The Workbench · 2024',
     headline: 'ONE FEED. MINE.',
     headlineGold: 'ONE FEED.',
-    deck:     'Five newsletters kept sending me the same AI news every day. So I built one feed that reads them all, drops the repeats, and emails me a single summary each morning.',
-    body:     'Five sources. Same story. Five times a day.\n\nEvery AI update was repeated across five newsletters, two blogs, and a Twitter feed — so I kept reading the same thing over and over.\n\nI built a small program that pulls every source overnight, removes the duplicates, and writes one short summary. It runs on my own laptop while I sleep. No cloud, no cost.',
+    deck: 'Five newsletters kept sending me the same AI news every day. So I built one feed that reads them all, drops the repeats, and emails me a single summary each morning.',
+    body: 'I built Syndicate — that pulls every source overnight, removes the duplicates, and writes one short summary. It runs on my own laptop while I sleep.',
     bodyStacked: 'Five sources, same story, five times a day. I built a small program that pulls them all overnight, removes the duplicates, and writes one summary. Runs on my laptop. No cloud, no cost.',
-    bodyGold: 'removes the duplicates',
-    pull:     '"Five sources in. One summary out."',
-    outcome:  'OUTCOME — I read it every morning  ·  zero cloud bill  ·  runs on my laptop',
-    staff:    'BUILT WITH — Python · DSPy · Ollama · Gemma · Qwen · PWA',
+    bodyGold: '',
+    pull: '"Five sources in. One summary out."',
+    outcome: 'OUTCOME — I read it every morning  ·  zero cloud bill  ·  runs on my laptop',
+    staff: 'BUILT WITH — Python · DSPy · Ollama · Gemma · Qwen · PWA',
     figLabel: 'FIG. 01 · SYNDICATE',
     fig: '/assets/fig_1.png',
+    url: 'https://aadarshvelu.github.io/syndicate',
+    name: 'SYNDICATE',
   },
   {
-    kicker:   'STORY Nº 02  ·  Filed · Ops Desk  ·  The Workbench · 2022 — present',
+    kicker: 'STORY Nº 02  ·  Filed · Ops Desk  ·  The Workbench · 2022 — present',
     headline: 'THE TOOL THAT RAN THE TEAM.',
     headlineGold: 'RAN',
-    deck:     'Twelve people, daily standups dragging on for an hour, tasks slipping through the cracks. So I built one tool to track everything — and it ended up running the meetings too.',
-    body:     "It started as a timesheet. By the time the team had doubled, it was running the standup.\n\nWe grew to twice the size, and spreadsheets weren't enough. Standups stretched to an hour, and things kept getting missed.\n\nSo I built Hourglass. It tracked work, leave, and expenses in one place. Then it joined our calls, wrote down what was said, and reminded everyone in the next standup what they'd forgotten.",
+    deck: 'Twelve people, daily standups dragging on for an hour, tasks slipping through the cracks. So I built one tool to track everything — and it ended up running the meetings too.',
+    body: "I built Hourglass. It tracked work, leave, and expenses in one place. it joined our calls, wrote down what was said, and reminded everyone in the next standup what they'd forgotten.",
     bodyStacked: "It started as a timesheet. By the time the team had doubled, it had joined our calls and was reminding everyone in the next standup what they'd forgotten.",
-    bodyGold: "joined our calls",
-    pull:     '"Started as a spreadsheet. Ended up running the team."',
-    outcome:  'OUTCOME — 10× the work, same team  ·  nothing falls through anymore',
-    staff:    'BUILT WITH — React · Node.js · MS Teams · AI · Azure',
+    bodyGold: "",
+    pull: '"Started as a spreadsheet. Ended up running the team."',
+    outcome: 'OUTCOME — 10× the work, same team  ·  nothing falls through anymore',
+    staff: 'BUILT WITH — React · Node.js · MS Teams · AI · Azure',
     figLabel: 'FIG. 02 · HOURGLASS',
     fig: '/assets/fig_2.png',
+    url: 'https://hourglass.acumatic.co',
+    name: 'HOURGLASS',
   },
   {
-    kicker:   'STORY Nº 03  ·  Filed · Casting Desk  ·  The Workbench · 2023',
+    kicker: 'STORY Nº 03  ·  Filed · Casting Desk  ·  The Workbench · 2023',
     headline: '50,000 RÉSUMÉS. ONE DECISION.',
     headlineGold: '50,000 RÉSUMÉS.',
-    deck:     'My manager spent three hours a day on hiring calls — most with the wrong people. So I built a way to find the best candidates automatically, and left the final call to him.',
-    body:     "My manager wasn't dodging meetings. He was three hours deep in candidate calls every day.\n\nMost of those calls were with people who should never have made it past the résumé. So I built the filter he needed — without taking the human out of the final decision.\n\nDrop in a résumé — no form, no questions. The AI reads it and ranks it against the rest, like a tournament. The top ones get a video interview. The best rise to the top, and a human still picks.",
+    deck: 'My manager spent three hours a day on hiring calls — most with the wrong people. So I built a way to find the best candidates automatically, and left the final call to him.',
+    body: "Drop in a résumé — no form, no questions. The AI reads it and ranks it against the rest, like a tournament. The top ones get a video interview. The best rise to the top, and a human still picks.",
     bodyStacked: "My manager was three hours deep in candidate calls every day. So I built the filter: the AI ranks résumés, the best rise to the top, and a human still picks.",
-    bodyGold: 'ranks it against',
-    pull:     '"Résumés compete. Videos compete. The best rise. You decide."',
-    outcome:  'OUTCOME — 50,000+ résumés processed  ·  costs next to nothing',
-    staff:    'BUILT WITH — React · Node.js · AI / LLM · Video',
+    bodyGold: '',
+    pull: '"Résumés compete. Videos compete. The best rise. You decide."',
+    outcome: 'OUTCOME — 50,000+ résumés processed  ·  costs next to nothing',
+    staff: 'BUILT WITH — React · Node.js · AI / LLM · Video',
     figLabel: 'FIG. 03 · HIREHOUSE',
     fig: '/assets/fig_3.png',
+    url: 'https://hirehouse.acumatic.co',
+    name: 'HIREHOUSE',
   },
 ]
+
+// ── ProjectButton — a ROUND RUBBER STAMP CTA under each story ──────────────
+// "CLICK TO PREVIEW" curved around the ring, the project name stamped in the
+// centre — red ink on the newsprint. Tilted like a pressed stamp; hover lifts
+// it. m = size.meta (the story's small-text unit) → scales per breakpoint.
+
+const STAMP_INK = '#a5352a' // rubber-stamp red — pops on the cream newspaper
+
+// Lay text around an arc (chars tangent to the circle).
+function _arcText(g, text, cx, cy, r, span, centerA = -Math.PI / 2) {
+  const per = span / text.length
+  let a = centerA - span / 2 + per / 2
+  for (let i = 0; i < text.length; i++) {
+    g.save()
+    g.translate(cx + Math.cos(a) * r, cy + Math.sin(a) * r)
+    g.rotate(a + Math.PI / 2)
+    g.fillText(text[i], 0, 0)
+    g.restore()
+    a += per
+  }
+}
+
+// Draw the whole stamp to a canvas (rings + curved border + centre name). One
+// texture per project, cached (the centre name differs).
+const _stampCache = {}
+function stampTexture(name) {
+  if (_stampCache[name]) return _stampCache[name]
+  const S = 320
+  const cv = document.createElement('canvas')
+  cv.width = S; cv.height = S
+  const g = cv.getContext('2d')
+  const cx = S / 2, cy = S / 2
+  g.fillStyle = STAMP_INK; g.strokeStyle = STAMP_INK
+  g.textAlign = 'center'; g.textBaseline = 'middle'
+  // concentric rings
+  g.lineWidth = 7
+  g.beginPath(); g.arc(cx, cy, 146, 0, Math.PI * 2); g.stroke()
+  g.lineWidth = 2.5
+  g.beginPath(); g.arc(cx, cy, 108, 0, Math.PI * 2); g.stroke()
+  // curved border text — "CLICK TO PREVIEW" around the top
+  g.font = '700 24px "Courier New", monospace'
+  _arcText(g, 'CLICK TO PREVIEW', cx, cy, 126, 2.5)
+  // dots at 3 & 9 o'clock
+  g.beginPath(); g.arc(cx - 125, cy, 5, 0, Math.PI * 2); g.fill()
+  g.beginPath(); g.arc(cx + 125, cy, 5, 0, Math.PI * 2); g.fill()
+  // centre — project name, shrunk to fit the inner circle
+  let fs = 48
+  g.font = `800 ${fs}px "Arial Black", Arial, sans-serif`
+  while (g.measureText(name).width > 170 && fs > 12) {
+    fs -= 2
+    g.font = `800 ${fs}px "Arial Black", Arial, sans-serif`
+  }
+  g.fillText(name, cx, cy)
+  const tex = new THREE.CanvasTexture(cv)
+  tex.anisotropy = 4
+  _stampCache[name] = tex
+  return tex
+}
+
+function ProjectButton({ x, y, scale, m, url, name, order }) {
+  const grp = useRef()
+  const hov = useRef(0)
+  const sd = m * 11 // stamp diameter
+  const tex = useMemo(() => stampTexture(name), [name])
+
+  useFrame((_, dt) => {
+    const k = Math.min(1, dt * 12)
+    if (grp.current) {
+      const target = scale * (1 + 0.06 * hov.current) // lift on hover
+      const s = grp.current.scale.x + (target - grp.current.scale.x) * k
+      grp.current.scale.set(s, s, 1)
+    }
+  })
+
+  return (
+    <group
+      ref={grp}
+      position={[x, y, 0.03]}
+      rotation={[0, 0, -7 * DEG]}
+      scale={scale}
+      onClick={(e) => { e.stopPropagation(); window.open(url, '_blank', 'noopener,noreferrer') }}
+      onPointerOver={() => { hov.current = 1; document.body.style.cursor = 'pointer' }}
+      onPointerOut={() => { hov.current = 0; document.body.style.cursor = '' }}
+    >
+      {/* round rubber stamp — transparent outside the ink so the paper shows through */}
+      <mesh renderOrder={order}>
+        <planeGeometry args={[sd, sd]} />
+        <meshBasicMaterial map={tex} transparent depthTest={false} depthWrite={false} toneMapped={false} />
+      </mesh>
+    </group>
+  )
+}
 
 // ── StorySection — one article rendered from content + position config ─────
 
@@ -499,7 +601,7 @@ function StorySection({ pos, size, story, gRefs, order, stacked, storyKey }) {
         renderOrder={order + 2.5}
         position={[
           pos.goldHeadlineX + gx - 0.15 * GOLD_TREATMENT.depth,
-          pos.headlineY    + gy - 0.15 * GOLD_TREATMENT.depth,
+          pos.headlineY + gy - 0.15 * GOLD_TREATMENT.depth,
           0.005
         ]}
         rotation={[0, 0, GOLD_TREATMENT.rotation]}
@@ -513,7 +615,7 @@ function StorySection({ pos, size, story, gRefs, order, stacked, storyKey }) {
         renderOrder={order + 3}
         position={[
           pos.goldHeadlineX + gx + adj.goldenHeadline.dx,
-          pos.headlineY    + gy + adj.goldenHeadline.dy,
+          pos.headlineY + gy + adj.goldenHeadline.dy,
           0.01
         ]}
         rotation={[0, 0, GOLD_TREATMENT.rotation]}
@@ -544,7 +646,7 @@ function StorySection({ pos, size, story, gRefs, order, stacked, storyKey }) {
         anchorX={bodyAnchorX} anchorY={bodyAnchorY}
         maxWidth={size.bodyMaxW + adj.goldBody.maxWAdj} lineHeight={1.5} renderOrder={order + 3}
         position={[
-          pos.bodyX     + adj.goldBody.dx,
+          pos.bodyX + adj.goldBody.dx,
           pos.goldBodyY + adj.goldBody.dy,
           0.01
         ]}
@@ -577,7 +679,7 @@ function StorySection({ pos, size, story, gRefs, order, stacked, storyKey }) {
       <Text font={FONTS.dmMono400} fontSize={size.meta + adj.outcome.fontSizeAdj} color="#1a1410" anchorX="center" anchorY="middle"
         letterSpacing={0.18} renderOrder={order + 2}
         maxWidth={size.outcomeMaxW + adj.outcome.maxWAdj}
-        position={[adj.outcome.x , pos.outcomeY + adj.outcome.dy, 0]} fillOpacity={0.92}>
+        position={[adj.outcome.x, pos.outcomeY + adj.outcome.dy, 0]} fillOpacity={0.92}>
         {story.outcome}
       </Text>
       <Text font={FONTS.dmMono400} fontSize={size.meta + adj.staff.fontSizeAdj} color="#4a4030" anchorX="center" anchorY="middle"
@@ -586,6 +688,21 @@ function StorySection({ pos, size, story, gRefs, order, stacked, storyKey }) {
         position={[adj.staff.x, pos.staffY + adj.staff.dy, 0]} fillOpacity={0.88}>
         {story.staff}
       </Text>
+
+      {/* Catchy "OPEN <project>" coupon button below BUILT WITH. Positioned off
+          the staff line + button height so it follows the per-breakpoint layout;
+          tune per story/breakpoint via adj.link (dx/dy/scale). */}
+      {story.url && (
+        <ProjectButton
+          x={adj.staff.x + adj.link.dx}
+          y={pos.staffY + adj.staff.dy - 1.5 - (size.meta * 11) / 2 + adj.link.dy}
+          scale={adj.link.scale}
+          m={size.meta}
+          url={story.url}
+          name={story.name}
+          order={order + 4}
+        />
+      )}
     </>
   )
 }
@@ -622,14 +739,14 @@ export default function CraftsChapter({ smoothed }) {
     [g3h, GOLD_THRESHOLDS.s3.headline],
     [g3b, GOLD_THRESHOLDS.s3.body],
     [g3p, GOLD_THRESHOLDS.s3.pull],
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   ], [])
 
   const HEADLINE_SHADOWS = useMemo(() => [
     [g1hSh, GOLD_THRESHOLDS.s1.headline],
     [g2hSh, GOLD_THRESHOLDS.s2.headline],
     [g3hSh, GOLD_THRESHOLDS.s3.headline],
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   ], [])
 
   const KEYS = useMemo(() => buildKeys(c), [c])
@@ -713,93 +830,93 @@ export default function CraftsChapter({ smoothed }) {
   // Masthead positions are fixed offsets from paper top so the chrome lands
   // at the same place on every breakpoint, regardless of paperH.
   const top = c.paperH / 2
-  const skylineY    = top - 4
-  const strapY      = top - 7.5
-  const ruleStrapY  = top - 8.8
-  const titleY      = top - 18.5
-  const taglineY    = top - 26.5
-  const editorialY  = top - 30
+  const skylineY = top - 4
+  const strapY = top - 7.5
+  const ruleStrapY = top - 8.8
+  const titleY = top - 18.5
+  const taglineY = top - 26.5
+  const editorialY = top - 30
   const doubleRuleY = top - 33
 
   return (
     <>
-    {/* Chapter-isolation backdrop — viewport-aligned, masks newspaper during
+      {/* Chapter-isolation backdrop — viewport-aligned, masks newspaper during
         postcard phase. Sibling of paperGroup so it doesn't inherit paper
         transforms. RenderOrder sits between newspaper layers and cardstock. */}
-    <ExitNoticeBackdrop pRef={pRef} />
+      <ExitNoticeBackdrop pRef={pRef} />
 
-    <group ref={paperGroupRef}>
+      <group ref={paperGroupRef}>
 
-      {/* Paper background — per-bp height (260 desktop, 300 portrait) */}
-      <mesh renderOrder={RO} position={[0, 0, -0.1]}>
-        <planeGeometry args={[100, c.paperH]} />
-        <shaderMaterial vertexShader={paperVert} fragmentShader={paperFrag}
-          depthTest={false} depthWrite={false} transparent />
-      </mesh>
+        {/* Paper background — per-bp height (260 desktop, 300 portrait) */}
+        <mesh renderOrder={RO} position={[0, 0, -0.1]}>
+          <planeGeometry args={[100, c.paperH]} />
+          <shaderMaterial vertexShader={paperVert} fragmentShader={paperFrag}
+            depthTest={false} depthWrite={false} transparent />
+        </mesh>
 
-      {/* ── Skyline strap ──────────────────────────────────── */}
-      <Text font={FONTS.dmMono400} fontSize={sz.mastheadStrap} color="#3d3525" anchorX="center" anchorY="middle"
-        letterSpacing={0.28} renderOrder={ROT} position={[0, skylineY, 0]} fillOpacity={0.9}>
-        {'VOL II · NO. 03     ★ ★ ★     LATE EDITION · NIGHT FILE     ★ ★ ★     SIX PAGES · ₹0'}
-      </Text>
+        {/* ── Skyline strap ──────────────────────────────────── */}
+        <Text font={FONTS.dmMono400} fontSize={sz.mastheadStrap} color="#3d3525" anchorX="center" anchorY="middle"
+          letterSpacing={0.28} renderOrder={ROT} position={[0, skylineY, 0]} fillOpacity={0.9}>
+          {'VOL II · NO. 03     ★ ★ ★     LATE EDITION · NIGHT FILE     ★ ★ ★     SIX PAGES · ₹0'}
+        </Text>
 
-      {/* ── Masthead ───────────────────────────────────────── */}
-      <Rule y={top - 5.5} order={ROT} opacity={0.45} />
-      <Text font={FONTS.dmMono400} fontSize={sz.mastheadStrap} color="#3d3525" anchorX="center" anchorY="middle"
-        letterSpacing={0.22} renderOrder={ROT} position={[0, strapY, 0]} fillOpacity={0.9}>
-        {'FILED · 03:42 AM               EDITOR · A. VELU               TUE · MAY 2026'}
-      </Text>
-      <Rule y={ruleStrapY} order={ROT} opacity={0.28} />
+        {/* ── Masthead ───────────────────────────────────────── */}
+        <Rule y={top - 5.5} order={ROT} opacity={0.45} />
+        <Text font={FONTS.dmMono400} fontSize={sz.mastheadStrap} color="#3d3525" anchorX="center" anchorY="middle"
+          letterSpacing={0.22} renderOrder={ROT} position={[0, strapY, 0]} fillOpacity={0.9}>
+          {'FILED · 03:42 AM               EDITOR · A. VELU               TUE · MAY 2026'}
+        </Text>
+        <Rule y={ruleStrapY} order={ROT} opacity={0.28} />
 
-      <Text font={FONTS.anton} fontSize={sz.title} color="#0d0a07" anchorX="center" anchorY="middle"
-        letterSpacing={-0.012} renderOrder={ROT} position={[0, titleY, 0]}>
-        {'THE CUTTING·ROOM'}
-      </Text>
+        <Text font={FONTS.anton} fontSize={sz.title} color="#0d0a07" anchorX="center" anchorY="middle"
+          letterSpacing={-0.012} renderOrder={ROT} position={[0, titleY, 0]}>
+          {'THE CUTTING·ROOM'}
+        </Text>
 
-      <Text font={FONTS.cormorantItalic500} fontSize={sz.tagline} color="#241d17" anchorX="center" anchorY="middle"
-        renderOrder={ROT} position={[0, taglineY, 0]} fillOpacity={0.96}>
-        {'all the news the workbench saw fit to file'}
-      </Text>
+        <Text font={FONTS.cormorantItalic500} fontSize={sz.tagline} color="#241d17" anchorX="center" anchorY="middle"
+          renderOrder={ROT} position={[0, taglineY, 0]} fillOpacity={0.96}>
+          {'all the news the workbench saw fit to file'}
+        </Text>
 
-      <Text font={FONTS.dmMono400} fontSize={sz.mastheadStrap} color="#3d3525" anchorX="center" anchorY="middle"
-        letterSpacing={0.28} renderOrder={ROT} position={[0, editorialY, 0]} fillOpacity={0.92}>
-        {'REEL Nº 02  ·  CHAPTER II  ·  THE CRAFTS  ·  2022 — PRESENT'}
-      </Text>
+        <Text font={FONTS.dmMono400} fontSize={sz.mastheadStrap} color="#3d3525" anchorX="center" anchorY="middle"
+          letterSpacing={0.28} renderOrder={ROT} position={[0, editorialY, 0]} fillOpacity={0.92}>
+          {'REEL Nº 02  ·  CHAPTER II  ·  THE CRAFTS  ·  2022 — PRESENT'}
+        </Text>
 
-      <DoubleRule y={doubleRuleY} order={ROT} />
+        <DoubleRule y={doubleRuleY} order={ROT} />
 
-      {/* ── Story 01 ────────────────────────────────────────── */}
-      <DimOverlay h={c.dim[0].h} y={c.dim[0].y} uniforms={dimU[0]} order={ROT + 1} />
-      <StorySection pos={c.stories[0]} size={sz} story={STORIES[0]}
-        gRefs={{ headline: g1h, headlineShadow: g1hSh, body: g1b, pull: g1p }} order={ROT} stacked={c.stacked} storyKey="s1" />
+        {/* ── Story 01 ────────────────────────────────────────── */}
+        <DimOverlay h={c.dim[0].h} y={c.dim[0].y} uniforms={dimU[0]} order={ROT + 1} />
+        <StorySection pos={c.stories[0]} size={sz} story={STORIES[0]}
+          gRefs={{ headline: g1h, headlineShadow: g1hSh, body: g1b, pull: g1p }} order={ROT} stacked={c.stacked} storyKey="s1" />
 
-      <Rule y={c.ruleY.r12 + 2} order={ROT} opacity={0.18} />
+        <Rule y={c.ruleY.r12 + 2} order={ROT} opacity={0.18} />
 
-      {/* ── Story 02 ────────────────────────────────────────── */}
-      <DimOverlay h={c.dim[1].h} y={c.dim[1].y} uniforms={dimU[1]} order={ROT + 1} />
-      <StorySection pos={c.stories[1]} size={sz} story={STORIES[1]}
-        gRefs={{ headline: g2h, headlineShadow: g2hSh, body: g2b, pull: g2p }} order={ROT} stacked={c.stacked} storyKey="s2" />
+        {/* ── Story 02 ────────────────────────────────────────── */}
+        <DimOverlay h={c.dim[1].h} y={c.dim[1].y} uniforms={dimU[1]} order={ROT + 1} />
+        <StorySection pos={c.stories[1]} size={sz} story={STORIES[1]}
+          gRefs={{ headline: g2h, headlineShadow: g2hSh, body: g2b, pull: g2p }} order={ROT} stacked={c.stacked} storyKey="s2" />
 
-      <Rule y={c.ruleY.r23 + 2} order={ROT} opacity={0.18} />
+        <Rule y={c.ruleY.r23 + 2} order={ROT} opacity={0.18} />
 
-      {/* ── Story 03 ────────────────────────────────────────── */}
-      <DimOverlay h={c.dim[2].h} y={c.dim[2].y} uniforms={dimU[2]} order={ROT + 1} />
-      <StorySection pos={c.stories[2]} size={sz} story={STORIES[2]}
-        gRefs={{ headline: g3h, headlineShadow: g3hSh, body: g3b, pull: g3p }} order={ROT} stacked={c.stacked} storyKey="s3" />
+        {/* ── Story 03 ────────────────────────────────────────── */}
+        <DimOverlay h={c.dim[2].h} y={c.dim[2].y} uniforms={dimU[2]} order={ROT + 1} />
+        <StorySection pos={c.stories[2]} size={sz} story={STORIES[2]}
+          gRefs={{ headline: g3h, headlineShadow: g3hSh, body: g3b, pull: g3p }} order={ROT} stacked={c.stacked} storyKey="s3" />
 
-      {/* ── Colophon ───────────────────────────────────────── */}
-      <DoubleRule y={c.colophonY + 3} order={ROT} />
-      <Text font={FONTS.dmMono400} fontSize={sz.colophon} color="#3d3525" anchorX="center" anchorY="middle"
-        letterSpacing={0.24} renderOrder={ROT} position={[0, c.colophonY, 0]} fillOpacity={0.92}>
-        {'PAGE 22 · OF 22     — end of reel · continued in CHAPTER III · THE RECORD —     REEL Nº 02 · 2026'}
-      </Text>
+        {/* ── Colophon ───────────────────────────────────────── */}
+        <DoubleRule y={c.colophonY + 3} order={ROT} />
+        <Text font={FONTS.dmMono400} fontSize={sz.colophon} color="#3d3525" anchorX="center" anchorY="middle"
+          letterSpacing={0.24} renderOrder={ROT} position={[0, c.colophonY, 0]} fillOpacity={0.92}>
+          {'PAGE 22 · OF 22     — end of reel · continued in CHAPTER III · THE RECORD —     REEL Nº 02 · 2026'}
+        </Text>
 
-    </group>
+      </group>
 
-    {/* Exit Notice postcard — viewport-aligned (sibling of paperGroup, not
+      {/* Exit Notice postcard — viewport-aligned (sibling of paperGroup, not
         child). Its size and position derive from the live camera frustum,
         not from paper coordinates, so per-bp recomposition is clean. */}
-    <ExitNoticeChapter pRef={pRef} />
+      <ExitNoticeChapter pRef={pRef} />
     </>
   )
 }

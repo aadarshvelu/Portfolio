@@ -21,7 +21,7 @@ import Polaroid from './Polaroid.jsx'
 const SKY_OVER = 3
 
 const PEARL_FADE = '#6f6c61'
-const GOLD = '#b8860b'
+const GOLD = '#c8a157' // bright gold accents — the reveal cards are now dark film-slate
 const META = '#9b9789'
 
 const clamp01 = (x) => Math.min(1, Math.max(0, x))

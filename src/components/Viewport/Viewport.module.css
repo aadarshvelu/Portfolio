@@ -1,17 +1,17 @@
 /* fills the browser window — the black here is the thin CRT bezel surround.
-   Height is pinned to --app-h: a pixel value App.jsx measures once from a
-   100lvh probe and re-measures only on a real resize. Mobile browsers
-   resize the visual viewport as their chrome bars show/hide on scroll;
-   a fixed px keeps the canvas (and the scene) from reflowing. The vh/lvh
-   lines are fallbacks for the first paint before the JS lock runs. */
+   Height is pinned to the SMALL viewport (100svh): the height *with* the mobile
+   toolbar showing. svh is invariant to the toolbar hiding/showing, so the canvas
+   never reflows AND nothing is ever clipped behind the bar (unlike 100lvh, which
+   sizes to the toolbar-retracted height and tucks the bottom under the bar). The
+   revealed strip below when the bar retracts is the same black bezel/body, so it
+   reads seamlessly. 100vh is the fallback for browsers without svh (< iOS 15.4). */
 .viewport {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: 100vh;
-  height: 100lvh;
-  height: var(--app-h, 100lvh);
+  height: 100svh;
   background: #000;
 }
 

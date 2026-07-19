@@ -27,14 +27,15 @@ const smoothstep = (x) => x * x * (3 - 2 * x)
 // ── Chapter-local p thresholds ─────────────────────────────────────────────
 // The postcard is the closing message and was flying past too fast to read
 // ("everyone is missing it"). Story3's park now ends at p=0.835 (CraftsChapter
-// KEYS) and the runway is 1650vh, so the finale gets more of both the chapter
-// budget AND physical scroll. Budget: a longer newspaper→note reveal 0.84→0.89,
-// a LONG reading hold 0.89→0.955 before it flips, the flip to the Contact
-// "director takes calls" back-face 0.955→0.99, then the clap 0.99→1.0.
+// KEYS) and the runway is 2000vh, so the finale gets more of both the chapter
+// budget AND physical scroll. Budget: a newspaper→note reveal 0.84→0.89, a LONG
+// reading hold 0.89→0.97 before it flips, the flip to the Contact "director
+// takes calls" back-face 0.97→0.992, then the clap 0.992→1.0. The 2000vh runway
+// keeps the flip and clap from feeling quick despite their small p-fractions.
 const EXIT_ENTER_P = 0.84   // backdrop + cardstock reveal begins (after story3 park)
 const EXIT_LAND_P  = 0.89   // front content fully revealed
-const FLIP_START_P = 0.955  // reading hold 0.89→0.955 so the note can actually be read
-const FLIP_END_P   = 0.99   // flip complete; 0.99→1.00 plays the clap
+const FLIP_START_P = 0.97   // reading hold 0.89→0.97 — more scroll room to read the note before it flips
+const FLIP_END_P   = 0.992  // flip complete; 0.992→1.00 plays the clap
 
 // ── Render-order constants (see spec) ─────────────────────────────────────
 // Backdrop sits BELOW everything in the chapter but ABOVE the newspaper. The
@@ -476,6 +477,10 @@ export default function ExitNoticeChapter({ pRef }) {
     bDividerY - 0.05 - 3 * bRowGap,
   ]
   const bCueY          = -cardH / 2 + 0.10 * cardH
+  // Résumé CTA — a gold pill in the gap between the contact rows and the cue.
+  const bResumeY       = (bRowYs[3] + bCueY) / 2
+  const bResumeW       = 0.66
+  const bResumeH       = fsValue * 2.6
   const chKicker       = fsKicker * 0.604 * (1 + 0.42)
   const bKickerSplit   = leftX + 10 * chKicker
   const chHeadline     = fsHeadline * 0.43
@@ -503,6 +508,7 @@ export default function ExitNoticeChapter({ pRef }) {
   const rBValues  = [useRef(), useRef(), useRef(), useRef()]
   const rBPips    = [useRef(), useRef(), useRef(), useRef()]
   const rBCue     = useRef()
+  const rBResume  = useRef(), rBResumeBg = useRef()
 
   useFrame((state) => {
     const cam = state.camera
@@ -603,6 +609,8 @@ export default function ExitNoticeChapter({ pRef }) {
       setText(rBValues[i], tBack)
       if (rBPips[i].current) rBPips[i].current.material.opacity = tBack
     }
+    setText(rBResume, tBack)
+    if (rBResumeBg.current) rBResumeBg.current.material.opacity = tBack
   })
 
   return (
@@ -939,6 +947,28 @@ export default function ExitNoticeChapter({ pRef }) {
           </Fragment>
         )
       })}
+
+      {/* Résumé CTA — gold pill; opens the print-ready /resume page in a new tab
+          (save-as-PDF there). Handlers on both the pill and its label so a click
+          anywhere on it registers. Fades in with the back face (tBack). */}
+      <mesh ref={rBResumeBg}
+        position={[0, bResumeY, 0.008]} renderOrder={RO_TEXT}
+        onClick={(e) => { e.stopPropagation(); window.open('/resume', '_blank', 'noopener,noreferrer') }}
+        onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer' }}
+        onPointerOut ={(e) => { e.stopPropagation(); document.body.style.cursor = '' }}>
+        <planeGeometry args={[bResumeW, bResumeH]} />
+        <meshBasicMaterial color={GOLD} transparent opacity={0} depthTest={false} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <Text ref={rBResume}
+        font={FONTS.dmMono400} fontSize={fsLabel} color="#1a1410"
+        anchorX="center" anchorY="middle" letterSpacing={0.3}
+        fillOpacity={0} renderOrder={RO_TEXT}
+        position={[0, bResumeY, 0.012]}
+        onClick={(e) => { e.stopPropagation(); window.open('/resume', '_blank', 'noopener,noreferrer') }}
+        onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer' }}
+        onPointerOut ={(e) => { e.stopPropagation(); document.body.style.cursor = '' }}>
+        {'DOWNLOAD RÉSUMÉ'}
+      </Text>
 
       {/* Cue — italic Cormorant, gold */}
       <Text ref={rBCue}
