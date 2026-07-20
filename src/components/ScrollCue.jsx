@@ -9,7 +9,7 @@ const smoothstep = (x) => x * x * (3 - 2 * x)
 
 // Which chapter the visitor is in — drives both the placement lookup and the
 // ticket's "· <heading>" suffix.
-const LABELS = { enter: 'Enter', origin: 'The Origin', upgrade: 'The Upgrade', roster: 'The Roster', work: 'The Work' }
+const LABELS = { enter: 'The Booth', origin: 'The Origin', upgrade: 'The Upgrade', roster: 'The Roster', work: 'The Work' }
 function sectionKey(inRoom, sm) {
   if (inRoom) return 'enter'
   if (sm < UPGRADE_ENTER) return 'origin'
@@ -125,7 +125,7 @@ export default function ScrollCue({ introPx = 0 }) {
         {'×'}
       </button>
       <span className="scrollcue__label">
-        Scroll<span className="scrollcue__suffix" ref={sufRef}> · Enter</span>
+        Scroll<span className="scrollcue__suffix" ref={sufRef}> · The Booth</span>
       </span>
       <span className="scrollcue__hand" aria-hidden="true">{"☟︎"}</span>
     </div>
