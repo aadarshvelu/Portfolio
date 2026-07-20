@@ -31,7 +31,13 @@ export function useResumeData() {
   // inside the mount effect below) — avoids a same-tick cascading render.
   const [cloudStatus, setCloudStatus] = useState("loading-cloud");
   const mounted = useRef(true);
-  useEffect(() => () => { mounted.current = false; }, []);
+  useEffect(() => {
+    // Set true on every mount (not just initial) — React StrictMode mounts,
+    // unmounts, then re-mounts in dev, and without re-setting this the ref
+    // would be stuck false, silently swallowing every status update.
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   // On mount, check for a cloud copy — it's the source of truth once one
   // exists (e.g. opening this page fresh on another device/browser). A local
@@ -42,11 +48,17 @@ export function useResumeData() {
     fetch(CLOUD_URL, { headers: { Accept: "application/json" } })
       .then((res) => (res.ok ? res.json() : null))
       .then((cloud) => {
-        if (cancelled || !cloud) return;
-        setData({ ...structuredClone(defaultData), ...cloud });
-        setCloudStatus("idle");
+        if (cancelled) return;
+        // Only adopt the cloud copy if there is one; a 404 (nothing saved yet)
+        // or 403 yields null and we simply keep the local/default data.
+        if (cloud) setData({ ...structuredClone(defaultData), ...cloud });
       })
       .catch(() => {
+        /* network error — keep local/default data */
+      })
+      .finally(() => {
+        // ALWAYS clear the spinner, whatever the outcome — otherwise it hangs
+        // on "Checking cloud…" forever (the previous bug).
         if (!cancelled) setCloudStatus("idle");
       });
     return () => { cancelled = true; };

@@ -9,6 +9,8 @@ import Scene from './Scene.jsx'
 import { FRAMES } from './scene/FilmFrame.jsx'
 import CountdownOverlay from './CountdownOverlay.jsx'
 import { useIntroFreeze } from '../../concept/IntroFreeze.js'
+import { qualityFor } from '../../concept/config/qualityProfiles.js'
+import { getDeviceType } from '../../concept/config/deviceUtils.js'
 
 // Re-derives the camera fov so the active design rect always covers the
 // viewport full-bleed (no letterbox bars).
@@ -27,6 +29,23 @@ function CoverCamera({ design }) {
 export default function Hero() {
   const bp = useBreakpoint()
   const ctx = useMemo(() => ({ bp, layout: LAYOUTS[bp] }), [bp])
+
+  // Render quality — read from the SAME per-device tiers the room uses (which
+  // also step down on weak hardware). Previously this Canvas hardcoded
+  // dpr [1,2] + MSAA on every device, so a phone rendered the film at up to 2x
+  // resolution with antialiasing while the room beside it ran at 1.5x with none.
+  // Resolved once at mount: changing gl attributes later can't apply without
+  // recreating the WebGL context, and remounting this Canvas mid-session would
+  // drop the whole film. Breakpoint changes still restyle the scene normally.
+  //
+  // NOTE: no runtime adaptive-dpr here (unlike the room). This scene renders
+  // through an EffectComposer at renderPriority 1 (CRT post), and R3F's runtime
+  // setDpr resizes only the final composite blit, not the composer's scene
+  // buffer — so a live dpr change would cost nothing AND make the CRT scanlines
+  // shimmer. The static tier dpr below IS honored (the composer sizes from it at
+  // mount); we simply don't move it afterwards. The array form also lets R3F
+  // clamp it to the display's native ratio, so we never supersample.
+  const quality = useMemo(() => qualityFor(getDeviceType()), [])
 
   // The room intro (ConceptIntro) occupies the first `introPx` of window scroll.
   // Offset progress by it so the Hero sits at its opening (progress 0) while the
@@ -56,6 +75,73 @@ export default function Hero() {
   const onReelSettled = useCallback(() => {
     if (retuningRef.current) unlockScroll()
   }, [unlockScroll])
+
+  // ── Idle while the room covers us ──────────────────────────────────────────
+  // For the whole intro the film sits parked at progress 0, fully hidden behind
+  // the boot splash and then the room — yet it was still rendering a static
+  // frame 60x a second at full resolution, doubling GPU load exactly when the
+  // browser is busiest (two Canvases initialising, GLBs parsing, shaders
+  // compiling). That contention is what makes the boot screen stutter.
+  //
+  // So: render normally for a warm-up window (shaders must actually compile and
+  // troika must lay out its text — pausing from frame zero would just defer the
+  // cost into a visible hitch at the reveal), then drop to "demand" (idle) until
+  // the CRT starts showing us through, and switch back well before that.
+  // Two details that are easy to get wrong here:
+  //
+  // 1. `warm` and `introPx` live in REFS, and the effect runs once ([] deps).
+  //    introPx changes on every resize (App.jsx re-locks --app-h per resize
+  //    event on desktop), and an effect keyed to it would re-arm the warm-up
+  //    latch on every event of a resize drag — leaving the Canvas pinned in
+  //    "demand" while the CRT opens onto it, i.e. a frozen film.
+  // 2. The wake LATCHES. R3F v8's setFrameloop resets clock.elapsedTime to 0 on
+  //    every flip, and several scenes key off absolute time (shooting stars hold
+  //    launch timestamps, the reel-road offsets by elapsedTime) — so flipping
+  //    back to "demand" whenever the visitor scrolls up into the room would
+  //    freeze the stars for seconds each time. We idle only on the way IN; once
+  //    awake, we stay awake for the session.
+  const WARMUP_MS = 2500
+  const HERO_WAKE = 0.78 // wake below TRANSITION_CONFIG.heroRevealStart (0.84)
+  const [frameloop, setFrameloop] = useState('always')
+  const introPxRef = useRef(introPx)
+  introPxRef.current = introPx
+  useEffect(() => {
+    let warm = false
+    let awake = false // latch: once we wake, we never idle again
+    let raf = 0
+    const evaluate = () => {
+      if (!warm || awake) return
+      const px = introPxRef.current || 0
+      // No intro runway (or already past it) → always render.
+      const phase = px > 0 ? window.scrollY / px : 1
+      if (phase < HERO_WAKE) {
+        setFrameloop('demand')
+      } else {
+        awake = true
+        setFrameloop('always')
+      }
+    }
+    const warmTimer = setTimeout(() => {
+      warm = true
+      evaluate()
+    }, WARMUP_MS)
+    // rAF-coalesced: scroll fires far more often than we need to flip a boolean.
+    const onScroll = () => {
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = 0
+        evaluate()
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      clearTimeout(warmTimer)
+      if (raf) cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [])
 
   // page scroll -> camera transition. A plain ref the scroll listener
   // mutates and the render loop reads — no React re-render per scroll event.
@@ -158,8 +244,9 @@ export default function Hero() {
     <>
       <Canvas
         flat
-        dpr={[1, 2]}
-        gl={{ antialias: true, alpha: false }}
+        dpr={quality.dpr}
+        frameloop={frameloop}
+        gl={{ antialias: quality.antialias, alpha: false, powerPreference: 'high-performance' }}
         camera={{ position: [0, 0, CAMERA_Z], fov: CAMERA_FOV, near: 1, far: 6000 }}
         resize={{ scroll: false }}
         style={{ width: '100%', height: '100%', display: 'block' }}

@@ -6,8 +6,11 @@ import ScrollCue from "./components/ScrollCue.jsx";
 import SoundControl from "./audio/SoundControl.jsx";
 
 // How many viewport-heights of scroll the room intro occupies before the Hero
-// takes over. The whole thing is one continuous, reversible scroll.
-const INTRO_SCREENS = 4;
+// takes over. The whole thing is one continuous, reversible scroll. The camera
+// profile splits this in half: phase 0→0.5 (first screen) dollies in on the
+// paper, 0.5→1 (second screen) dives into the CRT — so 2 = ~one scroll to the
+// note, one into the TV.
+const INTRO_SCREENS = 2;
 
 // Read the stable locked viewport height App.jsx measures into --app-h. Using
 // this instead of live window.innerHeight keeps introPx (and therefore the

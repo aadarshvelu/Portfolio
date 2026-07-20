@@ -5,18 +5,10 @@
 // reach this handler, they're stopped at Cloudflare's edge. The requireOwner
 // check below is defense-in-depth on top of that, not the primary gate.
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { requireOwner } from "../../owner.js";
 
 const KV_KEY = "resume";
 const MAX_BODY_BYTES = 200_000; // generous; a resume JSON is a few KB
-
-function requireOwner(request, env) {
-  const owner = (env.OWNER_EMAIL || "").trim().toLowerCase();
-  if (!owner) return true; // not configured yet — skip the extra check
-  const authedEmail = (request.headers.get("Cf-Access-Authenticated-User-Email") || "")
-    .trim()
-    .toLowerCase();
-  return authedEmail === owner;
-}
 
 export async function GET(request) {
   const { env } = getCloudflareContext();

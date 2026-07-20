@@ -16,13 +16,68 @@ const BRAND_ICONS = {
       <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z" />
     </svg>
   ),
+  // Generic website — a globe, for any http(s) link that isn't GitHub/LinkedIn.
+  globe: (
+    <svg className="c-icon c-icon--globe" viewBox="0 0 24 24" aria-hidden="true" strokeWidth="1.8">
+      <circle cx="12" cy="12" r="10" />
+      <ellipse cx="12" cy="12" rx="4.2" ry="10" />
+      <path d="M2 12h20M3.5 7h17M3.5 17h17" />
+    </svg>
+  ),
 };
 
-function contactIcon(c) {
+// Small "opens elsewhere" mark appended after every real hyperlink in the
+// body (project links, inline-linked product names). Keeps it obvious a
+// clickable term leaves the page, on screen and in the printed PDF alike.
+const EXTERNAL_ICON = (
+  <svg className="c-icon c-icon--ext" viewBox="0 0 24 24" aria-hidden="true" strokeWidth="2.2">
+    <path d="M7 17 17 7M9 7h8v8" />
+  </svg>
+);
+
+// Turn known plain-text mentions (e.g. "tanat.app") into real links, using an
+// explicit whitelist rather than a domain-shaped regex — a regex would also
+// catch harmless tech names like "Node.js" or "React.js" in bullets/tech
+// lines, which should stay plain text. `links` is [{ text, href }, …].
+function linkify(text, links) {
+  if (!text || !links?.length) return text;
+  const escaped = links
+    .filter((l) => l.text && l.href)
+    .sort((a, b) => b.text.length - a.text.length) // longest match first
+    .map((l) => l.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (!escaped.length) return text;
+  const re = new RegExp(`(${escaped.join("|")})`, "g");
+  const parts = text.split(re);
+  return parts.map((part, i) => {
+    const link = links.find((l) => l.text === part);
+    if (!link) return part;
+    return (
+      <a key={i} className="inline-link" href={link.href} target="_blank" rel="noreferrer">
+        {part}
+        {EXTERNAL_ICON}
+      </a>
+    );
+  });
+}
+
+function contactIcon(c, href) {
   const s = `${c.href || ""} ${c.label || ""}`.toLowerCase();
   if (s.includes("github")) return BRAND_ICONS.github;
   if (s.includes("linkedin")) return BRAND_ICONS.linkedin;
+  if (href && /^https?:\/\//.test(href)) return BRAND_ICONS.globe;
   return null;
+}
+
+// Resolve a contact's link. If no explicit href was set but the label is
+// clearly a web address (e.g. "github.com/you"), treat it as https:// so it
+// stays clickable on screen AND becomes a real link annotation in the printed
+// PDF. Labels with spaces ("Dubai, United Arab Emirates") are never linked.
+function contactHref(c) {
+  if (c.href) return c.href;
+  const label = (c.label || "").trim();
+  if (!label || /\s/.test(label)) return null;
+  if (!/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(label)) return null;
+  return `https://${label}`;
 }
 
 function SectionTitle({ children }) {
@@ -47,28 +102,30 @@ function LeaderRow({ title, date }) {
 }
 
 export default function SheetView({ data, over, innerRef }) {
-  const { name, contact, summary, skills, certification, projects, experience } = data;
+  const { name, contact, summary, skills, certification, projects, experience, inlineLinks } = data;
   return (
     <div className={`sheet${over ? " sheet--over" : ""}`} ref={innerRef}>
       <header>
         <h1 className="sheet__name">{name}</h1>
         <div className="sheet__contact">
           {contact.map((c, i) => {
-            const icon = contactIcon(c);
+            const href = contactHref(c);
+            const icon = contactIcon(c, href);
             // pin + icon + label stay glued as one unbreakable unit (c-item),
             // so a wrap can only happen BETWEEN items, never inside one.
             const inner = (
               <span className="c-item">
-                {c.pin && "📍 "}
                 {icon}
                 {c.label}
               </span>
             );
+            // The "|" divider is attached to the END of each entry (via CSS
+            // ::after) and the entry is atomic, so a wrap can never leave a
+            // stray leading "|" at the start of the next line.
             return (
-              <span key={i}>
-                {i > 0 && <span className="sep">|</span>}
-                {c.href ? (
-                  <a href={c.href} target="_blank" rel="noreferrer">
+              <span className="c-entry" key={i}>
+                {href ? (
+                  <a href={href} target="_blank" rel="noreferrer">
                     {inner}
                   </a>
                 ) : (
@@ -81,7 +138,7 @@ export default function SheetView({ data, over, innerRef }) {
       </header>
 
       <SectionTitle>Professional Summary</SectionTitle>
-      <p className="summary-text">{summary}</p>
+      <p className="summary-text">{linkify(summary, inlineLinks)}</p>
 
       {/* Never print a row/bullet that's still blank (e.g. a "+ Add" click left
           unfilled) — it would otherwise show up as a bare label with nothing
@@ -109,13 +166,13 @@ export default function SheetView({ data, over, innerRef }) {
             {e.bullets
               .filter((b) => b.trim())
               .map((b, j) => (
-                <li key={j}>{b}</li>
+                <li key={j}>{linkify(b, inlineLinks)}</li>
               ))}
           </ul>
         </div>
       ))}
 
-      <SectionTitle>Personal Projects</SectionTitle>
+      <SectionTitle>Projects</SectionTitle>
       {projects.map((p, i) => (
         <div className="entry" key={i}>
           <p className="proj-body">
@@ -123,12 +180,13 @@ export default function SheetView({ data, over, innerRef }) {
             {p.link ? (
               <a className="proj-link" href={p.link} target="_blank" rel="noreferrer">
                 {p.name}
+                {EXTERNAL_ICON}
               </a>
             ) : (
               <span className="proj-name">{p.name}</span>
             )}
             {": "}
-            {p.blurb}
+            {linkify(p.blurb, inlineLinks)}
           </p>
           {p.tech && (
             <p className="proj-tech">

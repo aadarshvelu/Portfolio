@@ -1,7 +1,6 @@
-// Minimal synthesized audio — just two sounds, generated with the Web Audio API
-// (no files, off-thread, near-zero cost):
-//   • tick() — a short iOS-picker "tock" per detent scrolling the reel.
-//   • woff() — a soft air-puff on each polaroid pan in The Upgrade.
+// Minimal synthesized audio — one sound, generated with the Web Audio API (no
+// files, off-thread, near-zero cost):
+//   • burst() — the confetti-cannon "POP" at the celebration.
 // Master is 0.5, so the OS scales it by the system volume → we play at half the
 // system level.
 
@@ -11,15 +10,11 @@ class AudioEngine {
     this.master = null
     this.noise = null
     this.vol = 0.5
-    this.lastTick = -1
-    this.lastWoff = -1
     this.lastBurst = -1
     let muted = false
     try { muted = localStorage.getItem('walkthrough_muted') === '1' } catch (e) { /* private mode */ }
     this.muted = muted
   }
-
-  get ready() { return !!this.ctx }
 
   // Create/resume the AudioContext. MUST be called from a user gesture the first
   // time (browsers block audio until then).
@@ -45,28 +40,6 @@ class AudioEngine {
     return buf
   }
 
-  // short "tock" — a bandpassed noise transient + a hint of pitched body.
-  tick() {
-    if (!this.ctx) return
-    const ctx = this.ctx, now = ctx.currentTime
-    if (now - this.lastTick < 0.04) return
-    this.lastTick = now
-    const src = ctx.createBufferSource(); src.buffer = this.noise
-    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2200; bp.Q.value = 1.3
-    const g = ctx.createGain()
-    g.gain.setValueAtTime(0.0001, now)
-    g.gain.exponentialRampToValueAtTime(0.28, now + 0.003)
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.05)
-    src.connect(bp).connect(g).connect(this.master)
-    src.start(now); src.stop(now + 0.06)
-    const osc = ctx.createOscillator(); osc.type = 'triangle'; osc.frequency.value = 880
-    const og = ctx.createGain()
-    og.gain.setValueAtTime(0.0001, now)
-    og.gain.exponentialRampToValueAtTime(0.1, now + 0.002)
-    og.gain.exponentialRampToValueAtTime(0.0001, now + 0.045)
-    osc.connect(og).connect(this.master)
-    osc.start(now); osc.stop(now + 0.06)
-  }
 
   // confetti-cannon BURST — four layers for a real party-popper "POP", not a
   // thin spark: (1) a punchy pitched body, (2) a sharp broadband snap, (3) an
@@ -128,24 +101,6 @@ class AudioEngine {
       cr.connect(crf).connect(crg).connect(master)
       cr.start(t, rndOff()); cr.stop(t + 0.06)
     }
-  }
-
-  // soft "woff" air-puff — lowpass-swept noise.
-  woff() {
-    if (!this.ctx) return
-    const ctx = this.ctx, now = ctx.currentTime
-    if (now - this.lastWoff < 0.1) return
-    this.lastWoff = now
-    const src = ctx.createBufferSource(); src.buffer = this.noise
-    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 0.6
-    lp.frequency.setValueAtTime(1600, now)
-    lp.frequency.exponentialRampToValueAtTime(480, now + 0.26)
-    const g = ctx.createGain()
-    g.gain.setValueAtTime(0.0001, now)
-    g.gain.exponentialRampToValueAtTime(0.36, now + 0.05)
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.3)
-    src.connect(lp).connect(g).connect(this.master)
-    src.start(now); src.stop(now + 0.32)
   }
 
   setMuted(m) {

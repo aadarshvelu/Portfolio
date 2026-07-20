@@ -8,8 +8,6 @@
  * of the transition.
  */
 export const TRANSITION_CONFIG = {
-  introStart: 0,
-
   // When the existing Hero begins to show THROUGH the CRT glass (a faint, distant
   // signal at first) and when it is fully visible inside the screen. Tuned to the
   // scroll model: ~0.90 the CRT nearly fills, ~0.95 the glass fills, 1.0 the Hero.

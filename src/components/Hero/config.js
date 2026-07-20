@@ -44,10 +44,8 @@ export const PEEL_END = 0.575 // page peel completes → reel-road behind it
 // a camera-aligned child of the page-peel, so it lives inside the CRT tube like
 // every other chapter). The peel reveals it; it flies the 5 postings across
 // ROSTER_START→ROSTER_END, then hands off to The Work at CRAFTS_START.
-export const ROSTER_IN = 0.55 // (reserved) fade-in band as the peel finishes
 export const ROSTER_START = 0.59 // fly begins (roster-local progress = 0)
 export const ROSTER_END = 0.74 // fly ends (roster-local progress = 1)
-export const ROSTER_OUT = 0.775 // (reserved) hand-off band into The Work
 
 // The Work (Crafts newspaper) now begins AFTER the Roster instead of at the peel.
 export const CRAFTS_START = 0.76

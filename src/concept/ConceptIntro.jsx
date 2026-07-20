@@ -9,6 +9,7 @@ import { qualityFor } from "./config/qualityProfiles";
 import { useDeviceType } from "./config/deviceUtils";
 import { TRANSITION_CONFIG } from "./config/transitionConfig";
 import { DEBUG_TRANSITION } from "./config/debugTransitionConfig";
+import { useAdaptiveDpr, AdaptiveDprMonitor } from "../perf/AdaptiveDpr.jsx";
 import "./styles.css";
 
 useGLTF.preload(ASSET_URLS.lamp);
@@ -59,6 +60,8 @@ const BOOT_MAX_MS = 7000; // absolute cap so the splash can never stick on black
 export default function ConceptIntro({ introPx }) {
   const device = useDeviceType();
   const quality = qualityFor(device);
+  // Tier = ceiling; measured frame rate walks the resolution under it.
+  const { dpr, onDecline, onIncline } = useAdaptiveDpr(quality.dpr);
   const progress = useRef(0);
   const phaseOut = useRef(0);
   const canvasWrap = useRef(null);
@@ -99,22 +102,31 @@ export default function ConceptIntro({ introPx }) {
       typedDoneAtRef.current = performance.now();
       return;
     }
-    let i = 0;
-    const start = setTimeout(() => {
-      typeRef.current = setInterval(() => {
-        i += 1;
+    // Time-based on rAF rather than setInterval. This is the boot screen's most
+    // visible stutter: a 52ms interval competing with GLB parsing and shader
+    // compilation fires late and compounds, so the line types in lurches. Here
+    // the character count is derived from ELAPSED time, so a long frame is
+    // absorbed (the next tick simply reveals the characters it owes) instead of
+    // pushing the whole line further behind.
+    const t0 = performance.now();
+    let shown = -1;
+    const tick = () => {
+      const elapsed = performance.now() - t0 - BOOT_START_MS;
+      const i = Math.max(0, Math.min(BOOT_TEXT.length, Math.floor(elapsed / BOOT_TYPE_MS)));
+      if (i !== shown) {
+        shown = i;
         el.textContent = BOOT_TEXT.slice(0, i);
-        if (i >= BOOT_TEXT.length) {
-          clearInterval(typeRef.current);
-          // Record real completion (the interval lags while GLBs parse) so the
-          // reveal waits for the whole line, not a guessed duration.
-          typedDoneAtRef.current = performance.now();
-        }
-      }, BOOT_TYPE_MS);
-    }, BOOT_START_MS);
+      }
+      if (i >= BOOT_TEXT.length) {
+        // Record real completion so the reveal waits for the whole line.
+        if (typedDoneAtRef.current === 0) typedDoneAtRef.current = performance.now();
+        return; // stop the loop — the line is fully typed
+      }
+      typeRef.current = requestAnimationFrame(tick);
+    };
+    typeRef.current = requestAnimationFrame(tick);
     return () => {
-      clearTimeout(start);
-      if (typeRef.current) clearInterval(typeRef.current);
+      if (typeRef.current) cancelAnimationFrame(typeRef.current);
     };
   }, []);
 
@@ -214,7 +226,7 @@ export default function ConceptIntro({ introPx }) {
             at first mount — an acceptable quality nit on a rare mid-session
             device change, in exchange for no remount lurch. */}
         <Canvas
-          dpr={quality.dpr}
+          dpr={dpr}
           gl={{ antialias: quality.antialias, alpha: true, powerPreference: "high-performance" }}
           camera={{
             fov: (CAMERA_PROFILES[device] || CAMERA_PROFILES.desktop).fovStart,
@@ -228,6 +240,9 @@ export default function ConceptIntro({ introPx }) {
           // room is scroll-driven only — it never needs pointer input.
           style={{ width: "100%", height: "100%", display: "block", pointerEvents: "none" }}
         >
+          {/* This Canvas always renders (frameloop "always"), so the monitor can
+              stay armed for the whole session. */}
+          <AdaptiveDprMonitor onDecline={onDecline} onIncline={onIncline} />
           <Suspense fallback={null}>
             <Scene progress={progress} phaseOut={phaseOut} device={device} />
             <ReadySignal readyRef={readyRef} />

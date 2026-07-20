@@ -21,5 +21,5 @@ export const DEBUG = {
   showAxes: false,
   showBoundingBoxes: false,
   showHelpers: false,
-  logModelInfo: true,
+  logModelInfo: false,
 };

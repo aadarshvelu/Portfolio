@@ -498,7 +498,7 @@ export default function ExitNoticeChapter({ pRef }) {
   const rLine1  = useRef(), rLine2  = useRef(),  rLine3  = useRef()
   const rNote   = useRef(), rSigName = useRef(), rSigDate = useRef()
   const rRule   = useRef(), rWavy   = useRef()
-  const rCCircle = useRef(), rICircle = useRef(), rSwoosh = useRef()
+  const rCCircle = useRef(), rICircle = useRef()
   const rBKickerG = useRef(), rBKickerL = useRef()
   const rBHeadL   = useRef(), rBHeadG   = useRef()
   const rBDivider = useRef()
@@ -567,7 +567,6 @@ export default function ExitNoticeChapter({ pRef }) {
     setLine(rWavy, tWavy)
     setLine(rCCircle, tCircle)
     setLine(rICircle, tCircle)
-    setLine(rSwoosh, tSig)
 
     // Back-side cardstock + Contact content
     cardUniformsB.uOpacity.value = smoothstep(exitT)
@@ -800,15 +799,6 @@ export default function ExitNoticeChapter({ pRef }) {
       >
         {'Aadarsh Velu'}
       </Text>
-      {/* <Line
-        ref={rSwoosh}
-        points={swooshPts}
-        color={RED}
-        lineWidth={2.2}
-        transparent
-        opacity={0}
-        renderOrder={RO_MARK}
-      /> */}
       <Text
         ref={rSigDate}
         font={FONTS.dmMono400}

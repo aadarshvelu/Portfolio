@@ -180,7 +180,7 @@ function ControlPane({ data, update, reset, overflow, overMm }) {
 
         {/* Projects */}
         <section className="cp-group">
-          <h3 className="cp-group__title">Personal Projects</h3>
+          <h3 className="cp-group__title">Projects</h3>
           {data.projects.map((p, i) => (
             <Card
               key={i}
@@ -331,7 +331,7 @@ export default function ResumeEditor() {
   const over = overflow > 1;
 
   useEffect(() => {
-    document.title = `${data.name} — Résumé editor`;
+    document.title = `Aadarsh Resume`;
   }, [data.name]);
 
   return (

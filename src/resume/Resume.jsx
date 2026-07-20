@@ -122,7 +122,6 @@ const SheetView = React.forwardRef(function SheetView({ data, over }, ref) {
             // so a wrap can only happen BETWEEN items, never inside one.
             const inner = (
               <span className="c-item">
-                {c.pin && "📍 "}
                 {icon}
                 {c.label}
               </span>
@@ -178,7 +177,7 @@ const SheetView = React.forwardRef(function SheetView({ data, over }, ref) {
         </div>
       ))}
 
-      <SectionTitle>Personal Projects</SectionTitle>
+      <SectionTitle>Projects</SectionTitle>
       {projects.map((p, i) => (
         <div className="entry" key={i}>
           <p className="proj-body">
@@ -386,7 +385,7 @@ function ControlPane({ data, update, reset, overflow, overMm }) {
 
         {/* Projects */}
         <section className="cp-group">
-          <h3 className="cp-group__title">Personal Projects</h3>
+          <h3 className="cp-group__title">Projects</h3>
           {data.projects.map((p, i) => (
             <Card
               key={i}

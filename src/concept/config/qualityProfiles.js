@@ -42,6 +42,34 @@ export const QUALITY_PROFILES = {
   },
 };
 
+/**
+ * Capability probe — the device TIER above is chosen purely by viewport width,
+ * which says nothing about GPU power: a cheap 1366×768 laptop reports "desktop"
+ * and gets 2048px shadow maps + MSAA + dpr 2, then crawls. This downgrades the
+ * tier by one step when the hardware self-reports as weak.
+ *
+ * Signals (all advisory, all widely supported enough to be useful):
+ *   hardwareConcurrency <= 4  — low core count tracks low-end silicon
+ *   deviceMemory <= 4         — Chromium-only; absent elsewhere, so never trusted alone
+ *   prefers-reduced-motion    — an explicit "keep it cheap" from the user
+ *
+ * Cached: these never change during a session, and this runs on every resize.
+ */
+let _weakCache;
+export function isWeakDevice() {
+  if (_weakCache !== undefined) return _weakCache;
+  if (typeof window === "undefined" || typeof navigator === "undefined") return (_weakCache = false);
+  const cores = navigator.hardwareConcurrency ?? 8;
+  const mem = navigator.deviceMemory; // undefined on Safari/Firefox
+  const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+  return (_weakCache = cores <= 4 || (mem !== undefined && mem <= 4) || reduced);
+}
+
+// One step down the ladder — a weak "desktop" renders the tablet scene, a weak
+// tablet renders the mobile scene. Mobile is already the cheapest tier.
+const DOWNGRADE = { desktop: "tablet", tablet: "mobile", mobile: "mobile" };
+
 export function qualityFor(device) {
-  return QUALITY_PROFILES[device] || QUALITY_PROFILES.desktop;
+  const tier = isWeakDevice() ? DOWNGRADE[device] || device : device;
+  return QUALITY_PROFILES[tier] || QUALITY_PROFILES.desktop;
 }

@@ -432,7 +432,7 @@ const STORIES = [
     outcome: 'OUTCOME — I read it every morning  ·  zero cloud bill  ·  runs on my laptop',
     staff: 'BUILT WITH — Python · DSPy · Ollama · Gemma · Qwen · PWA',
     figLabel: 'FIG. 01 · SYNDICATE',
-    fig: '/assets/fig_1.png',
+    fig: '/assets/fig_1.webp',
     url: 'https://aadarshvelu.github.io/syndicate',
     name: 'SYNDICATE',
   },
@@ -448,7 +448,7 @@ const STORIES = [
     outcome: 'OUTCOME — 10× the work, same team  ·  nothing falls through anymore',
     staff: 'BUILT WITH — React · Node.js · MS Teams · AI · Azure',
     figLabel: 'FIG. 02 · HOURGLASS',
-    fig: '/assets/fig_2.png',
+    fig: '/assets/fig_2.webp',
     url: 'https://hourglass.acumatic.co',
     name: 'HOURGLASS',
   },
@@ -464,7 +464,7 @@ const STORIES = [
     outcome: 'OUTCOME — 50,000+ résumés processed  ·  costs next to nothing',
     staff: 'BUILT WITH — React · Node.js · AI / LLM · Video',
     figLabel: 'FIG. 03 · HIREHOUSE',
-    fig: '/assets/fig_3.png',
+    fig: '/assets/fig_3.webp',
     url: 'https://hirehouse.acumatic.co',
     name: 'HIREHOUSE',
   },
@@ -583,12 +583,6 @@ function StorySection({ pos, size, story, gRefs, order, stacked, storyKey }) {
 
   return (
     <>
-      {/* <Text font={FONTS.dmMono400} fontSize={size.kicker} color="#8e6c28" anchorX="center" anchorY="middle"
-        letterSpacing={0.3} renderOrder={order + 2}
-        position={[adj.kicker.dx, pos.kickerY + adj.kicker.dy, 0]} fillOpacity={0.95}>
-        {story.kicker}
-      </Text> */}
-
       {/* Headline base — black ink */}
       <Text font={FONTS.anton} fontSize={size.headline + adj?.headline?.fontSizeAdj} color="#1a1612" anchorX="center" anchorY="middle"
         letterSpacing={-0.012} maxWidth={size.headlineMaxW + adj?.headline?.maxWAdj}

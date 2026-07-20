@@ -4,6 +4,14 @@
 const resumeData = {
   name: "Aadarsh velu",
 
+  // Plain-text product/site names inside bullets or blurbs that should render
+  // as real links — an explicit whitelist (not a domain regex), so it never
+  // false-positives on tech names like "Node.js" appearing in ordinary text.
+  inlineLinks: [
+    { text: "tanat.app", href: "https://tanat.app" },
+    { text: "deploy.finance", href: "https://deploy.finance" },
+  ],
+
   // Machine-readable context for systems that parse the /resume page (LLMs,
   // crawlers, ATS). This is emitted as declared, standard structured data
   // (schema.org JSON-LD) + meta tags in <head> — NOT hidden body text. It is the
@@ -36,11 +44,11 @@ const resumeData = {
   },
 
   contact: [
-    { label: "+971 52070820", href: "tel:+97152070820" },
+    { label: "+971 528070820", href: "tel:+971528070820" },
     { label: "aadarshvelu@gmail.com", href: "mailto:aadarshvelu@gmail.com" },
     { label: "whoisaadar.sh", href: "https://whoisaadar.sh/" },
-    { label: "github.com/aadarshvelu", href: null },
-    { label: "linkedin.com/in/aadarshvelu", href: null },
+    { label: "github.com/aadarshvelu", href: "https://github.com/aadarshvelu" },
+    { label: "linkedin.com/in/aadarshvelu", href: "https://linkedin.com/in/aadarshvelu" },
     { label: "Dubai, United Arab Emirates", href: null, pin: true },
   ],
 
@@ -87,23 +95,28 @@ const resumeData = {
 
   projects: [
     {
-      name: "Hirehouse",
-      link: "",
-      tech: "React, Node.js, LLMs",
+      name: "Syndicate",
+      link: "https://aadarshvelu.github.io/syndicate",
+      tech: "Python, DSPy, Ollama",
       blurb:
-        "Designed a competitive, chess-inspired hiring system where candidates " +
-        "are filtered via resume scoring and AI video rounds, ensuring only " +
-        "top-tier candidates reach final stages.",
+        "Reads five AI newsletters overnight, drops duplicates, and emails one " +
+        "summary each morning. Runs on a personal laptop, no cloud, no cost.",
     },
     {
       name: "Hourglass",
       link: "",
       tech: "MS Teams, AI, Node.js",
       blurb:
-        "A unified platform for timesheets, leave, and IT expense management " +
-        "with AI-powered project tracking integrated into MS Teams. Automates " +
-        "standups with MoMs, tracks tasks, and proactively follows up with team " +
-        "members before daily updates.",
+        "A unified platform for timesheets, leave, and IT expenses in MS Teams, " +
+        "with AI standup automation and proactive task follow ups.",
+    },
+    {
+      name: "Hirehouse",
+      link: "",
+      tech: "React, Node.js, LLMs",
+      blurb:
+        "A chess-inspired hiring system that filters candidates through resume " +
+        "scoring and AI video rounds, surfacing only top-tier finalists.",
     },
   ],
 
@@ -112,35 +125,36 @@ const resumeData = {
       role: "Solutions Architect, Elyts",
       date: "Nov 2025 – Present",
       bullets: [
-        "Solutions Architect driving end-to-end system design, infrastructure, and payments across client and internal products.",
-        "Built and scaled high-performing engineering teams; led hiring, mentorship, and delivery execution.",
-        "Developed AI tools (Hourglass, HireHouse) to manage day-to-day operations, automating workflows and reducing hiring noise by ~80% through multi-stage AI filtering.",
-        "Shipped Web3 rails — swap, bridge, and on/off-ramp — via an MCP app, alongside products including tanat.app and deploy.finance.",
+        "Built AI tools Hourglass and HireHouse to automate daily operations, cutting hiring noise by 80 percent through multi-stage AI filtering.",
+        "Grew and led a 12-person engineering team, owning hiring, mentorship, and delivery execution.",
+        "Own architecture and delivery for tanat.app, a multi-chain crypto wallet, and deploy.finance, a marketplace for autonomous trading agents.",
+        "Built an MCP app powering swap, bridge, and on/off-ramp rails for deploy.finance",
       ],
     },
     {
-      role: "Founding Engineer – AI, PieLabs Inc",
+      role: "Full-Stack Engineer – AI, PieLabs Inc",
       date: "May 2024 – Oct 2025",
       bullets: [
-        "Founding AI engineer; built a computer-use QA agent that cut per-step task time from 13.5s to 5s.",
-        "Architected an internal LLM log-observability platform to capture I/O and token usage precisely.",
-        "Built a human-in-the-loop portal to label data for model fine-tuning.",
+        "Built a computer-use QA agent that cut per-step decision time from 13.5 seconds to 5 seconds.",
+        "Engineered bounding-box targeting that lands accurately on UI elements, removing manual correction from the loop.",
+        "Architected an internal platform to log and monitor LLM input, output, and token usage.",
+        "Created a human-in-the-loop labeling portal used to fine-tune models.",
       ],
     },
     {
       role: "Senior Full-Stack Engineer, SM Technology",
       date: "Feb 2022 – May 2023",
       bullets: [
-        "Created optimal standard packages containing business modules that can be plugged into new projects seamlessly, eliminating drastic development work and decreasing new project timelines, which helped to acquire new partners.",
-        "Doubled as data engineer, building optimized ETL pipelines.",
+        "Built reusable business module packages that cut new project setup time and helped win new partners.",
+        "Also worked as data engineer, building ETL pipelines.",
       ],
     },
     {
       role: "Junior Software Engineer, Orbital",
       date: "Jun 2020 – Feb 2022",
       bullets: [
-        "Built a stakeholder reporting UI surfacing live activity and business summaries.",
-        "Built a shared design system adopted across new products.",
+        "Built a reporting UI giving stakeholders live activity and business summaries.",
+        "Created a shared design system adopted across new products.",
       ],
     },
   ],

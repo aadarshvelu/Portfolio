@@ -475,7 +475,15 @@ html, body { margin: 0; padding: 0; }
   margin-bottom: 10px;
 }
 .sheet__contact a { color: var(--link); text-decoration: none; }
-.sheet__contact .sep { margin: 0 6px; color: #999; }
+/* Each contact entry carries its own trailing "|" divider (never a leading
+   one), so when the line wraps the next line starts cleanly with the contact
+   itself rather than an orphaned separator. Last entry gets no divider. */
+.c-entry { white-space: nowrap; display: inline-block; }
+.c-entry:not(:last-child)::after {
+  content: "|";
+  margin: 0 6px;
+  color: #999;
+}
 /* Keep pin/icon glued to its label — wraps can only fall between items.
    inline-block (not just nowrap) is required: browsers treat a hyphen as an
    allowed break point regardless of white-space:nowrap (e.g. "your-handle"
@@ -491,6 +499,23 @@ html, body { margin: 0; padding: 0; }
   vertical-align: -0.14em;
   margin-right: 3px;
 }
+/* Globe is a line-art mark (circle + meridians), not a filled glyph like the
+   GitHub/LinkedIn marks — override the shared .c-icon fill. */
+.c-icon--globe { fill: none; stroke: currentColor; }
+
+/* External-link mark — a small ↗ appended after body links (project titles,
+   inline-linked product names), so it reads "opens elsewhere" both on screen
+   and in the printed PDF. Trails the text, not leading like the header icons. */
+.c-icon--ext {
+  fill: none;
+  stroke: currentColor;
+  width: 0.68em;
+  height: 0.68em;
+  margin: 0 0 0 2px;
+  vertical-align: 0.05em;
+}
+.inline-link { color: var(--link); text-decoration: none; }
+.inline-link:hover .c-icon--ext { stroke: var(--link); }
 
 /* Ruled-underline section titles — bold title-case serif (Times takes tracked
    caps badly, so no uppercase/letter-spacing). Clear space above separates
@@ -504,7 +529,7 @@ html, body { margin: 0; padding: 0; }
   color: #111;
   border-bottom: 1.2px solid #444;
   padding: 0 0 3px;
-  margin: 15px 0 7px;
+  margin: 14px 0 7px;
 }
 .sec-title span { border: none; padding: 0; }
 

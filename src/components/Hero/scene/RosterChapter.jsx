@@ -47,7 +47,7 @@ const all_roles = [
     b1: 'Robust LMS — SCORM + Azure Entra ID single sign-on.',
     b2: 'Multi-region LMS across UK · USA · Europe.',
     tools: 'React.js · Redux Toolkit · Python · Django · GoLang · FastAPI · Azure' },
-  { num: '04', year: '2025', dates: 'MAR 2025 — OCT 2025', title: 'Founding Engineer - AI', company: 'PieLabs Inc',
+  { num: '04', year: '2025', dates: 'MAR 2025 — OCT 2025', title: 'Full-Stack Engineer - AI', company: 'PieLabs Inc',
     b1: 'AI researcher — computer-use QA agent, 13.5s to 5s per step.',
     b2: 'Internal LLM log-observability — I/O + token capture.',
     b3: 'Built a human-in-the-loop portal to label data for fine-tuning.',

@@ -3,18 +3,10 @@
 // the file, this endpoint just stores its bytes in R2 so the public /download
 // route can serve them. Same Access-protection assumptions as /api/resume.
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { requireOwner } from "../../owner.js";
 
 const R2_KEY = "resume.pdf";
 const MAX_BYTES = 10 * 1024 * 1024; // 10MB — a one-page text resume is <1MB
-
-function requireOwner(request, env) {
-  const owner = (env.OWNER_EMAIL || "").trim().toLowerCase();
-  if (!owner) return true;
-  const authedEmail = (request.headers.get("Cf-Access-Authenticated-User-Email") || "")
-    .trim()
-    .toLowerCase();
-  return authedEmail === owner;
-}
 
 export async function POST(request) {
   const { env } = getCloudflareContext();
