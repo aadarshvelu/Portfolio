@@ -36,7 +36,10 @@ export default async function PublicResume() {
             </a>
           )}
           <a className="pf-download" href="/download">
-            ⭳ Download PDF
+            <svg className="c-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+            </svg>
+            Download PDF
           </a>
         </div>
       </div>

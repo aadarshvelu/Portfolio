@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Text, Line } from '@react-three/drei'
-import { DOLLY_END, BEAT1_END } from '../config.js'
+import { DOLLY_END, BEAT1_END, TRANSITION_END } from '../config.js'
 import { useLayout } from '../breakpoint.js'
 import { FONTS } from '../../../fonts.js'
 
@@ -209,6 +209,18 @@ export default function OriginBeat({ smoothed, frameMarker, coneAnchor }) {
   useFrame((state) => {
     const marker = frameMarker.current
     if (!outer.current || !marker) return
+
+    // Visibility gate — OriginBeat's prose only exists in Chapter I (the drum
+    // rotates DOLLY_END→BEAT1_END, then fades as the carrier locks full-screen at
+    // TRANSITION_END). Outside that window it is fully occluded by the Upgrade /
+    // Roster / Work chapters, so skip the whole layout + drum pass instead of
+    // paying it on every frame of the entire scroll timeline. Margins keep it
+    // running a hair before it appears and after it clears so there is no pop.
+    const sm = smoothed.current ?? 0
+    const active = sm > DOLLY_END - 0.03 && sm < TRANSITION_END + 0.04
+    outer.current.visible = active
+    if (!active) return
+
     marker.getWorldPosition(worldPos)
     outer.current.position.copy(worldPos)
 

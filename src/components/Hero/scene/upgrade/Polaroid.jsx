@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Text, Line } from '@react-three/drei'
 import { FONTS } from '../../../../fonts.js'
+import { UPGRADE_ENTER, PEEL_END } from '../../config.js'
 
 const LINK_DOTS = 26 // dotted underline segments beneath the Kaggle link
 
@@ -118,6 +119,14 @@ const Polaroid = forwardRef(function Polaroid(
 
   useFrame(() => {
     const sm = smoothed.current ?? 0
+    // Visibility gate — the polaroids only exist in The Upgrade (carrier dissolves
+    // at UPGRADE_ENTER; the page peels away to reveal the Roster by PEEL_END).
+    // Before the window they rest at their JSX defaults (placeholder shown, reveal
+    // hidden) which is exactly the pre-reveal look; after it they are the peeled-
+    // away page, frozen fully-revealed and occluded. Either way there is nothing
+    // to animate off-window, so skip the per-frame opacity + link-decoration pass
+    // instead of running it (×3 cards) through every other chapter.
+    if (sm < UPGRADE_ENTER - 0.06 || sm > PEEL_END + 0.03) return
     const raw = clamp01((sm - revealStart) / (revealEnd - revealStart))
     const t = smoothstep(raw)
     revealRef.current = t

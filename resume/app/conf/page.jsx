@@ -364,7 +364,10 @@ export default function ResumeEditor() {
               window.print();
             }}
           >
-            ⭳ Download PDF
+            <svg className="c-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+            </svg>
+            Download PDF
           </button>
 
           {/* Print-then-upload: after Download PDF saves a file locally, pick that

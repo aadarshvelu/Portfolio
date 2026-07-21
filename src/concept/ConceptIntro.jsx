@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useRef } from "react";
+import React, { Suspense, useCallback, useEffect, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -14,7 +14,7 @@ import "./styles.css";
 
 useGLTF.preload(ASSET_URLS.lamp);
 useGLTF.preload(ASSET_URLS.tv);
-useGLTF.preload(ASSET_URLS.pen);
+// useGLTF.preload(ASSET_URLS.pen); // commented with <Pen /> in Scene.jsx
 
 const smooth = (x, a, b) => THREE.MathUtils.smoothstep(x, a, b);
 
@@ -32,29 +32,32 @@ const smooth = (x, a, b) => THREE.MathUtils.smoothstep(x, a, b);
  * the Hero underneath stay fully interactive. It stays mounted the whole time.
  */
 /**
- * ReadySignal — an in-Canvas child that flips `readyRef.current` true on the
+ * ReadySignal — an in-Canvas child that calls `onReady` on the
  * first useFrame tick. That tick only fires AFTER the R3F Canvas has compiled
  * its shaders, resolved Suspense (i.e. GLBs parsed + troika text laid out), and
  * queued its first render — so it's the earliest moment at which the room has
  * an actual pixel to show. The DOM overlays key their fade-in off this so we
  * never flash the grain/vignette/"scroll" hint over an empty canvas.
  */
-function ReadySignal({ readyRef }) {
+function ReadySignal({ onReady }) {
   useFrame(() => {
-    if (!readyRef.current) readyRef.current = true;
+    onReady();
   });
   return null;
 }
 
 const READY_FADE_MS = 500;
 
-// The film's opening line — played over the black splash before the Room
-// reveals (moved here from the Hero's boot). The splash is held for BOOT_HOLD_MS
-// so the line reads, then the reveal lifts it.
-const BOOT_TEXT = "Life is a film. This is my story.";
-const BOOT_TYPE_MS = 52; // per character
-const BOOT_START_MS = 400; // pause on black before the line starts typing
-const BOOT_READ_MS = 1000; // linger after the line finishes, before the reveal
+// The film's opening line now lives in the pure-CSS boot leader in index.html —
+// it paints before this bundle is even fetched, and animates on the compositor,
+// so it cannot stutter while the two canvases compile their shaders. (It used to
+// be typed here from a rAF callback, i.e. main-thread work competing with that
+// exact compilation, which is why it lurched on low-end devices.)
+//
+// What remains here is the black splash: a failsafe so the room's grain/vignette
+// never paint over a canvas that has no pixel yet. The leader sits above it and
+// outlives it, so in practice the visitor never sees this layer.
+const BOOT_READ_MS = 1000; // linger on black after ready, before the room fades up
 const BOOT_MAX_MS = 7000; // absolute cap so the splash can never stick on black
 
 export default function ConceptIntro({ introPx }) {
@@ -74,61 +77,28 @@ export default function ConceptIntro({ introPx }) {
   introPxRef.current = introPx;
   const readyRef = useRef(false);
   const readyAtRef = useRef(0);
-  const introRef = useRef(null); // the opening-line DOM element
   const firstTickRef = useRef(0); // mount time, for the boot cap
-  const typeRef = useRef(0); // typewriter interval id
-  const typedDoneAtRef = useRef(0); // when the line finished typing (real time)
+  const readyFiredRef = useRef(false);
 
-  // Failsafe: the black splash only lifts once the room's first useFrame fires
-  // (readyRef). If that never happens — a 0-size canvas at some viewport, a lost
-  // context — the screen would stay pure black forever. Force-ready after a
-  // timeout so we can never get stuck on black.
+  // Single "the room has a pixel to show" signal. Called every frame by
+  // ReadySignal (cheap — it latches on the first one) and by the failsafe below.
+  // Besides lifting our own splash it dispatches `scene-ready`, which is what
+  // index.html's boot leader waits on before it dissolves.
+  const signalReady = useCallback(() => {
+    if (readyFiredRef.current) return;
+    readyFiredRef.current = true;
+    readyRef.current = true;
+    window.dispatchEvent(new Event("scene-ready"));
+  }, []);
+
+  // Failsafe: the black splash only lifts once the room's first useFrame fires.
+  // If that never happens — a 0-size canvas at some viewport, a lost context —
+  // the screen would stay pure black forever, and the boot leader would sit
+  // until its own hard cap. Force-ready after a timeout so neither can stick.
   useEffect(() => {
-    const id = setTimeout(() => {
-      readyRef.current = true;
-    }, 1500);
+    const id = setTimeout(signalReady, 1500);
     return () => clearTimeout(id);
-  }, []);
-
-  // Type the opening line onto the black splash (direct DOM — no re-render).
-  useEffect(() => {
-    const el = introRef.current;
-    if (!el) return;
-    const reduced =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      el.textContent = BOOT_TEXT;
-      typedDoneAtRef.current = performance.now();
-      return;
-    }
-    // Time-based on rAF rather than setInterval. This is the boot screen's most
-    // visible stutter: a 52ms interval competing with GLB parsing and shader
-    // compilation fires late and compounds, so the line types in lurches. Here
-    // the character count is derived from ELAPSED time, so a long frame is
-    // absorbed (the next tick simply reveals the characters it owes) instead of
-    // pushing the whole line further behind.
-    const t0 = performance.now();
-    let shown = -1;
-    const tick = () => {
-      const elapsed = performance.now() - t0 - BOOT_START_MS;
-      const i = Math.max(0, Math.min(BOOT_TEXT.length, Math.floor(elapsed / BOOT_TYPE_MS)));
-      if (i !== shown) {
-        shown = i;
-        el.textContent = BOOT_TEXT.slice(0, i);
-      }
-      if (i >= BOOT_TEXT.length) {
-        // Record real completion so the reveal waits for the whole line.
-        if (typedDoneAtRef.current === 0) typedDoneAtRef.current = performance.now();
-        return; // stop the loop — the line is fully typed
-      }
-      typeRef.current = requestAnimationFrame(tick);
-    };
-    typeRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (typeRef.current) cancelAnimationFrame(typeRef.current);
-    };
-  }, []);
+  }, [signalReady]);
 
   // Window scroll → intro phase (0 → 1). Reversible by construction.
   useEffect(() => {
@@ -160,16 +130,15 @@ export default function ConceptIntro({ introPx }) {
       const rf = smooth(p, TRANSITION_CONFIG.roomFadeStart, TRANSITION_CONFIG.roomFadeEnd);
       const vis = 1 - rf;
 
-      // Hold the black splash until the room is ready AND the opening line has
-      // FINISHED typing (+ a read pause) — not a guessed duration, since the
-      // typewriter lags while GLBs parse. A hard cap guarantees it never sticks.
+      // Hold the black splash until the room is ready, plus a short linger. The
+      // boot leader in index.html is still covering all of this, and outlives it
+      // (its floor is 3s), so this is purely the "never paint an empty canvas"
+      // guard rather than a timed beat. A hard cap guarantees it never sticks.
       const now = performance.now();
       if (firstTickRef.current === 0) firstTickRef.current = now;
-      const typedDone =
-        typedDoneAtRef.current > 0 && now - typedDoneAtRef.current >= BOOT_READ_MS;
-      const capped = now - firstTickRef.current >= BOOT_MAX_MS;
+      const elapsed = now - firstTickRef.current;
       let reveal = 0;
-      if (readyRef.current && (typedDone || capped)) {
+      if (readyRef.current && elapsed >= Math.min(BOOT_READ_MS, BOOT_MAX_MS)) {
         if (readyAtRef.current === 0) readyAtRef.current = now;
         const t = (now - readyAtRef.current) / READY_FADE_MS;
         reveal = Math.min(1, Math.max(0, t));
@@ -195,12 +164,6 @@ export default function ConceptIntro({ introPx }) {
         const splash = 1 - reveal;
         splashRef.current.style.opacity = String(splash);
         if (splash <= 0.001) splashRef.current.style.display = "none";
-      }
-      // The opening line fades out ahead of the splash (gone by reveal ~0.4) so
-      // it doesn't ghost over the room as the black lifts.
-      if (introRef.current) {
-        introRef.current.style.opacity = String(Math.max(0, 1 - reveal * 2.5));
-        if (reveal >= 1) introRef.current.style.display = "none";
       }
       if (DEBUG_TRANSITION.showTransitionProgress && dbgRef.current) {
         dbgRef.current.textContent = `phase ${p.toFixed(3)}`;
@@ -245,7 +208,7 @@ export default function ConceptIntro({ introPx }) {
           <AdaptiveDprMonitor onDecline={onDecline} onIncline={onIncline} />
           <Suspense fallback={null}>
             <Scene progress={progress} phaseOut={phaseOut} device={device} />
-            <ReadySignal readyRef={readyRef} />
+            <ReadySignal onReady={signalReady} />
           </Suspense>
         </Canvas>
       </div>
@@ -293,10 +256,6 @@ export default function ConceptIntro({ introPx }) {
       >
         <div className="concept-boot-grain" />
       </div>
-
-      {/* The film's opening line, over the black splash. Typed in on load, faded
-          out just ahead of the splash lift. */}
-      <div ref={introRef} className="concept-boot-line" aria-hidden="true" style={{ opacity: 1 }} />
 
       {DEBUG_TRANSITION.showTransitionProgress && (
         <div

@@ -100,27 +100,10 @@
   animation: grainShift 0.6s steps(4) infinite;
 }
 
-/* The film's opening line, typed over the black splash before the room reveals.
-   Sits just above the splash (z 20). */
-.concept-boot-line {
-  position: fixed;
-  inset: 0;
-  z-index: 21;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 8vw;
-  text-align: center;
-  pointer-events: none;
-  font-family: "DM Mono", ui-monospace, "Courier New", monospace;
-  font-size: clamp(15px, 2.4vw, 26px);
-  font-weight: 400;
-  letter-spacing: 0.26em;
-  text-indent: 0.26em;
-  line-height: 1.5;
-  color: #f2e8d8;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.7);
-}
+/* NOTE: the film's opening line used to be typed over this splash. It now lives
+   in the pure-CSS boot leader in index.html (`.bl-line`), which paints before
+   this bundle loads and animates on the compositor, so it can't stutter while
+   the canvases compile. Its styling moved there with it. */
 
 .concept-hint {
   position: fixed;

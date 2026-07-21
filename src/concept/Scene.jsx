@@ -7,7 +7,7 @@ import Room from "./Room";
 import Desk from "./Desk";
 import Paper from "./Paper";
 import Lamp from "./Lamp";
-import Pen from "./Pen";
+// import Pen from "./Pen"; // commented with <Pen /> below
 import Television from "./Television";
 import Curtain from "./Curtain";
 import Clock from "./Clock";
@@ -74,7 +74,11 @@ export default function Scene({ progress, phaseOut, device = "desktop" }) {
       {/* Desk props — DESKTOP only. Mobile + tablet use the bare portrait shot
           (TV + spotlit note), so the lamp, pen, clock and lamp-cone dust drop. */}
       {!bare && <Lamp />}
-      {!bare && <Pen />}
+      {/* Pen commented out — its shadow came from this mesh's own castShadow
+          (see AssetModel), so removing it drops the pen AND its cast shadow.
+          The pen.glb preload in index.html + ConceptIntro is commented to match;
+          restore all three together. */}
+      {/* {!bare && <Pen />} */}
       {!bare && <Clock />}
       {!bare && <DustParticles phase={phase} />}
 

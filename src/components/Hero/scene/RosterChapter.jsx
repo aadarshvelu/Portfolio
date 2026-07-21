@@ -38,7 +38,7 @@ const all_roles = [
     b2: 'Built a shared design system adopted across new products.',
     b3: 'Learned to break systems before shipping them.',
     tools: 'React.js · Redux Toolkit · AWS Serverless · Node.js · Antd · TypeScript' },
-  { num: '02', year: '2022', dates: 'FEB 2022 — MAY 2023', title: 'Senior Full-Stack Engineer', company: 'SM Technology',
+  { num: '02', year: '2022', dates: 'FEB 2022 — MAY 2024', title: 'Senior Full-Stack Engineer', company: 'SM Technology',
     b1: 'Reusable business-module packages for plug-in delivery.',
     b2: 'Cut project timelines; helped win new partners.',
     b3: 'Doubled as data engineer — built optimized ETL pipelines.',
@@ -53,7 +53,7 @@ const all_roles = [
     b3: 'Built a human-in-the-loop portal to label data for fine-tuning.',
     tools: 'GoLang · React.js · Python · Gemini · Playwright · AWS · GCP' },
   { num: '05', year: 'NOW', dates: 'NOV 2025 — PRESENT', title: 'Solutions Architect', company: 'Elyts',
-    b1: 'End-to-end system design, infra & payments.',
+    b1: 'Managed End-to-end system design, infra & payments.',
     b2: 'Developed AI Tools (Hourglass · HireHouse) — to manage my day-to-day problems.',
     b3: 'Shipped Web3 rails — swap · bridge · on/off-ramp — via an MCP app.',
     links: [
