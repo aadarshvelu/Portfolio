@@ -1,0 +1,6 @@
+[mcp_servers.blender]
+command = "npx"
+args = [
+    "-y",
+    "blender-mcp",
+]

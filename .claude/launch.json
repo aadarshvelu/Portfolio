@@ -7,6 +7,13 @@
       "runtimeArgs": ["run", "dev", "--", "--port", "3004"],
       "port": 3004,
       "autoPort": false
+    },
+    {
+      "name": "resume-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "resume", "run", "dev", "--", "--port", "3005"],
+      "port": 3005,
+      "autoPort": false
     }
   ]
 }

@@ -21,7 +21,7 @@ import Polaroid from './Polaroid.jsx'
 const SKY_OVER = 3
 
 const PEARL_FADE = '#6f6c61'
-const GOLD = '#b8860b'
+const GOLD = '#c8a157' // bright gold accents — the reveal cards are now dark film-slate
 const META = '#9b9789'
 
 const clamp01 = (x) => Math.min(1, Math.max(0, x))
@@ -162,8 +162,8 @@ const KAGGLE_DATA = {
       { t: 'Practiced on Kaggle', a: [['Kaggle', GOLD]] },
       { t: 'until the intuition came.', a: [] },
     ],
-    credential: { name: 'Kaggle — 3× Expert', year: '2022 — 2025' },
-    link: { url: 'https://kaggle.com/aadarshvelu', label: '→ kaggle.com/aadarshvelu' },
+    credential: { name: 'Kaggle — 3x Expert', year: '2022 — 2025' },
+    link: { url: 'https://kaggle.com/aadarshvelu', label: 'kaggle.com/aadarshvelu' },
     footer: '— first intuition.',
   },
 }
@@ -172,19 +172,20 @@ const KOZHIKODE_DATA = {
   label: 'IIM-K',
   year: '2026',
   caption: 'the upgrade.',
+  tape: true,
   voiceover: {
     slug: 'IIM KOZHIKODE',
     yearRange: '2025 — 2026',
     cue: '',
     lines: [
-      { t: 'Then the ground shifted.', a: [['shifted', GOLD]] },
+      { t: 'Then things changed.', a: [['changed', GOLD]] },
       { t: '' },
-      { t: 'When the tool writes the code,', a: [] },
-      { t: 'the bottleneck moves —', a: [] },
-      { t: 'the business problem', a: [] },
-      { t: 'under the ticket.', a: [] },
+      { t: 'When AI writes the code,', a: [] },
+      { t: 'the hard part shifts —', a: [] },
+      { t: "it's the business problem", a: [] },
+      { t: 'behind the task.', a: [] },
       { t: '' },
-      { t: 'So I went back for what', a: [] },
+      { t: 'So I went back to learn what', a: [] },
       { t: "code can't teach: judgment.", a: [['judgment', GOLD]] },
     ],
     credential: { name: '', year: '' },
@@ -197,18 +198,23 @@ const AWS_DATA = {
   label: 'AWS',
   year: '2023',
   caption: 'p.s.',
+  tape: true,
   voiceover: {
-    slug: 'P.S. — FOR THE RECORD',
-    yearRange: '2023',
+    slug: 'FOR THE RECORD',
+    yearRange: '2023 - 2026',
     cue: '',
     lines: [
-      { t: 'And — last but not least —', a: [] },
-      { t: 'an AWS Solutions Architect, too.', a: [['AWS Solutions Architect', GOLD]] },
+      { t: "I don't just build AI systems.", a: [] },
+      { t: 'I build them secure and compliant.', a: [['secure and compliant', GOLD]] },
       { t: '' },
-      { t: '(the cloud, on paper.)', a: [], italic: true },
+      { t: 'ISO 27701 & 42001 certified AI auditor,', a: [['27701', GOLD], ['42001', GOLD]] },
+      { t: 'and AWS Solutions Architect —', a: [['AWS Solutions Architect', GOLD]] },
+      { t: 'cleared back in college.', a: [] },
+      { t: '' },
+      { t: '(the proof, on paper.)', a: [], italic: true },
     ],
-    credential: { name: '', year: '' },
-    evidence: 'AWS CERTIFIED SOLUTIONS ARCHITECT · ASSOCIATE',
+    credential: { name: 'ISO & AWS certifications', year: '2026' },
+    link: { url: 'https://www.credly.com/users/aadarsh-velu/badges', label: 'credly.com/aadarshvelu' },
     footer: '— end of reel.',
   },
 }

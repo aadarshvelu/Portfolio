@@ -27,6 +27,11 @@ body {
   font-family: 'DM Mono', ui-monospace, monospace;
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
+  /* Kill the mobile rubber-band/bounce: it let a flick overscroll past the
+     polaroid & newspaper beats, and momentum slam the page to the bottom (which
+     jumped the Exit Notice straight to its "director takes calls" back-face).
+     The whole experience is one scroll timeline, so there's nothing to chain to. */
+  overscroll-behavior: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

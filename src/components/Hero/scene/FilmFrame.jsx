@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { Text } from '@react-three/drei'
 import { FONTS } from '../../../fonts.js'
 import { useTypewriter } from '../../../hooks/useTypewriter.js'
+import { edgeFor, SPREAD } from './reelGeometry.js'
 
 // frame 260x200, cell inset to 252x144 — origin at frame centre
 const FW = 260
@@ -11,18 +12,36 @@ const FH = 200
 const CW = 252
 const CH = 144
 
-// 5 frames, index -2 (left) .. +2 (right). cellA/cellB are sRGB 0..1.
+// CTA label ↔ suffix-glyph spacing / glyph footprint (design px)
+const CTA_GAP = 9
+const CTA_GLYPH = 13
+
+const clamp01 = (x) => Math.min(1, Math.max(0, x))
+const smoothstep = (x) => {
+  const t = clamp01(x)
+  return t * t * (3 - 2 * t)
+}
+
+// The centre frame's shell + colour cell dissolve over this scroll band as the
+// camera dollies in — driven by scroll POSITION (not a time-lag behind a fast
+// scroll), so the film roll is reliably gone by the FIRST LIGHT title card.
+const DISSOLVE_IN = 0.045
+const DISSOLVE_OUT = 0.095
+
+// The 4 destination chapters in RING order (mirrors hero-broadcast.html's
+// CHANNELS). FilmRoll tiles this array infinitely around the cylinder, so order
+// here = the loop order; positioning + which one is "centre" is decided by slot
+// in FilmRoll (not baked here). ORIGIN leads so slot 0 lands on FIRST LIGHT.
+// cellA/cellB are sRGB 0..1.
 export const FRAMES = [
-  { i: -2, roman: '—', tag: 'PROLOGUE', meta: '2014', title: 'Cold\nOpen',
-    em: 'before the work', cellA: [0.039, 0.063, 0.141], cellB: [0.020, 0.031, 0.063] },
-  { i: -1, roman: 'IV.', tag: 'THE ARCHITECT', meta: '2025—', title: 'Aadarsh',
-    em: 'technical lead', cellA: [0.102, 0.114, 0.173], cellB: [0.024, 0.031, 0.071] },
-  { i: 0, roman: 'I.', tag: 'THE ORIGIN', meta: '2018 — 2020', title: 'First\nLight',
-    em: 'before anyone was watching', center: true, cellA: [0.110, 0.165, 0.322], cellB: [0.020, 0.039, 0.110] },
-  { i: 1, roman: 'II.', tag: 'THE WORK', meta: '2018—2022', title: 'Selected',
-    em: 'seventeen reels', cellA: [0.102, 0.133, 0.220], cellB: [0.039, 0.063, 0.141] },
-  { i: 2, roman: 'III.', tag: 'THE RECORD', meta: '2022—', title: 'Notes',
-    em: 'from the cutting room', cellA: [0.086, 0.125, 0.243], cellB: [0.027, 0.035, 0.102] },
+  { roman: 'I.', tag: 'THE ORIGIN', meta: '2018 — 2020', title: 'First\nLight',
+    em: 'I taught myself to code at 16', cellA: [0.110, 0.165, 0.322], cellB: [0.020, 0.039, 0.110] },
+  { roman: 'II.', tag: 'THE UPGRADE', meta: '2020 — 2023', title: 'The\nUpgrade',
+    em: 'the years I got sharp', cellA: [0.102, 0.133, 0.220], cellB: [0.039, 0.063, 0.141] },
+  { roman: 'III.', tag: 'THE WORK', meta: '2022 — now', title: 'The\nWork',
+    em: 'building things that last', cellA: [0.086, 0.125, 0.243], cellB: [0.027, 0.035, 0.102] },
+  { roman: 'IV.', tag: 'CONTACT', meta: 'MMXXVI', title: 'Roll\nCredits',
+    em: 'the director will see you now', cellA: [0.102, 0.114, 0.173], cellB: [0.024, 0.031, 0.071] },
 ]
 
 const baseVert = /* glsl */ `
@@ -37,12 +56,13 @@ void main() {
 const frameFrag = /* glsl */ `
 varying vec2 vUv;
 uniform float uFade;
+uniform float uEdge;
 void main() {
   vec3 base = vec3(0.031, 0.035, 0.043);
   float band = step(0.90, vUv.y) + step(vUv.y, 0.10);
   float holes = step(0.5, fract(vUv.x * 21.0));
   vec3 col = mix(base, vec3(0.11, 0.11, 0.13), band * holes);
-  gl_FragColor = vec4(pow(col, vec3(2.2)), 1.0 - uFade);
+  gl_FragColor = vec4(pow(col, vec3(2.2)), (1.0 - uFade) * uEdge);
 }
 `
 
@@ -53,18 +73,31 @@ uniform vec3 uA;
 uniform vec3 uB;
 uniform float uDim;
 uniform float uFade;
+uniform float uEdge;
 void main() {
   vec3 col = mix(uB, uA, vUv.y);
   float r = 1.0 - length(vUv - vec2(0.35, 0.65));
   col += vec3(0.05) * smoothstep(0.45, 1.0, r);
   col *= uDim;
-  gl_FragColor = vec4(pow(col, vec3(2.2)), 1.0 - uFade);
+  gl_FragColor = vec4(pow(col, vec3(2.2)), (1.0 - uFade) * uEdge);
 }
 `
 
-export default function FilmFrame({ frame, idle, focus }) {
-  const { i, roman, tag, meta, title, em, center, cellA, cellB } = frame
-  const ro = 12 + (2 - Math.abs(i)) * 0.4
+export default function FilmFrame({ frame, focus, center = false, slot = 0, baseRotY, onEnter, smoothed }) {
+  const { roman, tag, meta, title, em, cellA, cellB } = frame
+  // FIRST LIGHT enters by scrolling into Act I; the others by the play button.
+  const isFirstLight = tag === 'THE ORIGIN'
+  // SELF-TAUGHT types out on the focus title card (Origin only).
+  const caption = useTypewriter('My Journey as a self-taught developer', {
+    speed: 20,
+    start: !!(center && focus && isFirstLight),
+  })
+  // `dist` = resting |slot| from centre; `edge0` is the resting fade (the LIVE
+  // fade, tracking rotation, is recomputed each frame in useFrame below).
+  const dist = Math.abs(slot)
+  const edge0 = center ? 1 : edgeFor(dist)
+  // renderOrder: nearer the centre paints on top.
+  const ro = 12 + (2 - Math.min(dist, 2)) * 0.4
 
   const cellUniforms = useMemo(
     () => ({
@@ -72,28 +105,107 @@ export default function FilmFrame({ frame, idle, focus }) {
       uB: { value: new THREE.Vector3(...cellB) },
       uDim: { value: center ? 1.0 : 0.72 },
       uFade: { value: 0 },
+      uEdge: { value: edge0 },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
-  const frameUniforms = useMemo(() => ({ uFade: { value: 0 } }), [])
+  const frameUniforms = useMemo(
+    () => ({ uFade: { value: 0 }, uEdge: { value: edge0 } }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
 
   // Phase B — the centre frame dissolves its shell + colour cell to leave
-  // only the title text floating on the shared night sky.
+  // only the title text floating on the shared night sky. `uEdge` fades the
+  // outer reel frames toward the strip edges so they recede into dark instead
+  // of piling up / bleeding through each other.
   const fade = useRef(0)
-  useFrame(() => {
-    const target = center && focus ? 1 : 0
-    fade.current += (target - fade.current) * 0.04
-    frameUniforms.uFade.value = fade.current
-    cellUniforms.uFade.value = fade.current
+  const groupRef = useRef() // whole frame — culled when its live edge is ~0
+  const titleRef = useRef() // heading — develops IN on focus
+  const emRef = useRef() // subtitle — browse only
+  const playRef = useRef() // PRESS PLAY label — browse only, pulses
+  const playTriRef = useRef() // play triangle — browse only, pulses
+  const focalRef = useRef() // FOCAL label — browse only
+  const focalDotRef = useRef() // FOCAL dot — browse only
+  const hovered = useRef(false) // CTA hover — solid + bright while pointed at
+  // Focus title-card elements — the inverse of browse: they develop IN on
+  // scroll-in (opacity ∝ fade) to rebuild the full left-aligned FIRST LIGHT card.
+  const tagRef = useRef()
+  const metaRef = useRef()
+  const emCardRef = useRef()
+  const selfRef = useRef()
+  const focalCardRef = useRef()
+  const focalDotCardRef = useRef()
+  useFrame((state) => {
+    // Centre frame: dissolve is a pure function of scroll depth (deterministic —
+    // gone by the title card regardless of scroll speed). Others: the old
+    // focus-driven ease (harmless; they're hidden on focus anyway).
+    let f
+    if (center && smoothed) {
+      f = smoothstep((smoothed.current - DISSOLVE_IN) / (DISSOLVE_OUT - DISSOLVE_IN))
+      fade.current = f
+    } else {
+      const target = center && focus ? 1 : 0
+      fade.current += (target - fade.current) * 0.04
+      f = fade.current
+    }
+    // LIVE edge fade — by the frame's ACTUAL rotated distance from centre
+    // (baseRotY), not its resting slot. So a frame swinging toward the strip
+    // edge during a paginate fades as it travels, instead of a still-bright
+    // frame glowing at the rim. Everything (shell, cell, text) rides this.
+    const off = baseRotY ? baseRotY.current / SPREAD : 0
+    const edge = edgeFor(Math.abs(off - slot))
+
+    frameUniforms.uFade.value = f
+    cellUniforms.uFade.value = f
+    frameUniforms.uEdge.value = edge
+    cellUniforms.uEdge.value = edge
+    // Cull the whole frame once it's essentially faded (keeps the far reel from
+    // drawing invisible troika text). Centre is never culled.
+    if (groupRef.current) groupRef.current.visible = center || edge > 0.003
+
+    // Shared heading + subtitle ride the live edge (side frames), or the
+    // develop-in / browse-out cross-fade at centre.
+    if (titleRef.current) titleRef.current.fillOpacity = center ? edge * f : edge
+    if (emRef.current) emRef.current.fillOpacity = center ? edge * (1 - f) : edge
+    // Sprocket header (chapter tag + years) on EVERY frame, riding the live edge.
+    if (tagRef.current) tagRef.current.fillOpacity = edge
+    if (metaRef.current) metaRef.current.fillOpacity = edge
+    if (!center) return
+
+    // The centre frame's heading duplicates the big broadcast title in browse,
+    // so it's hidden there and "develops" in as the shell dissolves on scroll-in
+    // (fade 0→1). The browse-only call-to-action group is the inverse: full in
+    // browse, faded out on scroll-in so the title card is left clean.
+    const browse = edge * (1 - f)
+    // pulse breathes to signal a button; hovering pins it solid + bright
+    const pulse = hovered.current
+      ? 1
+      : 0.82 + 0.18 * Math.sin(state.clock.elapsedTime * 2.4)
+    if (playRef.current) playRef.current.fillOpacity = browse * pulse
+    if (playTriRef.current) playTriRef.current.material.opacity = browse * pulse
+    if (focalRef.current) focalRef.current.fillOpacity = browse
+    if (focalDotRef.current) focalDotRef.current.material.opacity = browse
+
+    // Focus title card — develops in on scroll-in (opacity ∝ fade)
+    const card = edge * f
+    if (emCardRef.current) emCardRef.current.fillOpacity = card
+    if (selfRef.current) selfRef.current.fillOpacity = card
+    if (focalCardRef.current) focalCardRef.current.fillOpacity = card
+    if (focalDotCardRef.current) focalDotCardRef.current.material.opacity = card
+
+    // Place the glyph as a SUFFIX after the label and keep the label+glyph pair
+    // centred: measure the rendered label width, then park both around x=0.
+    const info = playRef.current?.textRenderInfo
+    if (info && playTriRef.current) {
+      const w = info.blockBounds[2] - info.blockBounds[0]
+      const total = w + CTA_GAP + CTA_GLYPH
+      playRef.current.position.x = -total / 2
+      playTriRef.current.position.x = -total / 2 + w + CTA_GAP + CTA_GLYPH / 2
+    }
   })
 
-  const caption = useTypewriter('SELF-TAUGHT', {
-    speed: 40,
-    start: !!(center && idle),
-  })
-
-  const tagColor = center ? '#ffffff' : '#dcd9c8'
   const titleColor = center ? '#faedd2' : '#cfc6b3'
   const emColor = center ? '#c8a157' : '#9a9486'
 
@@ -104,28 +216,27 @@ export default function FilmFrame({ frame, idle, focus }) {
     ? {
         label: 11,
         title: 42,
-        em: 18,
-        tag: [-118, 92, 2],
-        meta: [118, 92, 2],
+        em: 20,
         titlePos: [-120, 54, 2],
         titleAnchorY: 'top',
-        emPos: [-118, -36, 2],
-        emAnchorY: 'top',
+        // subtitle centred in the upper cell; CTA stack sits below it
+        emPos: [0, 28, 2],
+        emAnchorX: 'center',
+        emAnchorY: 'middle',
       }
     : {
         label: 9,
         title: 28,
         em: 13,
-        tag: [-116, 88, 2],
-        meta: [116, 88, 2],
         titlePos: [-112, -30, 2],
         titleAnchorY: 'bottom',
         emPos: [-112, -50, 2],
+        emAnchorX: 'left',
         emAnchorY: 'bottom',
       }
 
   return (
-    <group>
+    <group ref={groupRef}>
       <mesh renderOrder={ro}>
         <planeGeometry args={[FW, FH]} />
         <shaderMaterial
@@ -151,32 +262,7 @@ export default function FilmFrame({ frame, idle, focus }) {
       </mesh>
 
       <Text
-        font={FONTS.dmMono400}
-        fontSize={lay.label}
-        color={tagColor}
-        anchorX="left"
-        anchorY="top"
-        letterSpacing={0.2}
-        position={lay.tag}
-        renderOrder={ro + 0.2}
-      >
-        {`${roman}  ${tag}`}
-      </Text>
-
-      <Text
-        font={FONTS.dmMono400}
-        fontSize={lay.label}
-        color="#9b9789"
-        anchorX="right"
-        anchorY="top"
-        letterSpacing={0.16}
-        position={lay.meta}
-        renderOrder={ro + 0.2}
-      >
-        {meta}
-      </Text>
-
-      <Text
+        ref={titleRef}
         font={FONTS.anton}
         fontSize={lay.title}
         color={titleColor}
@@ -184,58 +270,233 @@ export default function FilmFrame({ frame, idle, focus }) {
         anchorY={lay.titleAnchorY}
         lineHeight={0.92}
         position={lay.titlePos}
+        fillOpacity={center ? 0 : edge0}
         renderOrder={ro + 0.2}
+        depthOffset={-1}
+        material-depthTest={false}
+        material-depthWrite={false}
       >
         {title.toUpperCase()}
       </Text>
 
       <Text
+        ref={emRef}
         font={FONTS.cormorantItalic}
         fontSize={lay.em}
         color={emColor}
-        anchorX="left"
+        anchorX={lay.emAnchorX}
         anchorY={lay.emAnchorY}
         position={lay.emPos}
+        fillOpacity={edge0}
         renderOrder={ro + 0.2}
+        depthOffset={-1}
+        material-depthTest={false}
+        material-depthWrite={false}
       >
         {em}
       </Text>
 
+      {/* Sprocket header — chapter tag + years, on EVERY frame's top band (both
+          browse and, at centre, the scroll-in title card). */}
+      <Text
+        ref={tagRef}
+        font={FONTS.dmMono400}
+        fontSize={lay.label}
+        color={center ? '#efe7d6' : '#c4bfb0'}
+        anchorX="left"
+        anchorY="top"
+        letterSpacing={0.2}
+        position={[-118, 90, 2]}
+        fillOpacity={edge0}
+        renderOrder={ro + 0.2}
+        depthOffset={-1}
+        material-depthTest={false}
+        material-depthWrite={false}
+      >
+        {`${roman}  ${tag}`}
+      </Text>
+      <Text
+        ref={metaRef}
+        font={FONTS.dmMono400}
+        fontSize={lay.label}
+        color="#b7ae9b"
+        anchorX="right"
+        anchorY="top"
+        letterSpacing={0.16}
+        position={[118, 90, 2]}
+        fillOpacity={edge0}
+        renderOrder={ro + 0.2}
+        depthOffset={-1}
+        material-depthTest={false}
+        material-depthWrite={false}
+      >
+        {meta}
+      </Text>
+
       {center && (
         <>
+          {/* ── Focus title card (left-aligned) — the full FIRST LIGHT card that
+              develops in on scroll-in (opacity ∝ fade). Its tag/year header is
+              the shared sprocket header above (shown in browse and the card). ── */}
           <Text
-            font={FONTS.dmMono400}
-            fontSize={11}
-            color="#dcd9c8"
+            ref={emCardRef}
+            font={FONTS.cormorantItalic}
+            fontSize={18}
+            color="#c8a157"
             anchorX="left"
             anchorY="top"
-            letterSpacing={0.14}
-            position={[-118, -66, 2]}
+            position={[-118, -28, 2]}
+            fillOpacity={0}
             renderOrder={ro + 0.2}
+            depthOffset={-1}
+            material-depthTest={false}
+            material-depthWrite={false}
           >
-            {idle ? caption : 'PRESS PLAY'}
+            {em}
           </Text>
-          <mesh position={[-115, -92, 2]} renderOrder={ro + 0.2}>
+          {isFirstLight && (
+            <Text
+              ref={selfRef}
+              font={FONTS.dmMono400}
+              fontSize={6}
+              color="#dcd9c8"
+              anchorX="left"
+              anchorY="top"
+              letterSpacing={0.14}
+              position={[-118, -58, 2]}
+              fillOpacity={0}
+              renderOrder={ro + 0.2}
+              depthOffset={-1}
+              material-depthTest={false}
+              material-depthWrite={false}
+            >
+              {caption}
+            </Text>
+          )}
+          <mesh ref={focalDotCardRef} position={[-115, -84, 2]} renderOrder={ro + 0.2}>
             <circleGeometry args={[3, 16]} />
             <meshBasicMaterial
               color="#c8a157"
               transparent
+              opacity={0}
               depthTest={false}
+              depthWrite={false}
               toneMapped={false}
             />
           </mesh>
           <Text
+            ref={focalCardRef}
             font={FONTS.dmMono400}
             fontSize={9}
             color="#c8a157"
             anchorX="left"
             anchorY="middle"
             letterSpacing={0.25}
-            position={[-106, -92, 2]}
+            position={[-106, -84, 2]}
+            fillOpacity={0}
             renderOrder={ro + 0.2}
+            depthOffset={-1}
+            material-depthTest={false}
+            material-depthWrite={false}
           >
             FOCAL
           </Text>
+
+          {/* Call to action, inside the cell below the subtitle. FIRST LIGHT
+              enters by scrolling into Act I (SCROLL DOWN + a ▽ glyph); the other
+              chapters by the play button (PRESS PLAY + a ▶ glyph). The glyph is a
+              SUFFIX — the label + glyph are measured and centred in the fade
+              loop. Both pulse together (breathing) to read as a button. */}
+          <Text
+            ref={playRef}
+            font={FONTS.dmMono400}
+            fontSize={11}
+            color="#efe7d6"
+            anchorX="left"
+            anchorY="middle"
+            letterSpacing={0.16}
+            position={[-40, -14, 2]}
+            fillOpacity={edge0}
+            renderOrder={ro + 0.2}
+            depthOffset={-1}
+            material-depthTest={false}
+            material-depthWrite={false}
+          >
+            {isFirstLight ? 'SCROLL DOWN' : 'PRESS PLAY'}
+          </Text>
+          <mesh
+            ref={playTriRef}
+            position={[40, -14, 2]}
+            rotation={[0, 0, isFirstLight ? -Math.PI / 2 : 0]}
+            renderOrder={ro + 0.2}
+          >
+            <circleGeometry args={[6.5, 3]} />
+            <meshBasicMaterial
+              color="#efe7d6"
+              transparent
+              depthTest={false}
+              depthWrite={false}
+              toneMapped={false}
+            />
+          </mesh>
+
+          {/* FOCAL status pip, centred below the CTA */}
+          <mesh ref={focalDotRef} position={[-26, -44, 2]} renderOrder={ro + 0.2}>
+            <circleGeometry args={[3, 16]} />
+            <meshBasicMaterial
+              color="#c8a157"
+              transparent
+              depthTest={false}
+              depthWrite={false}
+              toneMapped={false}
+            />
+          </mesh>
+          <Text
+            ref={focalRef}
+            font={FONTS.dmMono400}
+            fontSize={9}
+            color="#c8a157"
+            anchorX="left"
+            anchorY="middle"
+            letterSpacing={0.25}
+            position={[-18, -44, 2]}
+            fillOpacity={edge0}
+            renderOrder={ro + 0.2}
+            depthOffset={-1}
+            material-depthTest={false}
+            material-depthWrite={false}
+          >
+            FOCAL
+          </Text>
+
+          {/* Invisible click target over the focal frame's content (browse only),
+              so tapping the reel plays it — not just the CTA. WIDTH is kept clear
+              of the flanking arrows: on a narrow (mobile) viewport the arrows sit
+              inside the frame's projected area and this mesh is nearer the camera,
+              so a full-width target would swallow arrow taps (play instead of
+              paginate). A mesh is a reliable raycast target; the room canvas above
+              is pointer-events:none so the click reaches the Hero canvas. */}
+          {onEnter && !focus && (
+            <mesh
+              position={[0, 0, 3]}
+              onClick={(e) => {
+                e.stopPropagation()
+                onEnter()
+              }}
+              onPointerOver={(e) => {
+                e.stopPropagation()
+                hovered.current = true
+                document.body.style.cursor = 'pointer'
+              }}
+              onPointerOut={() => {
+                hovered.current = false
+                document.body.style.cursor = 'auto'
+              }}
+            >
+              <planeGeometry args={[170, FH]} />
+              <meshBasicMaterial transparent opacity={0} depthTest={false} depthWrite={false} />
+            </mesh>
+          )}
         </>
       )}
     </group>

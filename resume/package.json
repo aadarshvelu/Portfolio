@@ -1,0 +1,26 @@
+{
+  "name": "resume-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+  },
+  "dependencies": {
+    "@fontsource/dm-mono": "^5",
+    "@fontsource/inter": "^5",
+    "next": "^15",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "^1",
+    "wrangler": "^4.86.0"
+  }
+}

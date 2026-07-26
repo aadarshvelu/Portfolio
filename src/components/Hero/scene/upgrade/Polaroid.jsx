@@ -1,17 +1,23 @@
 import { forwardRef, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Text } from '@react-three/drei'
+import { Text, Line } from '@react-three/drei'
 import { FONTS } from '../../../../fonts.js'
+import { UPGRADE_ENTER, PEEL_END } from '../../config.js'
+
+const LINK_DOTS = 26 // dotted underline segments beneath the Kaggle link
 
 const CREAM = '#f2e8d8'
 const DARK_CAPTION = '#2a2620'
-const GOLD = '#96722e'
-const INK = '#2a2218'
-const INK_MED = '#443828'
-const SEPIA = '#5c4e3a'
-const RULE = '#6a5a42'
-const STAMP_BG = '#d4c5a8'
+// ── The V.O. reveal card is now a DARK FILM-SLATE, so its text + rules are
+//    light-on-dark (like First Light) for legibility through the CRT. The small
+//    polaroid thumbnail stays cream — it only uses CREAM / DARK_CAPTION / GOLD. ──
+const GOLD = '#c8a157' // bright gold — accents / slug / link / year (and the parchment dot)
+const INK = '#efe6d4' // card BODY text — light cream on the slate
+const INK_MED = '#a99a7e' // muted cream — the V.O. cue line
+const SEPIA = '#b3a284' // muted tan — labels / year range on the slate
+const RULE = '#7f6c48' // dim gold rule, visible on the slate
+const STAMP_BG = '#252c37' // raised dark panel (evidence stamp) on the slate
 
 const DEG = Math.PI / 180
 const clamp01 = (x) => Math.min(1, Math.max(0, x))
@@ -77,12 +83,12 @@ float noise(vec2 p) {
 }
 void main() {
   float n = noise(vUv * 20.0) * 0.6 + noise(vUv * 44.0) * 0.4;
-  vec3 base = vec3(0.937, 0.898, 0.816);
-  vec3 warm = vec3(0.910, 0.867, 0.780);
-  vec3 col = mix(base, warm, n * 0.10);
+  vec3 base = vec3(0.070, 0.074, 0.084); // deep neutral slate — sits DARKER than the navy wall so the card reads as an object, not a cut-out
+  vec3 warm = vec3(0.100, 0.105, 0.117); // subtle grain highlight
+  vec3 col = mix(base, warm, n * 0.4);
   vec2 e = smoothstep(vec2(0.0), vec2(0.04), vUv) * smoothstep(vec2(0.0), vec2(0.04), 1.0 - vUv);
   float vig = e.x * e.y;
-  col = mix(col * 0.93, col, vig);
+  col = mix(col * 0.82, col, vig); // darker edges → soft vignette frame
   gl_FragColor = vec4(pow(col, vec3(2.2)), uOpacity);
 }
 `
@@ -104,6 +110,8 @@ const Polaroid = forwardRef(function Polaroid(
   const revealTexts = useRef([])
   const revealMeshes = useRef([])
   const dotRef = useRef()
+  const linkDots = useRef([]) // Kaggle link dotted underline
+  const linkIcon = useRef() // Kaggle link external-link arrow
   const revealRef = useRef(0)
   const cardUniforms = useMemo(() => ({ uOpacity: { value: 0 } }), [])
 
@@ -111,6 +119,14 @@ const Polaroid = forwardRef(function Polaroid(
 
   useFrame(() => {
     const sm = smoothed.current ?? 0
+    // Visibility gate — the polaroids only exist in The Upgrade (carrier dissolves
+    // at UPGRADE_ENTER; the page peels away to reveal the Roster by PEEL_END).
+    // Before the window they rest at their JSX defaults (placeholder shown, reveal
+    // hidden) which is exactly the pre-reveal look; after it they are the peeled-
+    // away page, frozen fully-revealed and occluded. Either way there is nothing
+    // to animate off-window, so skip the per-frame opacity + link-decoration pass
+    // instead of running it (×3 cards) through every other chapter.
+    if (sm < UPGRADE_ENTER - 0.06 || sm > PEEL_END + 0.03) return
     const raw = clamp01((sm - revealStart) / (revealEnd - revealStart))
     const t = smoothstep(raw)
     revealRef.current = t
@@ -126,18 +142,50 @@ const Polaroid = forwardRef(function Polaroid(
     if (dotRef.current?.material) {
       dotRef.current.material.opacity = phOp * (0.4 + 0.6 * Math.sin(Date.now() * 0.003))
     }
+
+    // Kaggle link decoration — dotted underline + arrow, measured from the link
+    // text's rendered box, faded with the reveal (rvOp).
+    const linkText = revealTexts.current[23]
+    if (vo.link && linkText?.textRenderInfo) {
+      const bb = linkText.textRenderInfo.blockBounds // [minX, minY, maxX, maxY]
+      const ax = cardW * 0.24, ay = linkY - 5.5 // the link's anchor position
+      const w = bb[2] - bb[0]
+      const uy = ay + bb[1] - smallFont * 0.28 // underline just below the text
+      for (let d = 0; d < LINK_DOTS; d++) {
+        const dot = linkDots.current[d]
+        if (!dot) continue
+        dot.position.set(ax + bb[0] + (w * d) / (LINK_DOTS - 1), uy, 0.21)
+        dot.material.opacity = rvOp
+      }
+      if (linkIcon.current) {
+        linkIcon.current.position.set(
+          ax + bb[2] + smallFont * 0.4,
+          ay + (bb[1] + bb[3]) / 2 - smallFont * 0.28,
+          0.21,
+        )
+        linkIcon.current.material.transparent = true
+        linkIcon.current.material.opacity = rvOp
+      }
+    }
   })
 
   const cardW = PHOTO * 0.92
   const cardH = PHOTO * 0.96
 
   const voLines = vo.lines.filter((l) => l.t !== undefined)
-  const lineHeight = cardH * 0.055
+  const lineHeight = cardH * 0.057
   const headerY = cardH * 0.46
   const cueY = headerY - lineHeight * 1.5
   const textStartY = cueY - lineHeight * 1.3
-  const fontSize = cardW * 0.054
+  const fontSize = cardW * 0.058
   const smallFont = fontSize * 0.72
+
+  // External-link arrow shape for the Kaggle link (same look as First Light).
+  const linkIconPts = (() => {
+    const s = smallFont * 0.9 * 0.55
+    const b = s * 0.42
+    return [[0, 0, 0], [s, s, 0], [s, b, 0], [s, s, 0], [b, s, 0]]
+  })()
 
   // Compute per-line Y positions — blank lines get half-height gaps
   const lineYs = []
@@ -154,18 +202,29 @@ const Polaroid = forwardRef(function Polaroid(
 
   // Bottom section — credential/evidence/footer anchored from narration end
   // with a minimum position so short-content cards don't leave a void
+  const hasCred = !!vo.credential?.name // has a cert-NAME row (e.g. Kaggle)
+  const showCredLabel = hasCred || !!vo.link // "Credential" heading still shows
+  // for link-only cards (e.g. AWS) — just no name row underneath it
   const credDivY = Math.min(narrationEndY - lineHeight * 1.2, -cardH * 0.15)
   const credLabelY = credDivY - lineHeight * 0.9
   const credNameY = credLabelY - lineHeight * 0.95
-  const credYearY = credLabelY
 
-  // Optional elements flow downward from credential name
-  let nextSlotY = credNameY - lineHeight * 1.0
-  const linkY = vo.link ? nextSlotY : null
-  if (vo.link) nextSlotY -= lineHeight * 1.1
+  // Optional second credential line (e.g. AWS card: AWS SA on line 1, ISO on 2).
+  const credName2Y = credNameY - lineHeight * 1.1
+  const credBottomY = hasCred
+    ? (vo.credential?.name2 ? credName2Y : credNameY)
+    : (showCredLabel ? credLabelY : credDivY)
+
+  // Optional elements flow downward from the LAST credential line — evidence
+  // panel first, then the link BELOW it (so e.g. the AWS card's Credly link
+  // sits under the certs, or right under the heading when there's no name).
+  let nextSlotY = credBottomY - lineHeight * (hasCred || showCredLabel ? 1.0 : 0.6)
 
   const evidenceY = vo.evidence ? nextSlotY - lineHeight * 0.4 : null
   if (vo.evidence) nextSlotY -= lineHeight * 2.8
+
+  const linkY = vo.link ? nextSlotY : null
+  if (vo.link) nextSlotY -= lineHeight * 1.1
 
   const footerY = Math.min(nextSlotY - lineHeight * 0.3, -cardH * 0.42)
 
@@ -281,9 +340,10 @@ const Polaroid = forwardRef(function Polaroid(
           V.O. REVEAL CARD — archive document on parchment
           ================================================================ */}
       <group position={[0, (TOTAL_H - PHOTO) / 2 - PADDING, 4]}>
-        {/* card background — archival paper with grain + vignette */}
+        {/* card background — dark film-slate filling the whole photo cell (inside
+            the polaroid frame) so no cream/parchment shows inside; the frame stays */}
         <mesh renderOrder={58}>
-          <planeGeometry args={[cardW, cardH]} />
+          <planeGeometry args={[PHOTO, PHOTO]} />
           <shaderMaterial
             vertexShader={paperVert}
             fragmentShader={cardFrag}
@@ -432,73 +492,103 @@ const Polaroid = forwardRef(function Polaroid(
           />
         </mesh>
 
-        {/* credential */}
-        <Text
-          ref={(el) => (revealTexts.current[20] = el)}
-          font={FONTS.dmMono400}
-          fontSize={smallFont}
-          color={SEPIA}
-          anchorX="left"
-          anchorY="top"
-          letterSpacing={0.32}
-          position={[-cardW * 0.42, credLabelY, 0.2]}
-          renderOrder={59}
-          fillOpacity={0}
-        >
-          Credential
-        </Text>
-        <Text
-          ref={(el) => (revealTexts.current[21] = el)}
-          font={FONTS.dmMono400}
-          fontSize={smallFont * 1.35}
-          color={INK}
-          anchorX="left"
-          anchorY="top"
-          letterSpacing={0.18}
-          maxWidth={cardW * 0.84}
-          position={[-cardW * 0.42, credNameY - 2, 0.2]}
-          renderOrder={59}
-          fillOpacity={0}
-        >
-          {vo.credential.name}
-        </Text>
-        <Text
-          ref={(el) => (revealTexts.current[22] = el)}
-          font={FONTS.dmMono400}
-          fontSize={smallFont * 1.1}
-          color={GOLD}
-          anchorX="right"
-          anchorY="top"
-          letterSpacing={0.32}
-          position={[cardW * 0.42, credYearY, 0.2]}
-          renderOrder={59}
-          fillOpacity={0}
-        >
-          {vo.credential.year}
-        </Text>
-
-        {/* link (Kaggle only) */}
-        {vo.link && (
+        {/* "Credential" heading — shows for any card with a cert name OR a
+            link (e.g. AWS: no name row, but the heading still labels the link
+            below it). Only fully absent when a card has neither. */}
+        {showCredLabel && (
           <Text
-            ref={(el) => (revealTexts.current[23] = el)}
+            ref={(el) => (revealTexts.current[20] = el)}
             font={FONTS.dmMono400}
-            fontSize={smallFont * 0.9}
-            color={GOLD}
-            anchorX="right"
+            fontSize={smallFont}
+            color={SEPIA}
+            anchorX="left"
             anchorY="top"
-            letterSpacing={0.14}
-            position={[cardW * 0.12, linkY - 5, 0.2]}
+            letterSpacing={0.32}
+            position={[-cardW * 0.42, credLabelY, 0.2]}
             renderOrder={59}
             fillOpacity={0}
-            onClick={(e) => {
-              e.stopPropagation()
-              window.open(vo.link.url, '_blank', 'noopener,noreferrer')
-            }}
-            onPointerOver={() => { document.body.style.cursor = 'pointer' }}
-            onPointerOut={() => { document.body.style.cursor = '' }}
           >
-            {vo.link.label}
+            Credential
           </Text>
+        )}
+        {hasCred && (
+          <>
+            <Text
+              ref={(el) => (revealTexts.current[21] = el)}
+              font={FONTS.dmMono400}
+              fontSize={smallFont * (vo.credential.nameSize || 1.35) - 1.5}
+              color={INK}
+              colorRanges={colorRangesFor({ t: vo.credential.name, a: vo.credential.nameA })}
+              anchorX="left"
+              anchorY="top"
+              letterSpacing={0.18}
+              maxWidth={cardW * 0.84}
+              position={[-cardW * 0.42, credNameY - 2, 0.2]}
+              renderOrder={59}
+              fillOpacity={0}
+            >
+              {vo.credential.name}
+            </Text>
+            {vo.credential.name2 && (
+              <Text
+                ref={(el) => (revealTexts.current[26] = el)}
+                font={FONTS.dmMono400}
+                fontSize={smallFont * (vo.credential.nameSize || 1.35)}
+                color={INK}
+                colorRanges={colorRangesFor({ t: vo.credential.name2, a: vo.credential.name2A })}
+                anchorX="left"
+                anchorY="top"
+                letterSpacing={0.18}
+                maxWidth={cardW * 0.84}
+                position={[-cardW * 0.42, credName2Y - 2, 0.2]}
+                renderOrder={59}
+                fillOpacity={0}
+              >
+                {vo.credential.name2}
+              </Text>
+            )}
+          </>
+        )}
+
+        {/* link (Kaggle only) — dotted underline + external-link arrow */}
+        {vo.link && (
+          <>
+            <Text
+              ref={(el) => (revealTexts.current[23] = el)}
+              font={FONTS.dmMono400}
+              fontSize={smallFont * 0.9}
+              color={GOLD}
+              anchorX="right"
+              anchorY="top"
+              letterSpacing={0.14}
+              position={[cardW * 0.24, linkY - 5.5, 0.2]}
+              renderOrder={59}
+              fillOpacity={0}
+              onClick={(e) => {
+                e.stopPropagation()
+                window.open(vo.link.url, '_blank', 'noopener,noreferrer')
+              }}
+              onPointerOver={() => { document.body.style.cursor = 'pointer' }}
+              onPointerOut={() => { document.body.style.cursor = '' }}
+            >
+              {vo.link.label}
+            </Text>
+            {Array.from({ length: LINK_DOTS }, (_, d) => (
+              <mesh key={d} ref={(el) => (linkDots.current[d] = el)} renderOrder={59}>
+                <circleGeometry args={[smallFont * 0.05, 10]} />
+                <meshBasicMaterial color={GOLD} transparent opacity={0} depthTest={false} depthWrite={false} toneMapped={false} />
+              </mesh>
+            ))}
+            <Line
+              ref={linkIcon}
+              points={linkIconPts}
+              color={GOLD}
+              lineWidth={1.6}
+              transparent
+              opacity={0}
+              renderOrder={59}
+            />
+          </>
         )}
 
         {/* evidence panel (IIM K + AWS) */}
@@ -537,20 +627,6 @@ const Polaroid = forwardRef(function Polaroid(
           </>
         )}
 
-        {/* footer */}
-        <Text
-          ref={(el) => (revealTexts.current[25] = el)}
-          font={FONTS.cormorantItalic500}
-          fontSize={fontSize * 0.85}
-          color={GOLD}
-          anchorX="right"
-          anchorY="top"
-          position={[cardW * 0.42, footerY, 0.2]}
-          renderOrder={59}
-          fillOpacity={0}
-        >
-          {vo.footer}
-        </Text>
       </group>
     </group>
   )

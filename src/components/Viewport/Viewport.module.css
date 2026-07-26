@@ -3,7 +3,13 @@
    100lvh probe and re-measures only on a real resize. Mobile browsers
    resize the visual viewport as their chrome bars show/hide on scroll;
    a fixed px keeps the canvas (and the scene) from reflowing. The vh/lvh
-   lines are fallbacks for the first paint before the JS lock runs. */
+   lines are fallbacks for the first paint before the JS lock runs.
+
+   NOTE: do NOT switch this to 100svh. svh is the height WITH the mobile
+   toolbar showing, so when the bar retracts the viewport stays short and
+   leaves a black strip along the bottom. lvh/--app-h sizes to the retracted
+   height instead, so the scene always fills the screen and merely tucks
+   under the bar while it is visible. */
 .viewport {
   position: fixed;
   top: 0;

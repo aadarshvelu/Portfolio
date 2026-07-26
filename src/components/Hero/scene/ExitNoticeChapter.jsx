@@ -25,13 +25,17 @@ const clamp01 = (x) => Math.min(1, Math.max(0, x))
 const smoothstep = (x) => x * x * (3 - 2 * x)
 
 // ── Chapter-local p thresholds ─────────────────────────────────────────────
-// Postcard sequence compressed into a tight window at the end so we don't
-// waste 20% of the chapter scroll on a single reveal. Newspaper now holds
-// through 0.88 before the backdrop starts ramping in.
-const EXIT_ENTER_P = 0.88   // backdrop + cardstock reveal begins
-const EXIT_LAND_P  = 0.93   // front content fully revealed
-const FLIP_START_P = 0.94   // brief hold (0.93→0.94) for reading
-const FLIP_END_P   = 0.98   // flip complete; 0.98→1.00 plays the clap
+// The postcard is the closing message and was flying past too fast to read
+// ("everyone is missing it"). Story3's park now ends at p=0.835 (CraftsChapter
+// KEYS) and the runway is 2000vh, so the finale gets more of both the chapter
+// budget AND physical scroll. Budget: a newspaper→note reveal 0.84→0.89, a LONG
+// reading hold 0.89→0.97 before it flips, the flip to the Contact "director
+// takes calls" back-face 0.97→0.992, then the clap 0.992→1.0. The 2000vh runway
+// keeps the flip and clap from feeling quick despite their small p-fractions.
+const EXIT_ENTER_P = 0.84   // backdrop + cardstock reveal begins (after story3 park)
+const EXIT_LAND_P  = 0.89   // front content fully revealed
+const FLIP_START_P = 0.97   // reading hold 0.89→0.97 — more scroll room to read the note before it flips
+const FLIP_END_P   = 0.992  // flip complete; 0.992→1.00 plays the clap
 
 // ── Render-order constants (see spec) ─────────────────────────────────────
 // Backdrop sits BELOW everything in the chapter but ABOVE the newspaper. The
@@ -195,9 +199,12 @@ const CONTACT_ROWS = [
   { label: 'LINKEDIN', value: 'linkedin.com/in/aadarshvelu', href: 'https://linkedin.com/in/aadarshvelu' },
   { label: 'INDIA',    value: '+91 86100 47522',             href: 'tel:+918610047522' },
   { label: 'UAE',      value: '+971 52 807 0820',            href: 'tel:+971528070820' },
+  { label: 'RÉSUMÉ',   split: true,
+    preview:  'https://resume.whoisaadar.sh',
+    download: 'https://resume.whoisaadar.sh/download' },
 ]
-const CONTACT_KICKER_LEFT   = 'REEL Nº 02'
-const CONTACT_KICKER_RIGHT  = ' · CONTACT · WHERE TO REACH HIM'
+const CONTACT_KICKER_LEFT   = 'REEL Nº 07'
+const CONTACT_KICKER_RIGHT  = '  CONTACT · WHERE TO REACH HIM'
 const CONTACT_HEADLINE_LEFT = 'The director takes'
 const CONTACT_HEADLINE_GOLD = ' calls.'
 const CONTACT_CUE = '— Two phones · one inbox · always answering.'
@@ -460,19 +467,18 @@ export default function ExitNoticeChapter({ pRef }) {
   const fsLabel    = L.fontLabelMul     ?? D.fontLabelMul
   const fsValue    = L.fontValueMul     ?? D.fontValueMul
   const fsCue      = L.fontCueMul       ?? D.fontCueMul
-  const bRowGap    = L.contactRowGapMul ?? D.contactRowGapMul
   // Arm is now a hinged plank above the slate — slate top is clean again
   const bKickerY    =  cardH / 2 - 0.10 * cardH
   const bHeadlineY  =  cardH / 2 - 0.27 * cardH
-  // Divider sits midway down the card so rows have room to fit above the cue
-  const bDividerY   =  cardH * 0.05
-  const bRowYs = [
-    bDividerY - 0.05 - 0 * bRowGap,
-    bDividerY - 0.05 - 1 * bRowGap,
-    bDividerY - 0.05 - 2 * bRowGap,
-    bDividerY - 0.05 - 3 * bRowGap,
-  ]
-  const bCueY          = -cardH / 2 + 0.10 * cardH
+  // Divider under the headline; rows fill the band down to just above the cue
+  const bDividerY   =  cardH * 0.10
+  const bCueY       = -cardH / 2 + 0.10 * cardH
+  // Contact rows (incl. the RÉSUMÉ row) fill the band between the divider and
+  // just above the cue, evenly spaced — so any row count stays clear of both.
+  const bRowTop = bDividerY - 0.05
+  const bRowBot = bCueY + 0.05
+  const bRowGap = (bRowTop - bRowBot) / Math.max(1, CONTACT_ROWS.length - 1)
+  const bRowYs  = CONTACT_ROWS.map((_, i) => bRowTop - i * bRowGap)
   const chKicker       = fsKicker * 0.604 * (1 + 0.42)
   const bKickerSplit   = leftX + 10 * chKicker
   const chHeadline     = fsHeadline * 0.43
@@ -492,14 +498,15 @@ export default function ExitNoticeChapter({ pRef }) {
   const rLine1  = useRef(), rLine2  = useRef(),  rLine3  = useRef()
   const rNote   = useRef(), rSigName = useRef(), rSigDate = useRef()
   const rRule   = useRef(), rWavy   = useRef()
-  const rCCircle = useRef(), rICircle = useRef(), rSwoosh = useRef()
+  const rCCircle = useRef(), rICircle = useRef()
   const rBKickerG = useRef(), rBKickerL = useRef()
   const rBHeadL   = useRef(), rBHeadG   = useRef()
   const rBDivider = useRef()
-  const rBLabels  = [useRef(), useRef(), useRef(), useRef()]
-  const rBValues  = [useRef(), useRef(), useRef(), useRef()]
-  const rBPips    = [useRef(), useRef(), useRef(), useRef()]
+  const rBLabels  = [useRef(), useRef(), useRef(), useRef(), useRef()]
+  const rBValues  = [useRef(), useRef(), useRef(), useRef(), useRef()]
+  const rBPips    = [useRef(), useRef(), useRef(), useRef(), useRef()]
   const rBCue     = useRef()
+  const rBPrev    = useRef(), rBSep = useRef(), rBDl = useRef() // RÉSUMÉ split links
 
   useFrame((state) => {
     const cam = state.camera
@@ -560,7 +567,6 @@ export default function ExitNoticeChapter({ pRef }) {
     setLine(rWavy, tWavy)
     setLine(rCCircle, tCircle)
     setLine(rICircle, tCircle)
-    setLine(rSwoosh, tSig)
 
     // Back-side cardstock + Contact content
     cardUniformsB.uOpacity.value = smoothstep(exitT)
@@ -595,11 +601,14 @@ export default function ExitNoticeChapter({ pRef }) {
     setText(rBHeadG,   tBack)
     setText(rBCue,     tBack)
     setLine(rBDivider, tBack)
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < CONTACT_ROWS.length; i++) {
       setText(rBLabels[i], tBack)
       setText(rBValues[i], tBack)
       if (rBPips[i].current) rBPips[i].current.material.opacity = tBack
     }
+    setText(rBPrev, tBack)
+    setText(rBSep, tBack)
+    setText(rBDl, tBack)
   })
 
   return (
@@ -790,15 +799,6 @@ export default function ExitNoticeChapter({ pRef }) {
       >
         {'Aadarsh Velu'}
       </Text>
-      {/* <Line
-        ref={rSwoosh}
-        points={swooshPts}
-        color={RED}
-        lineWidth={2.2}
-        transparent
-        opacity={0}
-        renderOrder={RO_MARK}
-      /> */}
       <Text
         ref={rSigDate}
         font={FONTS.dmMono400}
@@ -905,6 +905,18 @@ export default function ExitNoticeChapter({ pRef }) {
       {CONTACT_ROWS.map((row, i) => {
         const rowY = bRowYs[i]
         const pipSize = fsValue * 0.30
+        // Split "Preview / Download" layout — right-aligned to rightX. Courier
+        // Prime is monospace, so char advance ≈ 0.6·em lets us place the parts.
+        const charW = fsValue * 0.6
+        const sw1 = 'Preview'.length * charW
+        const swS = ' / '.length * charW
+        const sw2 = 'Download'.length * charW
+        const splitStartX = rightX - (sw1 + swS + sw2)
+        const linkProps = (href) => ({
+          onClick: (e) => { e.stopPropagation(); window.open(href, '_blank', 'noopener,noreferrer') },
+          onPointerOver: (e) => { e.stopPropagation(); document.body.style.cursor = 'pointer' },
+          onPointerOut: (e) => { e.stopPropagation(); document.body.style.cursor = '' },
+        })
         return (
           <Fragment key={row.label}>
             <Text ref={rBLabels[i]}
@@ -920,19 +932,42 @@ export default function ExitNoticeChapter({ pRef }) {
               <circleGeometry args={[pipSize, 16]} />
               <meshBasicMaterial color={WARM} transparent depthTest={false} depthWrite={false} opacity={0} />
             </mesh>
-            <Text ref={rBValues[i]}
-              font={FONTS.courierPrimeBold} fontSize={fsValue} color={CLAP_INK}
-              anchorX="right" anchorY="middle"
-              fillOpacity={0} renderOrder={RO_TEXT}
-              position={[rightX, rowY, 0.008]}
-              onClick={(e) => {
-                e.stopPropagation()
-                if (row.href) window.open(row.href, row.href.startsWith('http') ? '_blank' : '_self')
-              }}
-              onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer' }}
-              onPointerOut ={(e) => { e.stopPropagation(); document.body.style.cursor = '' }}>
-              {row.value}
-            </Text>
+            {row.split ? (
+              <>
+                <Text ref={rBPrev}
+                  font={FONTS.courierPrimeBold} fontSize={fsValue} color={GOLD}
+                  anchorX="left" anchorY="middle" fillOpacity={0} renderOrder={RO_TEXT}
+                  position={[splitStartX, rowY, 0.008]} {...linkProps(row.preview)}>
+                  Preview
+                </Text>
+                <Text ref={rBSep}
+                  font={FONTS.courierPrimeBold} fontSize={fsValue} color={CLAP_INK_FADE}
+                  anchorX="left" anchorY="middle" fillOpacity={0} renderOrder={RO_TEXT}
+                  position={[splitStartX + sw1, rowY, 0.008]}>
+                  {' / '}
+                </Text>
+                <Text ref={rBDl}
+                  font={FONTS.courierPrimeBold} fontSize={fsValue} color={GOLD}
+                  anchorX="left" anchorY="middle" fillOpacity={0} renderOrder={RO_TEXT}
+                  position={[splitStartX + sw1 + swS, rowY, 0.008]} {...linkProps(row.download)}>
+                  Download
+                </Text>
+              </>
+            ) : (
+              <Text ref={rBValues[i]}
+                font={FONTS.courierPrimeBold} fontSize={fsValue} color={row.gold ? GOLD : CLAP_INK}
+                anchorX="right" anchorY="middle"
+                fillOpacity={0} renderOrder={RO_TEXT}
+                position={[rightX, rowY, 0.008]}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (row.href) window.open(row.href, (row.href.startsWith('http') || row.href.startsWith('/')) ? '_blank' : '_self')
+                }}
+                onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer' }}
+                onPointerOut ={(e) => { e.stopPropagation(); document.body.style.cursor = '' }}>
+                {row.value}
+              </Text>
+            )}
           </Fragment>
         )
       })}

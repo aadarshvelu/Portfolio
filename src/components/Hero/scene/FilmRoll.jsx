@@ -1,20 +1,22 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import gsap from 'gsap'
 import { useLayout } from '../breakpoint.js'
 import FilmFrame, { FRAMES } from './FilmFrame.jsx'
+import { SPREAD, DEPTH, TILT, MARGIN, wrap } from './reelGeometry.js'
 
-const DEG = Math.PI / 180
-const SPREAD = 16 * DEG // per-frame fan angle
-const DEPTH = 920 // cylinder radius
-const TILT = -7 * DEG // roll tilt
-
-export default function FilmRoll({ on, idle, frameMarker, focus }) {
+export default function FilmRoll({ on, idle, frameMarker, focus, carouselOffset = 0, onEnter, smoothed, onSettled }) {
   const { filmRoll } = useLayout()
   const { y: rollY, scale, rise } = filmRoll
 
   const roll = useRef()
   const idleOn = useRef(false)
+  const baseRotY = useRef(0)
+  const animating = useRef(false) // reel is mid-rotation — suppress idle sway
+  // Which chapter currently sits at centre (slot 0). Snap-back carousel: GSAP
+  // rotates the roll one step to reveal the neighbour, then `committed` catches
+  // up and the rotation resets to 0 — infinite spin with no accumulating angle.
+  const [committed, setCommitted] = useState(0)
 
   useEffect(() => {
     idleOn.current = idle
@@ -31,31 +33,73 @@ export default function FilmRoll({ on, idle, frameMarker, focus }) {
     }
   }, [on, rise])
 
-  // idle: slow drift sway
+  // carousel: rotate toward the requested offset, then commit + reset.
+  useEffect(() => {
+    const delta = carouselOffset - committed
+    // Nothing to do only if we're also already settled. If a rotation is still
+    // in flight (e.g. you scrolled mid-click and retuned to 0), fall through so
+    // the new gsap tween overwrites the stale one and lands on the right frame.
+    if (delta === 0 && !animating.current) return
+    animating.current = true
+    gsap.to(baseRotY, {
+      current: delta * SPREAD,
+      duration: 0.7,
+      ease: 'power2.inOut',
+      overwrite: true,
+      onComplete: () => {
+        baseRotY.current = 0
+        setCommitted(carouselOffset)
+        animating.current = false
+        if (onSettled) onSettled()
+      },
+    })
+  }, [carouselOffset, committed, onSettled])
+
+  // roll rotation = carousel base + a slow idle drift sway (browse only; not
+  // while a rotation/retune is in flight, so the spin stays clean).
   useFrame((state) => {
-    if (!roll.current || !idleOn.current) return
+    if (!roll.current) return
     const t = state.clock.elapsedTime
-    roll.current.rotation.y = Math.sin(t * 0.45) * 0.024
-    roll.current.position.x = Math.sin(t * 0.45) * -6
+    const drift = idleOn.current && !focus && !animating.current
+    const sway = drift ? Math.sin(t * 0.45) * 0.024 : 0
+    roll.current.rotation.y = baseRotY.current + sway
+    roll.current.position.x = drift ? Math.sin(t * 0.45) * -6 : 0
   })
 
   return (
     <group position={[0, rollY, 0]} scale={scale}>
       <group ref={roll} position={[0, -rise, 0]} rotation={[TILT, 0, 0]}>
-        {FRAMES.map((f) => (
-          <group
-            key={f.i}
-            rotation={[0, -f.i * SPREAD, 0]}
-            visible={f.i === 0 || !focus}
-          >
+        {Array.from({ length: MARGIN * 2 + 1 }, (_, k) => {
+          const s = k - MARGIN // slot: -MARGIN .. +MARGIN
+          const frame = FRAMES[wrap(s + committed, FRAMES.length)]
+          const isCenter = s === 0
+          // Every slot is mounted; FilmFrame fades + culls itself each frame by
+          // its LIVE rotated distance (baseRotY), so a frame swinging toward the
+          // edge during a paginate fades as it goes instead of glowing there.
+          return (
             <group
-              position={[0, 0, DEPTH]}
-              ref={f.i === 0 ? frameMarker : undefined}
+              key={s}
+              rotation={[0, -s * SPREAD, 0]}
+              visible={isCenter || !focus}
             >
-              <FilmFrame frame={f} idle={idle} focus={focus} />
+              <group
+                position={[0, 0, DEPTH]}
+                ref={isCenter ? frameMarker : undefined}
+              >
+                <FilmFrame
+                  frame={frame}
+                  idle={idle}
+                  focus={focus}
+                  center={isCenter}
+                  slot={s}
+                  baseRotY={baseRotY}
+                  onEnter={isCenter ? onEnter : undefined}
+                  smoothed={isCenter ? smoothed : undefined}
+                />
+              </group>
             </group>
-          </group>
-        ))}
+          )
+        })}
       </group>
     </group>
   )

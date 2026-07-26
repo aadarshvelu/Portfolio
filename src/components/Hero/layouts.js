@@ -10,10 +10,12 @@ export const LAYOUTS = {
     design: { w: 1920, h: 1080 },
     starfield: { count: 180 },
     shootingStar: { count: 7, len: 120, thick: 2.4 },
-    moon: { x: 550, y: 333.6, w: 560 },
-    clouds: { x: 390, y: 215, scale: 1 },
-    title: { x: 0, y: 145, w: 1050 },
-    filmRoll: { y: -216, scale: 1, rise: 700, spread: 16, visibleFrames: 5 },
+    moon: { x: 750, y: 333.6, w: 560 },
+    clouds: { x: 690, y: 300, scale: .6 },
+    title: { x: 0, y: 270, w: 1150 },
+    filmRoll: { y: -135, scale: .95, rise: 900, spread: 16, visibleFrames: 5 },
+    // Carousel prev/next controls, flanking the reel (world units from centre).
+    arrows: { x: 844, y: -150 },
     chrome: {
       cornerX: 900,
       topY: 412,
@@ -39,7 +41,10 @@ export const LAYOUTS = {
       maxWidth: 195,
       anchorX: 'left',
       laneTop: 0.05,
-      laneBot: 0.95,
+      // Bottom of the reading drum. Kept off the very bottom (was 0.95) so the
+      // lowest fading line clears the scroll cue + CRT vignette on short 16:10
+      // laptop viewports (MacBook 13"), where coverFov crops top/bottom.
+      laneBot: 0.86,
     },
     // Confetti celebration scale (relative to desktop) + reel-transition card.
     confetti: { scale: 1 },
@@ -74,6 +79,11 @@ export const LAYOUTS = {
     peel: {
       curlRadiusFrac: 0.08, peelDist: 150, overscan: 1.05,
       titleSize: 18, subSize: 6, titleY: 12, subY: -12,
+      // The Roster (Chapter III) reel-road. k = type/HUD scale (fonts + row
+      // spacing ×k); seg/amp/roadY = wave geometry; beacon = reel size ×;
+      // stars = backdrop star count. Portrait bumps k/amp/beacon so the
+      // width-relative layout stays legible on a narrow screen.
+      roster: { k: 1.0, seg: 26, amp: 5, roadY: 6, beacon: 1.0, stars: 70 },
       // The Crafts chapter — desktop landscape: two-column layout (figure left,
       // prose right). All positions in paper-local design units (1 du = 1% of
       // paper width). Paper is 100du × paperH; +y up, x centred at 0.
@@ -124,10 +134,11 @@ export const LAYOUTS = {
     design: { w: 820, h: 1180 },
     starfield: { count: 130 },
     shootingStar: { count: 5, len: 70, thick: 2.0 },
-    moon: { x: 350, y: 250, w: 560 },
-    clouds: { x: 200, y: 200, scale: 0.6 },
-    title: { x: 10, y: 35, w: 575 },
-    filmRoll: { y: -200, scale: 0.92, rise: 520, spread: 16, visibleFrames: 5 },
+    moon: { x: 380, y: 250, w: 560 },
+    clouds: { x: 300, y: 200, scale: 0.6 },
+    title: { x: 10, y: 125, w: 1275 },
+    filmRoll: { y: -180, scale: 0.92, rise: 520, spread: 16, visibleFrames: 5 },
+    arrows: { x: 300, y: -275 },
     chrome: {
       cornerX: 352,
       topY: 540,
@@ -176,6 +187,7 @@ export const LAYOUTS = {
     peel: {
       curlRadiusFrac: 0.08, peelDist: 150, overscan: 1.05,
       titleSize: 8, subSize: 2.8, titleY: 6, subY: -6,
+      roster: { k: 1.5, seg: 30, amp: 9, roadY: 4, beacon: 1.4, stars: 90 },
       // Tablet portrait — stacked layout: figure above body, both centred.
       // Paper extended to 300du (vs 260 desktop) so taller stacked articles
       // fit. Higher s_park because portrait viewport is taller than wide.
@@ -227,8 +239,9 @@ export const LAYOUTS = {
     shootingStar: { count: 4, len: 44, thick: 1.8 },
     moon: { x: 185, y: 150, w: 532 },
     clouds: { x: 20, y: 90, scale: 0.3 },
-    title: { x: 5, y: 12, w: 305 },
-    filmRoll: { y: -180, scale: 0.75, rise: 420, spread: 6, visibleFrames: 3 },
+    title: { x: 5, y: 110, w: 900 },
+    filmRoll: { y: -160, scale: 0.75, rise: 420, spread: 6, visibleFrames: 3 },
+    arrows: { x: 150, y: -150 },
     chrome: {
       cornerX: 188,
       topY: 422,
@@ -277,6 +290,7 @@ export const LAYOUTS = {
     peel: {
       curlRadiusFrac: 0.08, peelDist: 150, overscan: 1.05,
       titleSize: 4.5, subSize: 1.6, titleY: 3, subY: -3,
+      roster: { k: 1.95, seg: 32, amp: 12, roadY: 3, beacon: 1.65, stars: 90 },
       // Mobile portrait — narrowest column. Stacked, larger relative font
       // sizes for legibility. Paper extended to 300du; positions match the
       // tablet portrait so the layout reads the same shape on every

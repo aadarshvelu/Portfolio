@@ -21,6 +21,8 @@ const SCALE_IN = 0.05 // cp fraction over which a piece scales up from the cone
 const HEAT_SPAN = 0.32 // cp range the burst stays glowing white-hot
 const GLOW_SPAN = 0.35 // cp range of the soft gold bloom pulse
 const SPRAY = 1.1 // spread of the spray fan around the popper's aim — wide
+const CONE_READY = 0.05 // scroll span the popper rises into view (at rest) before it fires
+const CONE_PUNCH = 0.07 // cp span of the recoil kick when it fires
 const CONE_R = 7 // popper-cone mouth radius
 const CONE_H = 18 // popper-cone length
 const MOUTH_OFFX = 13.5 // cone sits just past the end of the line
@@ -68,7 +70,7 @@ export default function Confetti({ smoothed, coneAnchor }) {
   const film = useMemo(() => Array.from({ length: FILM_COUNT }, makeParticle), [])
   const dummy = useMemo(() => new THREE.Object3D(), [])
   const mouth = useMemo(() => new THREE.Vector3(), [])
-  const lastCp = useRef(-1)
+  const lastActive = useRef(false)
 
   // popper aim — up and out into the open space, away from the text
   const aim = useMemo(
@@ -179,9 +181,19 @@ export default function Confetti({ smoothed, coneAnchor }) {
   useFrame(() => {
     const sm = smoothed.current ?? 0
     const cp = clamp01((sm - CELEB_START) / (CELEB_END - CELEB_START))
-    // idle when fully before the window (one final write settles to scale 0)
-    if (cp === 0 && lastCp.current === 0) return
-    lastCp.current = cp
+    // The popper rises into view (at rest) over the CONE_READY window just before
+    // the trigger, then fires at CELEB_START. `ready` = 0→1 over that window,
+    // stays 1 through the burst.
+    const ready = smoothstep(clamp01((sm - (CELEB_START - CONE_READY)) / CONE_READY))
+    // idle only when fully before the ready window (one final settling write)
+    const active = cp > 0 || ready > 0
+    // Pieces exist only from the burst onward. Hide them otherwise so the
+    // not-yet-placed instances don't sit at the world origin (screen centre) —
+    // that was the stray dark "chip" visible in First Light before the pop.
+    if (foilRef.current) foilRef.current.visible = cp > 0
+    if (filmRef.current) filmRef.current.visible = cp > 0
+    if (!active && !lastActive.current) return
+    lastActive.current = active
 
     // breakpoint scale — the whole celebration grows on portrait so it stays
     // proportionate to the larger portrait text
@@ -195,7 +207,8 @@ export default function Confetti({ smoothed, coneAnchor }) {
     // cp drives a virtual trajectory time — deterministic, fully reversible
     const tau = cp * SPAN
     const sIn = smoothstep(clamp01(cp / SCALE_IN))
-    const heat = 1 - smoothstep(clamp01(cp / HEAT_SPAN))
+    // white-hot only AT the burst — the ready popper sits at rest (striped)
+    const heat = cp > 0 ? 1 - smoothstep(clamp01(cp / HEAT_SPAN)) : 0
 
     const place = (list, mesh) => {
       if (!mesh) return
@@ -229,13 +242,17 @@ export default function Confetti({ smoothed, coneAnchor }) {
     if (foilRef.current) foilRef.current.material.color.setRGB(hr, hg, hb)
     if (filmRef.current) filmRef.current.material.color.setRGB(hr, hg, hb)
 
-    // the popper cone
+    // the popper cone — rises into view (ready) by "startup", recoil-kicks as it
+    // fires, then holds while the confetti pours
     if (coneRef.current) {
-      coneRef.current.visible = sIn > 0.001
+      const punch =
+        cp > 0 && cp < CONE_PUNCH ? Math.sin((cp / CONE_PUNCH) * Math.PI) * 0.28 : 0
+      const cs = ready * (1 + punch) * S
+      coneRef.current.visible = cs > 0.001
       coneRef.current.position.copy(mouth)
       coneRef.current.quaternion.copy(coneQuat)
-      coneRef.current.scale.setScalar(sIn * S)
-      // white at rest so the striped texture shows; white-hot at the burst
+      coneRef.current.scale.setScalar(cs)
+      // striped at rest; white-hot at the burst
       coneRef.current.material.color.setRGB(
         lerp(1, 2.3, heat),
         lerp(1, 1.95, heat),
@@ -264,6 +281,7 @@ export default function Confetti({ smoothed, coneAnchor }) {
         ref={foilRef}
         args={[undefined, undefined, FOIL_COUNT]}
         frustumCulled={false}
+        visible={false}
       >
         <planeGeometry args={[8, 5]} />
         <meshBasicMaterial toneMapped={false} side={THREE.DoubleSide} />
@@ -273,6 +291,7 @@ export default function Confetti({ smoothed, coneAnchor }) {
         ref={filmRef}
         args={[undefined, undefined, FILM_COUNT]}
         frustumCulled={false}
+        visible={false}
       >
         <planeGeometry args={[7, 10.5]} />
         <meshBasicMaterial

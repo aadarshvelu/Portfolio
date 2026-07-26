@@ -26,14 +26,16 @@ import Moon from './scene/Moon.jsx'
 import Clouds from './scene/Clouds.jsx'
 import Title from './scene/Title.jsx'
 import FilmRoll from './scene/FilmRoll.jsx'
+import { FRAMES } from './scene/FilmFrame.jsx'
+import CarouselArrows from './scene/CarouselArrows.jsx'
 import Chrome from './scene/Chrome.jsx'
-import ScrollPrompt from './scene/ScrollPrompt.jsx'
 import BootOverlay from './scene/BootOverlay.jsx'
 import OriginBeat from './scene/OriginBeat.jsx'
 import Confetti from './scene/Confetti.jsx'
 import ReelTransition from './scene/ReelTransition.jsx'
 import UpgradeScene from './scene/upgrade/UpgradeScene.jsx'
 import ChapterPeel from './scene/ChapterPeel.jsx'
+import RosterChapter from './scene/RosterChapter.jsx'
 import CraftsChapter from './scene/CraftsChapter.jsx'
 
 const INITIAL = {
@@ -53,7 +55,11 @@ const MAX_TILT = 0.02
 const TILT_EASE = 0.02
 const ZOOM = 1.01
 
-const SCROLL_SMOOTH = 0.1
+// Scroll-smoothing time constant, in SECONDS. Frame-rate-independent: the catch-
+// up per unit of time is identical whether the device runs at 30/60/120 Hz, so
+// scrolling feels the same everywhere. 0.158s reproduces the old 0.1-per-frame
+// feel at 60fps (0.9 = e^(-(1/60)/0.158)), so desktop is unchanged.
+const SMOOTH_TAU = 0.158
 const clamp01 = (x) => Math.min(1, Math.max(0, x))
 const smoothstep = (x) => x * x * (3 - 2 * x)
 
@@ -63,7 +69,7 @@ const FRAME_CONTENT_LEFT = -116
 
 const DEG = Math.PI / 180
 
-export default function Scene({ progressRef }) {
+export default function Scene({ progressRef, carouselOffset = 0, onPrev, onNext, onEnter, onReelSettled }) {
   const [phase, setPhases] = useState(INITIAL)
   const setPhase = useCallback(
     (key, value) => setPhases((p) => ({ ...p, [key]: value })),
@@ -71,6 +77,10 @@ export default function Scene({ progressRef }) {
   )
   useBootSequence({ setPhase })
   const { park, filmRoll, upgrade } = useLayout()
+
+  // The focused (centred) carousel chapter drives the big broadcast title.
+  const focusedChapter =
+    FRAMES[((carouselOffset % FRAMES.length) + FRAMES.length) % FRAMES.length]
 
   const tilt = useRef()
   const frameMarker = useRef()
@@ -92,7 +102,7 @@ export default function Scene({ progressRef }) {
   const polaroidPos = useMemo(() => new THREE.Vector3(), [])
   const polaroidScale = useMemo(() => new THREE.Vector3(), [])
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const g = tilt.current
     if (g) {
       const targetX = -state.pointer.y * MAX_TILT
@@ -102,7 +112,10 @@ export default function Scene({ progressRef }) {
     }
 
     const raw = progressRef?.current ?? 0
-    smoothed.current += (raw - smoothed.current) * SCROLL_SMOOTH
+    // Frame-rate-independent exponential smoothing (see SMOOTH_TAU). dt is
+    // clamped so a post-stall frame eases in instead of snapping.
+    const dt = Math.min(delta, 0.1)
+    smoothed.current += (raw - smoothed.current) * (1 - Math.exp(-dt / SMOOTH_TAU))
 
     // Act I declutter
     if (!decluttered.current && smoothed.current > 0.038) {
@@ -262,16 +275,24 @@ export default function Scene({ progressRef }) {
           <ShootingStar on={phase.sky} />
           <Moon on={phase.moon} />
           <Clouds on={phase.moon} />
-          <Title on={phase.title} />
+          <Title on={phase.title} chapter={focusedChapter} />
           <FilmRoll
             on={phase.film}
             idle={phase.idle}
             frameMarker={frameMarker}
             focus={phase.focus}
+            carouselOffset={carouselOffset}
+            onEnter={onEnter}
+            smoothed={smoothed}
+            onSettled={onReelSettled}
+          />
+          <CarouselArrows
+            show={phase.idle && !phase.focus}
+            onPrev={onPrev}
+            onNext={onNext}
           />
           <Chrome on={phase.chrome} />
-          <ScrollPrompt on={phase.prompt} />
-          <BootOverlay bootLine={phase.bootLine} maskGone={phase.maskGone} />
+          <BootOverlay maskGone={phase.maskGone} />
         </group>
 
         <OriginBeat
@@ -290,6 +311,7 @@ export default function Scene({ progressRef }) {
       </group>
 
       <ChapterPeel smoothed={smoothed} start={PEEL_START} end={PEEL_END} capturedRef={peelCapturedRef} reelWrapRef={reelWrapRef}>
+        <RosterChapter smoothed={smoothed} />
         <CraftsChapter smoothed={smoothed} />
       </ChapterPeel>
 

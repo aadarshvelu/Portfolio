@@ -1,0 +1,154 @@
+/* Academy-leader countdown overlay — a full-screen filmic cut that covers the
+   jump to a chapter. Portalled to <body> above every layer (room included). */
+
+.cd-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 46%, #10151f 0%, #05070c 60%, #010204 100%);
+  overflow: hidden;
+  animation: cd-in 0.18s ease-out both;
+  cursor: default;
+}
+@keyframes cd-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.cd-overlay.cd-out {
+  animation: cd-out 0.34s ease-in forwards;
+}
+@keyframes cd-out {
+  to { opacity: 0; }
+}
+
+/* faint moving film grain */
+.cd-grain {
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: cd-grain 0.5s steps(4) infinite;
+}
+@keyframes cd-grain {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-3%, 2%); }
+  50% { transform: translate(2%, -2%); }
+  75% { transform: translate(-2%, -3%); }
+  100% { transform: translate(2%, 2%); }
+}
+
+/* the leader dial */
+.cd-leader {
+  position: relative;
+  width: min(62vmin, 460px);
+  height: min(62vmin, 460px);
+  /* whole dial flickers subtly like a projector gate */
+  animation: cd-flicker 3.6s steps(1) infinite;
+}
+@keyframes cd-flicker {
+  0%, 7%, 9%, 61%, 63%, 100% { opacity: 1; }
+  8% { opacity: 0.82; }
+  62% { opacity: 0.88; }
+}
+
+.cd-dial {
+  position: absolute;
+  inset: 0;
+}
+.cd-ring {
+  fill: none;
+  stroke: rgba(244, 234, 216, 0.34);
+  stroke-width: 0.7;
+}
+.cd-cross {
+  stroke: rgba(244, 234, 216, 0.22);
+  stroke-width: 0.5;
+}
+/* the sweeping hand — one full revolution per count (0.46s) */
+.cd-sweep {
+  transform-origin: 100px 100px;
+  animation: cd-sweep 0.46s linear infinite;
+}
+@keyframes cd-sweep {
+  to { transform: rotate(360deg); }
+}
+.cd-sweep-line {
+  stroke: rgba(200, 161, 87, 0.85);
+  stroke-width: 1.4;
+}
+/* wedge trailing the hand */
+.cd-wedge {
+  fill: rgba(200, 161, 87, 0.10);
+  transform-origin: 100px 100px;
+  animation: cd-sweep 0.46s linear infinite;
+}
+
+/* the big number */
+.cd-num {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: "Anton", "Arial Narrow", system-ui, sans-serif;
+  font-weight: 400;
+  font-size: min(30vmin, 220px);
+  line-height: 1;
+  color: #f6ecd2;
+  text-shadow:
+    -2px 0 rgba(255, 49, 66, 0.5), 2px 0 rgba(47, 210, 255, 0.5),
+    0 0 26px rgba(200, 161, 87, 0.5), 0 0 60px rgba(200, 161, 87, 0.28);
+  transform: scaleY(1.16);
+}
+.cd-num span {
+  display: inline-block;
+  animation: cd-pop 0.46s ease-out;
+}
+@keyframes cd-pop {
+  0% { transform: scale(1.35); opacity: 0; }
+  22% { opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* now-showing label */
+.cd-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12%;
+  text-align: center;
+  font-family: "DM Mono", ui-monospace, "Courier New", monospace;
+  font-size: clamp(11px, 1.5vw, 15px);
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  color: rgba(244, 234, 216, 0.62);
+}
+.cd-label b {
+  color: #c8a157;
+  font-weight: 400;
+}
+
+/* white flash at resolve */
+.cd-flash {
+  position: absolute;
+  inset: 0;
+  background: #f6ecd2;
+  opacity: 0;
+  pointer-events: none;
+}
+.cd-flash.on {
+  animation: cd-flash 0.36s ease-out forwards;
+}
+@keyframes cd-flash {
+  0% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-sweep, .cd-wedge, .cd-grain, .cd-leader { animation: none; }
+}
