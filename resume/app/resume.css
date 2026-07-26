@@ -10,7 +10,7 @@
 :root {
   --a4-w: 210mm;
   --a4-h: 297mm;
-  --sheet-pad: 12mm;      /* the real page margin */
+  --sheet-pad: 9mm;      /* the real page margin */
   --ink: #111;
   --muted: #444;
   --rule: #111;
@@ -555,7 +555,7 @@ html, body { margin: 0; padding: 0; }
 .skills {
   margin: 2px 0 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.15fr 1fr;
   column-gap: 22px;
   row-gap: 2px;
 }
