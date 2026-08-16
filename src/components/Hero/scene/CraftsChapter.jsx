@@ -465,7 +465,7 @@ const STORIES = [
     staff: 'BUILT WITH — React · Node.js · AI / LLM · Video',
     figLabel: 'FIG. 03 · HIREHOUSE',
     fig: '/assets/fig_3.png',
-    url: 'https://hirehouse.acumatic.co',
+    url: 'https://hirehouse.xyz',
     name: 'HIREHOUSE',
   },
 ]

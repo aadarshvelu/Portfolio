@@ -12,7 +12,7 @@ const resumeData = {
     { text: "tanat.app", href: "https://tanat.app" },
     { text: "deploy.finance", href: "https://deploy.finance" },
     { text: "Hourglass", href: "https://hourglass.acumatic.co" },
-    { text: "HireHouse", href: "https://hirehouse.acumatic.co" },
+    { text: "HireHouse", href: "https://hirehouse.xyz" },
   ],
 
   // Machine-readable context for systems that parse the resume (LLMs,
@@ -106,7 +106,7 @@ const resumeData = {
     },
     {
       name: "Hirehouse",
-      link: "https://hirehouse.acumatic.co",
+      link: "https://hirehouse.xyz",
       tech: "Next.js, GoLang, Python, Firebase, Firebase Scheduler, GCP - CloudRun, Gemini 2.0 Flash",
       blurb:
         "A chess-inspired hiring system that filters candidates through resume " +

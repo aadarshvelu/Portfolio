@@ -53,12 +53,12 @@ const all_roles = [
     b3: 'Built a human-in-the-loop portal to label data for fine-tuning.',
     tools: 'GoLang · React.js · Python · Gemini · Playwright · AWS · GCP' },
   { num: '05', year: 'NOW', dates: 'NOV 2025 — PRESENT', title: 'Solutions Architect', company: 'Elyts',
-    b1: 'Managed End-to-end system design, infra & payments.',
+    b1: 'Managed End-to-end system design, MCP Apps, infra & payments.',
     b2: 'Developed AI Tools (Hourglass · HireHouse) — to manage my day-to-day problems.',
     b3: 'Shipped Web3 rails — swap · bridge · on/off-ramp — via an MCP app.',
     links: [
-      { t: 'Hourglass', url: 'https://hourglass.elyts.tech' },
-      { t: 'HireHouse', url: 'https://hirehouse.elyts.tech' },
+      { t: 'Hourglass', url: 'https://hourglass.acumatic.co' },
+      { t: 'HireHouse', url: 'https://hirehouse.xyz' },
       { t: 'tanat.app', url: 'https://tanat.app' },
       { t: 'deploy.finance', url: 'https://deploy.finance' },
     ],
@@ -84,8 +84,7 @@ const ROLES = enable_ix ? all_roles : alter_roles
 // visible glyph, ✦). troika's blockBounds trims TRAILING whitespace only, so a
 // trailing-gap string would measure short and the two-copy marquee would hiccup
 // at every wrap. Leading gap → measured width = exactly 2× one copy → seamless.
-const HIGHLIGHT = `      ★ ~80% HIRING NOISE REMOVED   ✦   INTERNAL AI SYSTEMS ADOPTED COMPANY-WIDE   ${enable_ix ? "✦   MULTI-REGION LMS · UK · USA · EUROPE" : ""}   ✦   REUSABLE MODULES THAT WON PARTNERS   ✦   END-TO-END SYSTEM DESIGN & PAYMENTS   ✦`
-
+const HIGHLIGHT = `      ★ ~80% HIRING NOISE REDUCED   ✦   AI DECISION TIME: 13.5s → 5s   ✦   INTERNAL AI SYSTEMS ADOPTED COMPANY-WIDE   ✦   AI PRODUCTS COMMERCIALIZED   ✦   MCP APP · 10K+ REQUESTS / MONTH   ✦`
 const N = ROLES.length
 const TL_X0 = -40 // timeline rail extent (fixed — halfW is constant across bp)
 const TL_W = 80
