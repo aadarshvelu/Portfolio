@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback, useEffect, useRef } from "react";
+import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -10,6 +10,8 @@ import { useDeviceType } from "./config/deviceUtils";
 import { TRANSITION_CONFIG } from "./config/transitionConfig";
 import { DEBUG_TRANSITION } from "./config/debugTransitionConfig";
 import { useAdaptiveDpr, AdaptiveDprMonitor } from "../perf/AdaptiveDpr.jsx";
+import BurnReveal, { BURN_MASK_URL } from "./BurnReveal";
+import Magnifier, { LENS_R } from "./Magnifier";
 import "./styles.css";
 
 useGLTF.preload(ASSET_URLS.lamp);
@@ -72,6 +74,22 @@ export default function ConceptIntro({ introPx }) {
   const hintRef = useRef(null);
   const splashRef = useRef(null);
   const blockRef = useRef(null); // blocks Hero clicks while the room covers it
+  const roomMaskedRef = useRef(null); // holds the burn mask on the room layer
+  const glowRef = useRef(null); // burn edge glow — faded with vis*reveal below
+
+  // Burn position driven by the <Magnifier/> widget. Initialised to the
+// magnifier's home anchor (bottom-right) so the sneak-peak burn is visible
+// from frame zero — the user lands on the page and the Hero is already
+// peeking through the lens at the corner. The Magnifier then updates this
+// on mousedown/move/up.
+function getBurnHome() {
+  if (typeof window === "undefined") return { x: 0, y: 0 }
+  return {
+    x: Math.max(LENS_R + 110, window.innerWidth - LENS_R - 60),
+    y: Math.max(LENS_R + 110, window.innerHeight - LENS_R - 60),
+  }
+}
+const [burnPos, setBurnPos] = useState(getBurnHome);
   const dbgRef = useRef(null);
   const introPxRef = useRef(introPx);
   introPxRef.current = introPx;
@@ -158,6 +176,11 @@ export default function ConceptIntro({ introPx }) {
       if (fxRef.current) fxRef.current.style.opacity = String(eff);
       if (hintRef.current)
         hintRef.current.style.opacity = String(Math.max(0, 0.9 - p * 6) * reveal);
+      // Burn glow follows the same vis*reveal curve so it only "burns" while
+      // the room is actually on screen. Boosted slightly (clamped to 1) so a
+      // faint room fade still shows a visible edge.
+      if (glowRef.current)
+        glowRef.current.style.opacity = String(Math.min(1, eff * 1.15));
       // Black splash covers everything (Hero's dark-blue night sky included)
       // until the room signals ready, then fades in inverse of `reveal`.
       if (splashRef.current) {
@@ -179,69 +202,105 @@ export default function ConceptIntro({ introPx }) {
       className="concept-intro"
       style={{ position: "fixed", inset: 0, zIndex: 10, pointerEvents: "none" }}
     >
-      <div ref={canvasWrap} className="concept-canvas" style={{ opacity: 0 }}>
-        {/* NOTE: intentionally NOT keyed on `device`. Keying would remount the
-            whole Canvas on a breakpoint crossing (e.g. phone rotation), which
-            resets Scene's smoothed camera phase to 0 → the dolly snaps back to
-            the room-start shot mid-scroll, and the anti-flash splash can't
-            re-arm. dpr / shadows type / camera path / env / dust all update
-            LIVE via props; only gl.antialias and the shadow-map size are fixed
-            at first mount — an acceptable quality nit on a rare mid-session
-            device change, in exchange for no remount lurch. */}
-        <Canvas
-          dpr={dpr}
-          gl={{ antialias: quality.antialias, alpha: true, powerPreference: "high-performance" }}
-          camera={{
-            fov: (CAMERA_PROFILES[device] || CAMERA_PROFILES.desktop).fovStart,
-            near: 0.1,
-            far: 100,
-            position: (CAMERA_PROFILES[device] || CAMERA_PROFILES.desktop).path[0].position,
-          }}
-          shadows={quality.shadows}
-          // pointerEvents:none so clicks fall THROUGH the room canvas to the
-          // Hero canvas below (its 3D carousel arrows need the raycaster). The
-          // room is scroll-driven only — it never needs pointer input.
-          style={{ width: "100%", height: "100%", display: "block", pointerEvents: "none" }}
-        >
-          {/* This Canvas always renders (frameloop "always"), so the monitor can
-              stay armed for the whole session. */}
-          <AdaptiveDprMonitor onDecline={onDecline} onIncline={onIncline} />
-          <Suspense fallback={null}>
-            <Scene progress={progress} phaseOut={phaseOut} device={device} />
-            <ReadySignal onReady={signalReady} />
-          </Suspense>
-        </Canvas>
+      {/* Room layer with a burn-mask punched through it. The mask is defined
+          in <BurnReveal/> below; userSpaceOnUse coords make its circle align
+          to viewport pixels (= mouse clientX/Y). The Hero (Layer 1) shows
+          through the hole. blockRef and splashRef sit OUTSIDE this wrapper
+          so they keep full coverage (click gate + boot cover). */}
+      <div
+        ref={roomMaskedRef}
+        style={{
+          position: "absolute",
+          inset: 0,
+          maskImage: BURN_MASK_URL,
+          WebkitMaskImage: BURN_MASK_URL,
+          pointerEvents: "none",
+        }}
+      >
+        <div ref={canvasWrap} className="concept-canvas" style={{ opacity: 0 }}>
+          {/* NOTE: intentionally NOT keyed on `device`. Keying would remount the
+              whole Canvas on a breakpoint crossing (e.g. phone rotation), which
+              resets Scene's smoothed camera phase to 0 → the dolly snaps back to
+              the room-start shot mid-scroll, and the anti-flash splash can't
+              re-arm. dpr / shadows type / camera path / env / dust all update
+              LIVE via props; only gl.antialias and the shadow-map size are fixed
+              at first mount — an acceptable quality nit on a rare mid-session
+              device change, in exchange for no remount lurch. */}
+          <Canvas
+            dpr={dpr}
+            gl={{ antialias: quality.antialias, alpha: true, powerPreference: "high-performance" }}
+            camera={{
+              fov: (CAMERA_PROFILES[device] || CAMERA_PROFILES.desktop).fovStart,
+              near: 0.1,
+              far: 100,
+              position: (CAMERA_PROFILES[device] || CAMERA_PROFILES.desktop).path[0].position,
+            }}
+            shadows={quality.shadows}
+            // pointerEvents:none so clicks fall THROUGH the room canvas to the
+            // Hero canvas below (its 3D carousel arrows need the raycaster). The
+            // room is scroll-driven only — it never needs pointer input.
+            style={{ width: "100%", height: "100%", display: "block", pointerEvents: "none" }}
+          >
+            {/* This Canvas always renders (frameloop "always"), so the monitor can
+                stay armed for the whole session. */}
+            <AdaptiveDprMonitor onDecline={onDecline} onIncline={onIncline} />
+            <Suspense fallback={null}>
+              <Scene progress={progress} phaseOut={phaseOut} device={device} />
+              <ReadySignal onReady={signalReady} />
+            </Suspense>
+          </Canvas>
+        </div>
+
+        <div ref={fxRef} style={{ opacity: 0 }}>
+          <div className="concept-grain" />
+        </div>
+
+        {/* Scroll cue — a word + a downward manicule glyph (U+261F forced to text
+            presentation with U+FE0E so it renders as a typographic hand, not a
+            colour emoji). Opacity driven per-frame by the rAF loop above. */}
+        <div ref={hintRef} className="concept-hint" style={{ opacity: 0 }}>
+          <span className="concept-hint__word">scroll down</span>
+          <span className="concept-hint__sub">to enter the world</span>
+          <span className="concept-hint__hand" aria-hidden="true">
+            {"☟︎"}
+          </span>
+        </div>
       </div>
 
-      <div ref={fxRef} style={{ opacity: 0 }}>
-        <div className="concept-grain" />
-      </div>
+      {/* Burn defs (mask + filter + gradient) + glow ring. Position is driven by
+          the <Magnifier/> widget below: starts at the home anchor (peek
+          visible from frame zero), follows the cursor while dragging, snaps
+          back to home on mouseup. glowRef lets the rAF loop above drive the
+          glow's opacity from vis*reveal so the burn fades in with the room
+          and out as the dolly enters the TV. */}
+      <BurnReveal position={burnPos} glowRef={glowRef} />
+
+      {/* Bottom-right draggable magnifier — desktop only. Owns the mousedown/
+          mousemove/mouseup that drives burnPos above. Renders nothing on
+          tablet/mobile (no mouse cursor to drag with; the existing CRT
+          portal reveal handles the "see the film underneath" beat there). */}
+      {device === "desktop" && (
+        <Magnifier onPositionChange={setBurnPos} />
+      )}
 
       {/* Invisible pointer-events blocker: swallows clicks/hover while the room
           covers the Hero, so the Hero's 3D buttons don't fire through the
           pointer-events:none room canvas. Released (none) once the room fades.
-          Scroll still works — pointer-events doesn't capture wheel/touch. */}
+          Scroll still works — pointer-events doesn't capture wheel/touch.
+          Intentionally OUTSIDE the masked wrapper so the burn hole doesn't
+          unblock the Hero while the room is otherwise opaque. */}
       <div
         ref={blockRef}
         aria-hidden="true"
         style={{ position: "fixed", inset: 0, zIndex: 6, pointerEvents: "auto" }}
       />
 
-      {/* Scroll cue — a word + a downward manicule glyph (U+261F forced to text
-          presentation with U+FE0E so it renders as a typographic hand, not a
-          colour emoji). Opacity driven per-frame by the rAF loop above. */}
-      <div ref={hintRef} className="concept-hint" style={{ opacity: 0 }}>
-        <span className="concept-hint__word">scroll down</span>
-        <span className="concept-hint__sub">to enter the world</span>
-        <span className="concept-hint__hand" aria-hidden="true">
-          {"☟︎"}
-        </span>
-      </div>
-
       {/* Black splash covers everything (including the Hero's dark-blue night
           sky underneath) until the Room canvas signals ready. Fades inverse
           of `reveal` (500ms), then removes itself from paint via display:none
-          so it can't intercept anything downstream. */}
+          so it can't intercept anything downstream. Intentionally OUTSIDE the
+          masked wrapper so the burn can't reveal pixels before the room has
+          anything to show. */}
       <div
         ref={splashRef}
         aria-hidden="true"
